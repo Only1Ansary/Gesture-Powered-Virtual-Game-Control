@@ -580,9 +580,63 @@ class HCIApp(tk.Tk):
         game_bar.pack(fill="x", side="bottom")
         game_bar.pack_propagate(False)
 
-        # Beat Saber icon inside an accent-coloured frame
-        border   = 4
-        icon_sz  = int(bar_h * 0.72)
+        # Rotation hints — LEFT side of game bar
+        hints     = tk.Frame(game_bar, bg=u["header_bg"])
+        hints.pack(side="left", padx=int(sw * 0.035), expand=True, fill="both")
+
+        btn_pad_y = int(bar_h * 0.14)
+        btn_pad_x = int(sw * 0.010)
+
+        # ◄ Left button — outline / secondary
+        left_box = tk.Frame(hints, bg=u["bg"],
+                            highlightthickness=2,
+                            highlightbackground=u["accent"])
+        left_box.pack(side="left", expand=True, fill="both",
+                      padx=btn_pad_x, pady=btn_pad_y)
+        tk.Canvas(left_box, height=5, bg=u["accent"],
+                  highlightthickness=0).pack(fill="x")
+        l_body = tk.Frame(left_box, bg=u["bg"])
+        l_body.pack(expand=True, fill="both", padx=16)
+        l_row = tk.Frame(l_body, bg=u["bg"])
+        l_row.pack(expand=True, anchor="center")
+        tk.Label(l_row, text="◄",
+                 font=("Bahnschrift", int(sh * 0.034), "bold"),
+                 fg=u["accent"], bg=u["bg"]).pack(side="left", padx=(0, 8))
+        tk.Label(l_row, text="ROTATE LEFT",
+                 font=("Bahnschrift", int(sh * 0.028), "bold"),
+                 fg="#ffffff", bg=u["bg"]).pack(side="left")
+        tk.Label(l_body, text="Back to Main Menu",
+                 font=("Consolas", int(sh * 0.014)),
+                 fg="#aaaaaa", bg=u["bg"]).pack(pady=(2, 6))
+        tk.Canvas(left_box, height=2, bg=u["accent"],
+                  highlightthickness=0).pack(fill="x", side="bottom")
+
+        # ► Right button — filled / primary
+        right_box = tk.Frame(hints, bg=u["glow"],
+                             highlightthickness=0)
+        right_box.pack(side="left", expand=True, fill="both",
+                       padx=btn_pad_x, pady=btn_pad_y)
+        tk.Canvas(right_box, height=5, bg=u["accent"],
+                  highlightthickness=0).pack(fill="x")
+        r_body = tk.Frame(right_box, bg=u["glow"])
+        r_body.pack(expand=True, fill="both", padx=16)
+        r_row = tk.Frame(r_body, bg=u["glow"])
+        r_row.pack(expand=True, anchor="center")
+        tk.Label(r_row, text="ROTATE RIGHT",
+                 font=("Bahnschrift", int(sh * 0.028), "bold"),
+                 fg=u["header_bg"], bg=u["glow"]).pack(side="left")
+        tk.Label(r_row, text="  ►",
+                 font=("Bahnschrift", int(sh * 0.034), "bold"),
+                 fg=u["header_bg"], bg=u["glow"]).pack(side="left")
+        tk.Label(r_body, text="Launch Beat Saber",
+                 font=("Consolas", int(sh * 0.014)),
+                 fg=u["bg"], bg=u["glow"]).pack(pady=(2, 6))
+        tk.Canvas(right_box, height=2, bg=u["header_bg"],
+                  highlightthickness=0).pack(fill="x", side="bottom")
+
+        # Beat Saber icon — RIGHT side of game bar, next to rotate-right button
+        border     = 4
+        icon_sz    = int(bar_h * 0.62)
         icon_pad_y = (bar_h - icon_sz - border * 2) // 2
         try:
             pil_icon   = Image.open(GAME_ICON).resize((icon_sz, icon_sz), Image.LANCZOS)
@@ -591,64 +645,21 @@ class HCIApp(tk.Tk):
             print(f"[WARN] Game icon load failed: {exc}")
             icon_photo = None
 
-        icon_frame = tk.Frame(game_bar, bg=u["accent"],
+        icon_wrapper = tk.Frame(game_bar, bg=u["header_bg"])
+        icon_wrapper.pack(side="right", padx=int(sw * 0.032), pady=icon_pad_y)
+
+        tk.Label(icon_wrapper, text="BEAT SABER",
+                 font=("Bahnschrift", int(sh * 0.022), "bold"),
+                 fg=u["accent"], bg=u["header_bg"]).pack()
+
+        icon_frame = tk.Frame(icon_wrapper, bg=u["accent"],
                               padx=border, pady=border)
-        icon_frame.pack(side="left", padx=int(sw * 0.028), pady=icon_pad_y)
+        icon_frame.pack()
 
         icon_lbl = tk.Label(icon_frame, image=icon_photo,
                             bg=u["header_bg"], bd=0)
         icon_lbl.image = icon_photo
         icon_lbl.pack()
-
-        # Game label
-        lbl_blk = tk.Frame(game_bar, bg=u["header_bg"])
-        lbl_blk.pack(side="left", padx=int(sw * 0.006))
-        tk.Label(lbl_blk, text="BEAT SABER",
-                 font=("Bahnschrift", int(sh * 0.032), "bold"),
-                 fg=u["accent"], bg=u["header_bg"]).pack(anchor="w")
-        tk.Label(lbl_blk, text="Beat Saber",
-                 font=("Consolas", int(sh * 0.013)),
-                 fg="#777777", bg=u["header_bg"]).pack(anchor="w")
-
-        # Rotation hints
-        hints   = tk.Frame(game_bar, bg=u["header_bg"])
-        hints.pack(side="right", padx=int(sw * 0.035), expand=True, fill="both")
-        pad_y   = int(bar_h * 0.18)
-
-        btn_pad_y = int(bar_h * 0.14)
-        btn_pad_x = int(sw * 0.010)
-
-        # ◄ Left button
-        left_box = tk.Frame(hints, bg=u["bg"],
-                            highlightthickness=2,
-                            highlightbackground=u["accent"])
-        left_box.pack(side="left", expand=True, fill="both",
-                      padx=btn_pad_x, pady=btn_pad_y)
-        # top glow strip
-        top_l = tk.Canvas(left_box, height=3, bg=u["accent"], highlightthickness=0)
-        top_l.pack(fill="x")
-        tk.Label(left_box, text="◄   ROTATE LEFT",
-                 font=("Bahnschrift", int(sh * 0.024), "bold"),
-                 fg=u["accent"], bg=u["bg"]).pack(expand=True, pady=(6, 2))
-        tk.Label(left_box, text="Back to Main Menu",
-                 font=("Consolas", int(sh * 0.013)),
-                 fg="#999999", bg=u["bg"]).pack(pady=(0, int(sh * 0.010)))
-
-        # Right button ►
-        right_box = tk.Frame(hints, bg=u["bg"],
-                             highlightthickness=2,
-                             highlightbackground=u["glow"])
-        right_box.pack(side="right", expand=True, fill="both",
-                       padx=btn_pad_x, pady=btn_pad_y)
-        # top glow strip
-        top_r = tk.Canvas(right_box, height=3, bg=u["glow"], highlightthickness=0)
-        top_r.pack(fill="x")
-        tk.Label(right_box, text="ROTATE RIGHT   ►",
-                 font=("Bahnschrift", int(sh * 0.024), "bold"),
-                 fg=u["glow"], bg=u["bg"]).pack(expand=True, pady=(6, 2))
-        tk.Label(right_box, text="Launch Beat Saber",
-                 font=("Consolas", int(sh * 0.013)),
-                 fg="#999999", bg=u["bg"]).pack(pady=(0, int(sh * 0.010)))
 
         # ── body canvas — animated GIF with text drawn on top ─────────────────
         body_h = sh - hdr_h - bar_h
@@ -656,9 +667,10 @@ class HCIApp(tk.Tk):
                             bg=u["bg"], highlightthickness=0)
         body_cv.pack(fill="both", expand=True)
 
+        gif_y_off = int(body_h * u.get("gif_y", 0))
         frames, delays = self._load_gif_frames(u["gif"], sw, body_h)
         if frames:
-            gif_item = body_cv.create_image(0, 0, anchor="nw", image=frames[0])
+            gif_item = body_cv.create_image(0, gif_y_off, anchor="nw", image=frames[0])
             body_cv.gif_frames = frames
             self._animate_gif(body_cv, frames, delays, 0, gif_item, frame)
 
