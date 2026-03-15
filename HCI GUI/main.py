@@ -28,7 +28,7 @@ class TuioQThread(QThread):
             on_marker_detected=self.on_marker_detected,
             on_marker_rotated=self.on_marker_rotated,
             on_marker_removed=self.on_marker_removed
-        )
+        ) 
 
     def on_marker_detected(self, fiducial_id: int):
         self.marker_detected_signal.emit(fiducial_id)
@@ -180,16 +180,16 @@ class CharacterWelcomePage(QWidget):
         self.avatar_label.setStyleSheet("background: transparent;")
         
         self.welcome_label = QLabel("Welcome,")
-        self.welcome_label.setFont(QFont("Bahnschrift", 36))
+        self.welcome_label.setFont(QFont("Bahnschrift", 38))
         self.welcome_label.setAlignment(Qt.AlignCenter)
         self.welcome_label.setStyleSheet("color: white; background: transparent;")
 
         self.name_label = QLabel("")
-        self.name_label.setFont(QFont("Impact", 72, QFont.Bold))
+        self.name_label.setFont(QFont("Impact", 95, QFont.Bold))
         self.name_label.setAlignment(Qt.AlignCenter)
         
         self.status_label = QLabel()
-        self.status_label.setFont(QFont("Consolas", 18))
+        self.status_label.setFont(QFont("Consolas", 16))
         self.status_label.setAlignment(Qt.AlignCenter)
         
         self.tuio_indicator = QLabel("●  TUIO READING")
@@ -238,10 +238,11 @@ class CharacterWelcomePage(QWidget):
         self.name_label.setText(character_data["name"])
         self.name_label.setStyleSheet(f"color: {character_data['theme_color']}; background: transparent;")
         
-        glow = QGraphicsDropShadowEffect(self)
-        glow.setBlurRadius(20)
-        glow.setColor(QColor(character_data['glow_color']))
-        self.name_label.setGraphicsEffect(glow)
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(8)
+        shadow.setOffset(3, 3)
+        shadow.setColor(QColor(0, 0, 0, 200))
+        self.name_label.setGraphicsEffect(shadow)
         
         self.status_label.setText(f"TUIO marker #{cid} recognised")
         self.status_label.setStyleSheet(f"color: {character_data['glow_color']}; background: transparent;")

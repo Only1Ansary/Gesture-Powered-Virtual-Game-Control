@@ -60,17 +60,6 @@ CHARACTER_MAP = {
         "gif": "purple animation.gif",
         "avatar": "purple user.jpg",
     },
-    4: {
-        "name": "Ibrahim",
-        "theme_color": "#FF8800",      # Solar Orange
-        "bg_gradient": ("#1a0e00", "#331a00"),
-        "glow_color": "#FFAA00",
-        "accent_rgb": (255, 136, 0),
-        "icon_char": "🛡",
-        "title": "The Knight",
-        "gif": "orange animation.gif",
-        "avatar": "orange user.jpg",
-    },
 }
 
 
