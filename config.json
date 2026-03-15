@@ -1,0 +1,8 @@
+{
+  "reactvision_exe": "reacTIVision-1.5.1-win64/reacTIVision.exe",
+  "game_exe":        "D:/DeskDump/Minecraft Launcher/Content/Minecraft.exe",
+
+  "tuio_host":          "0.0.0.0",
+  "tuio_port":          3333,
+  "rotation_threshold": 0.5
+}
