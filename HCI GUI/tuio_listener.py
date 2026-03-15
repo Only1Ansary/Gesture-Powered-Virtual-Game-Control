@@ -122,11 +122,12 @@ class TUIOListener:
     # Debounce delay: ignore a repeated marker detection within this window (seconds).
     DEBOUNCE_SECONDS = 2.0
 
-    def __init__(self, on_marker_detected=None, on_marker_rotated=None, host='0.0.0.0', port=TUIO_PORT):
+    def __init__(self, on_marker_detected=None, on_marker_rotated=None, on_marker_removed=None, host='0.0.0.0', port=TUIO_PORT):
         self.host = host
         self.port = port
         self.on_marker_detected = on_marker_detected  # callable(int)
         self.on_marker_rotated = on_marker_rotated    # callable(str, int)
+        self.on_marker_removed = on_marker_removed    # callable(int)
 
         self._socket = None
         self._thread = None
@@ -215,9 +216,11 @@ class TUIOListener:
         elif command == 'alive':
             # args: ['alive', sid1, sid2, ...]
             new_alive = set(int(a) for a in args[1:])
-            removed = set(self._object_map.keys()) - new_alive
-            for sid in removed:
-                self._object_map.pop(sid, None)
+            removed_sids = set(self._object_map.keys()) - new_alive
+            for sid in removed_sids:
+                fid = self._object_map.pop(sid, None)
+                if fid is not None:
+                    self._fire_removed(fid)
 
         elif command == 'fseq':
             pass  # frame sequence — nothing extra needed for our purpose
@@ -232,6 +235,12 @@ class TUIOListener:
         print(f"[TUIOListener] Detected marker ID={fiducial_id}")
         if callable(self.on_marker_detected):
             self.on_marker_detected(fiducial_id)
+
+    def _fire_removed(self, fiducial_id: int):
+        """Invoke the removed callback."""
+        print(f"[TUIOListener] Marker ID={fiducial_id} removed")
+        if callable(self.on_marker_removed):
+            self.on_marker_removed(fiducial_id)
 
     def _fire_rotated(self, direction: str, fiducial_id: int):
         """Invoke the rotated callback (with debounce)."""

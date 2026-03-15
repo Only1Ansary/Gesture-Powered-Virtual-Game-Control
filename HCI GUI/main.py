@@ -11,7 +11,7 @@ from tuio_listener import TUIOListener
 from character_map import get_character, get_all_characters
 from game_launcher import launch_game
 
-REACTVISION_EXE = r"D:\HCI\reacTIVision-1.5.1-win64\reacTIVision.exe"
+REACTVISION_EXE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "reacTIVision-1.5.1-win64", "reacTIVision.exe")
 _A = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Assests")
 MAIN_BK_GIF = os.path.join(_A, "bk gifs", "main bk.gif")
 GAME_ICON = os.path.join(_A, "game icons", "Beat_Saber_logo.jpg")
@@ -20,11 +20,14 @@ class TuioQThread(QThread):
     marker_detected_signal = pyqtSignal(int)
     marker_rotated_signal = pyqtSignal(str, int)
 
+    marker_removed_signal = pyqtSignal(int)
+
     def __init__(self):
         super().__init__()
         self.listener = TUIOListener(
             on_marker_detected=self.on_marker_detected,
-            on_marker_rotated=self.on_marker_rotated
+            on_marker_rotated=self.on_marker_rotated,
+            on_marker_removed=self.on_marker_removed
         )
 
     def on_marker_detected(self, fiducial_id: int):
@@ -32,6 +35,9 @@ class TuioQThread(QThread):
         
     def on_marker_rotated(self, direction: str, fiducial_id: int):
         self.marker_rotated_signal.emit(direction, fiducial_id)
+
+    def on_marker_removed(self, fiducial_id: int):
+        self.marker_removed_signal.emit(fiducial_id)
 
     def run(self):
         self.listener.start()
@@ -185,6 +191,14 @@ class CharacterWelcomePage(QWidget):
         self.status_label = QLabel()
         self.status_label.setFont(QFont("Consolas", 18))
         self.status_label.setAlignment(Qt.AlignCenter)
+        
+        self.tuio_indicator = QLabel("●  TUIO READING")
+        self.tuio_indicator.setFont(QFont("Consolas", 14, QFont.Bold))
+        self.tuio_indicator.setStyleSheet("color: #00FF00; background: transparent;")
+        
+        self.top_bar = QHBoxLayout()
+        self.top_bar.addStretch()
+        self.top_bar.addWidget(self.tuio_indicator)
 
         # Instruction bar at the bottom
         self.info_layout = QHBoxLayout()
@@ -198,6 +212,7 @@ class CharacterWelcomePage(QWidget):
         self.info_layout.addStretch()
         self.info_layout.addWidget(self.right_label, alignment=Qt.AlignRight)
 
+        self.layout.addLayout(self.top_bar)
         self.layout.addStretch()
         self.layout.addWidget(self.avatar_label, alignment=Qt.AlignCenter)
         self.layout.addWidget(self.welcome_label)
@@ -238,6 +253,14 @@ class CharacterWelcomePage(QWidget):
         self.status_label.setText("Launching game...")
         self.status_label.setStyleSheet("color: white; background: transparent;")
 
+    def update_tuio_status(self, is_reading: bool):
+        if is_reading:
+            self.tuio_indicator.setText("●  TUIO READING")
+            self.tuio_indicator.setStyleSheet("color: #00FF00; background: transparent;")
+        else:
+            self.tuio_indicator.setText("●  TUIO LOST")
+            self.tuio_indicator.setStyleSheet("color: #FF0000; background: transparent;")
+
     def resizeEvent(self, event):
         self.bg_label.setGeometry(self.rect())
         self.overlay.setGeometry(self.rect())
@@ -273,6 +296,7 @@ class MainWindow(QMainWindow):
         self.tuio_thread = TuioQThread()
         self.tuio_thread.marker_detected_signal.connect(self.handle_marker_detected)
         self.tuio_thread.marker_rotated_signal.connect(self.handle_marker_rotated)
+        self.tuio_thread.marker_removed_signal.connect(self.handle_marker_removed)
         self.tuio_thread.start()
 
     def launch_reactivision(self):
@@ -291,12 +315,16 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(int)
     def handle_marker_detected(self, fiducial_id: int):
-        if self.is_logging_in:
-            return 
         character_data = get_character(fiducial_id)
-        if character_data:
-            print(f"[GUI] Authenticated character ID {fiducial_id}: {character_data['name']}")
-            self.transition_to_character_page(character_data, fiducial_id)
+        if not character_data: return
+
+        if self.is_logging_in:
+            if character_data['name'] == self.current_character_name:
+                self.character_page.update_tuio_status(True)
+            return
+            
+        print(f"[GUI] Authenticated character ID {fiducial_id}: {character_data['name']}")
+        self.transition_to_character_page(character_data, fiducial_id)
 
     @pyqtSlot(str, int)
     def handle_marker_rotated(self, direction: str, fiducial_id: int):
@@ -319,10 +347,19 @@ class MainWindow(QMainWindow):
                 self.character_page.status_label.setStyleSheet("color: #FF3B3B; background: transparent;")
                 QTimer.singleShot(4000, self.reset_to_welcome)
 
+    @pyqtSlot(int)
+    def handle_marker_removed(self, fiducial_id: int):
+        if not self.is_logging_in:
+            return
+        character_data = get_character(fiducial_id)
+        if character_data and character_data['name'] == self.current_character_name:
+            self.character_page.update_tuio_status(False)
+
     def transition_to_character_page(self, character_data: dict, cid: int):
         self.is_logging_in = True
         self.current_character_name = character_data['name']
         self.character_page.set_character(character_data, cid)
+        self.character_page.update_tuio_status(True)
         
         self.welcome_page.movie.stop()
         self.stack.setCurrentWidget(self.character_page)
