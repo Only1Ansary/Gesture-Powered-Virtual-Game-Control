@@ -45,17 +45,6 @@ pip install -r requirements.txt
 python main.py
 ```
 
----
-
-## Keyboard Shortcuts (no hardware needed)
-
-| Key | Action |
-|-----|--------|
-| `0` / `1` / `2` / `3` | Simulate placing / removing marker for that user |
-| `← Left Arrow` | Simulate rotating left (back to main menu) |
-| `→ Right Arrow` | Simulate rotating right (launch game) |
-| `F11` | Toggle fullscreen |
-| `ESC` / `Q` | Exit |
 
 ---
 
