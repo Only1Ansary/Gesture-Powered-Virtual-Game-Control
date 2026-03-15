@@ -17,7 +17,6 @@ A fullscreen Python GUI application that authenticates users via **TUIO fiducial
 - **Automatic reacTIVision Launch** — the app starts `reacTIVision.exe` in the background on startup.
 - **TUIO OSC Listener** — powered by `python-osc`, running on a background thread to keep the UI responsive.
 - **Rotation-Based Navigation** — rotate marker **left** to return to the main menu, rotate **right** to launch the configured game.
-- **Keyboard Simulation** — test without physical hardware using keyboard shortcuts.
 - **Configurable via `config.json`** — set game path, TUIO host/port, and rotation sensitivity without touching any code.
 
 ---
