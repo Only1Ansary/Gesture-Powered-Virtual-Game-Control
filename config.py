@@ -65,3 +65,15 @@ GAME_EXE           = _find_game()
 TUIO_HOST          = _CFG.get("tuio_host", "0.0.0.0")
 TUIO_PORT          = int(_CFG.get("tuio_port", 3333))
 ROTATION_THRESHOLD = float(_CFG.get("rotation_threshold", 0.5))  # rad/s angular velocity
+
+# ── VR bridge settings ────────────────────────────────────────────────────────
+VR_BRIDGE_ENABLED  = bool(_CFG.get("vr_bridge_enabled", False))
+VR_PLAY_WIDTH      = float(_CFG.get("vr_play_width", 2.0))          # metres
+VR_PLAY_HEIGHT     = float(_CFG.get("vr_play_height", 2.0))         # metres
+VR_DEPTH           = float(_CFG.get("vr_depth", 1.0))               # metres (Z into screen)
+VR_Y_OFFSET        = float(_CFG.get("vr_y_offset", 1.2))            # metres (base height)
+VR_GLOBAL_OFFSET   = list(_CFG.get("vr_global_offset", [0, 0, 0]))  # XYZ camera alignment
+VR_GLOBAL_ROTATION = list(_CFG.get("vr_global_rotation", [0, 0, 0]))# Euler rotation
+VR_LEFT_MARKER     = int(_CFG.get("vr_left_marker", 0))             # fiducial ID → left saber
+VR_RIGHT_MARKER    = int(_CFG.get("vr_right_marker", 1))            # fiducial ID → right saber
+VR_UPDATE_RATE     = int(_CFG.get("vr_update_rate", 60))             # Hz

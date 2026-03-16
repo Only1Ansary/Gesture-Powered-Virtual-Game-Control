@@ -24,10 +24,11 @@ import time
 import tkinter as tk
 
 from character_map  import MAIN_BK_GIF, GAME_ICON, get_all_users
-from config         import BASE_DIR, IS_WINDOWS, REACTVISION_EXE, TUIO_HOST, TUIO_PORT
+from config         import BASE_DIR, IS_WINDOWS, REACTVISION_EXE, TUIO_HOST, TUIO_PORT, VR_BRIDGE_ENABLED
 from game_launcher  import launch_game
 from gif_utils      import GifManager, load_avatar, load_image
 from tuio_listener  import TUIOListener, OSC_AVAILABLE
+from vr_bridge      import VRBridge
 
 
 class HCIApp(tk.Tk):
@@ -63,10 +64,15 @@ class HCIApp(tk.Tk):
 
         # ── start ─────────────────────────────────────────────────────────────
         self._launch_reactivision()
+
+        # ── VR bridge ─────────────────────────────────────────────────────────
+        self._vr_bridge = VRBridge(dry_run=not VR_BRIDGE_ENABLED)
+
         self._listener = TUIOListener(
             on_marker_detected=lambda fid:       self.after(0, lambda: self._on_marker_detected(fid)),
             on_marker_rotated= lambda d, fid:    self.after(0, lambda: self._on_marker_rotated(d, fid)),
             on_marker_removed= lambda fid:       self.after(0, lambda: self._on_marker_removed(fid)),
+            on_marker_moved=   lambda fid, x, y, a: self._vr_bridge.enqueue(fid, x, y, a),
             host=TUIO_HOST,
             port=TUIO_PORT,
         )
@@ -77,6 +83,7 @@ class HCIApp(tk.Tk):
     # ── lifecycle ─────────────────────────────────────────────────────────────
 
     def _on_exit(self, _event=None):
+        self._vr_bridge.stop()
         self._listener.stop()
         self.destroy()
 
@@ -448,6 +455,9 @@ class HCIApp(tk.Tk):
     def _do_launch_game(self):
         name    = self._users[self._current_user]["name"] \
                   if self._current_user is not None else ""
+        # Start the VR bridge when the game launches
+        if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
+            self._vr_bridge.start()
         success, error_msg = launch_game(character_name=name)
         if success:
             self.attributes("-fullscreen", False)

@@ -37,6 +37,7 @@ class TUIOListener:
         on_marker_detected=None,
         on_marker_rotated=None,
         on_marker_removed=None,
+        on_marker_moved=None,
         host: str = "0.0.0.0",
         port: int = 3333,
     ):
@@ -45,6 +46,7 @@ class TUIOListener:
         self.on_marker_detected = on_marker_detected   # callable(int)
         self.on_marker_rotated  = on_marker_rotated    # callable(str, int)
         self.on_marker_removed  = on_marker_removed    # callable(int)
+        self.on_marker_moved    = on_marker_moved      # callable(int, float, float, float)
 
         self._server  = None
         self._thread  = None
@@ -109,6 +111,9 @@ class TUIOListener:
             #  index:   0        1           2        3  4    5    6  7  8
             session_id  = args[1]
             fiducial_id = int(args[2])
+            x           = float(args[3]) if len(args) > 3 else 0.0
+            y           = float(args[4]) if len(args) > 4 else 0.0
+            angle       = float(args[5]) if len(args) > 5 else 0.0
             va          = float(args[8]) if len(args) > 8 else 0.0
 
             if session_id not in self._object_map:
@@ -121,6 +126,10 @@ class TUIOListener:
                     self._fire_rotated("right", fiducial_id, va)
                 elif va < -ROTATION_THRESHOLD:
                     self._fire_rotated("left", fiducial_id, va)
+
+            # Fire continuous position update for every 'set' message
+            if callable(self.on_marker_moved):
+                self.on_marker_moved(fiducial_id, x, y, angle)
 
         elif command == "alive":
             new_alive    = {args[i] for i in range(1, len(args))}
