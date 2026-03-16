@@ -36,8 +36,12 @@ def launch_game(character_name: str = "") -> tuple[bool, str]:
         return False, msg
 
     try:
-        game_dir = os.path.dirname(GAME_EXE) or BASE_DIR
-        subprocess.Popen([GAME_EXE], cwd=game_dir)
+        if GAME_EXE.lower().endswith(".lnk"):
+            # .lnk shortcuts can't be launched via Popen; use the Windows shell
+            os.startfile(GAME_EXE)
+        else:
+            game_dir = os.path.dirname(GAME_EXE) or BASE_DIR
+            subprocess.Popen([GAME_EXE], cwd=game_dir)
         print(f"[GameLauncher] Launched: {GAME_EXE}  (character={character_name!r})")
         return True, ""
     except Exception as exc:
