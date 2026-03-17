@@ -8,7 +8,7 @@
   "vr_play_width": 2.0,
   "vr_play_height": 2.0,
   "vr_depth": 1.0,
-  "vr_y_offset": 1.2,
+  "vr_y_offset": 0.0,
   "vr_global_offset": [
     0,
     0,

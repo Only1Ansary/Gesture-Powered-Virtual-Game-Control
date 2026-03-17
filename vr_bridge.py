@@ -190,14 +190,18 @@ class VRBridge:
     # ── VR initialisation ─────────────────────────────────────────────────────
 
     def _init_vr(self):
-        """Create the VRInputSystem connection and add two virtual trackers."""
+        """Create the VRInputSystem connection and add two virtual controllers."""
         try:
             self._vr_input = VRInputSystem(
                 global_offset=self.global_offset,
                 global_rotation=self.global_rotation,
             )
-            self._trackers["left"] = self._vr_input.add_tracker("tuio_left_saber")
-            self._trackers["right"] = self._vr_input.add_tracker("tuio_right_saber")
+            self._trackers["left"] = self._vr_input.add_controller(
+                "tuio_left_saber", role="left"
+            )
+            self._trackers["right"] = self._vr_input.add_controller(
+                "tuio_right_saber", role="right"
+            )
             print(
                 f"[VRBridge] VR initialised – "
                 f"{self._vr_input.tracker_count()} virtual device(s) registered."
