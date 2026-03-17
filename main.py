@@ -61,6 +61,7 @@ class HCIApp(tk.Tk):
         self._tuio_light_cv      = None
         self._tuio_light_oval    = None
         self._u_theme            = None
+        self._current_gif_key    = None
 
         # ── start ─────────────────────────────────────────────────────────────
         self._launch_reactivision()
@@ -78,7 +79,6 @@ class HCIApp(tk.Tk):
         )
         self._listener.start()
         self._show_main_menu()
-        self.after(300, self._preload_gifs)
 
     # ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -159,6 +159,9 @@ class HCIApp(tk.Tk):
         if self._screen and self._screen.winfo_exists():
             self._screen.destroy()
         self._screen = None
+        if self._current_gif_key:
+            self._gif.evict(*self._current_gif_key)
+            self._current_gif_key = None
 
     def _set_tuio_light(self, active: bool):
         if self._tuio_light_cv is None:
@@ -177,17 +180,10 @@ class HCIApp(tk.Tk):
 
     # ── GIF helpers ───────────────────────────────────────────────────────────
 
-    def _preload_gifs(self):
-        sw, sh  = self._sw(), self._sh()
-        body_h  = sh - int(sh * 0.10) - int(sh * 0.22)
-        to_load = [(MAIN_BK_GIF, sw, sh)] + [
-            (u["gif"], sw, body_h) for u in self._users.values()
-        ]
-        self._gif.preload(to_load)
-
     def _start_gif(self, canvas: tk.Canvas, path: str, width: int, height: int, owner):
         """Load a GIF onto *canvas* and start its animation loop.
         Animation stops automatically when the owning screen changes."""
+        self._current_gif_key = (path, width, height)
         frames, delays = self._gif.load(path, width, height)
         if not frames:
             return

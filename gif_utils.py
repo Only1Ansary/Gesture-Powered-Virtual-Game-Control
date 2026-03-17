@@ -87,6 +87,12 @@ class GifManager:
 
         self._root.after(5, lambda: self._convert_batch(pending, batch))
 
+    def evict(self, path: str, width: int, height: int):
+        """Remove a cached GIF from memory to free RAM."""
+        key = (path, width, height)
+        self._gif_cache.pop(key, None)
+        self._gif_pil_cache.pop(key, None)
+
     # ── On-demand loading ─────────────────────────────────────────────────────
 
     def load(self, path: str, width: int, height: int) -> tuple[list, list]:
