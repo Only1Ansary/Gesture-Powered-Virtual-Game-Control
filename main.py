@@ -78,7 +78,6 @@ class HCIApp(tk.Tk):
             port=TUIO_PORT,
         )
         self._listener.start()
-        self._preload_gifs()
         self._show_main_menu()
 
     # ── lifecycle ─────────────────────────────────────────────────────────────
@@ -161,8 +160,7 @@ class HCIApp(tk.Tk):
             self._screen.destroy()
         self._screen = None
         if self._current_gif_key:
-            # We no longer evict here to keep GIFs cached for instant re-loads.
-            # Cache takes some RAM but prevents the UI from freezing on every detection.
+            self._gif.evict(*self._current_gif_key)
             self._current_gif_key = None
 
     def _set_tuio_light(self, active: bool):
@@ -179,24 +177,6 @@ class HCIApp(tk.Tk):
 
     def _sh(self) -> int:
         return self.winfo_screenheight()
-
-    def _preload_gifs(self):
-        """Prepare all background GIFs in a background thread to prevent UI freezing."""
-        # Force a geometry update so we have accurate dimensions
-        self.update_idletasks()
-        sw, sh = self._sw(), self._sh()
-        
-        # Calculate heights for user pages (same logic as _show_user_page)
-        hdr_h  = int(sh * 0.10)
-        bar_h  = int(sh * 0.22)
-        body_h = sh - hdr_h - bar_h
-
-        targets = [(MAIN_BK_GIF, sw, sh)]
-        for u in self._users.values():
-            targets.append((u["gif"], sw, body_h))
-            
-        print(f"[HCIApp] Pre-loading {len(targets)} animated backgrounds...")
-        self._gif.preload(targets)
 
     # ── GIF helpers ───────────────────────────────────────────────────────────
 
