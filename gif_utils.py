@@ -56,20 +56,37 @@ class GifManager:
 
         threading.Thread(target=_bg, daemon=True).start()
 
-    def _convert_batch(self, pending=None, batch: int = 8):
+    def _convert_batch(self, pending: list | None = None, batch: int = 8):
         """Convert PIL frames → PhotoImage in small batches on the main thread
-        to avoid freezing the UI."""
+        to avoid freezing the UI. This is called recursively via root.after()."""
+        
+        # 1. Initialize pending list if this is the start of a conversion cycle
         if pending is None:
             pending = [
                 (k, list(v))
                 for k, v in self._gif_pil_cache.items()
                 if k not in self._gif_cache
             ]
+            
+        # 2. If no GIFs in current 'pending' list, or pending list is exhausted:
         if not pending:
+            # Re-check PIL cache to see if background thread finished more work
+            remaining_pil = [
+                (k, list(v))
+                for k, v in self._gif_pil_cache.items()
+                if k not in self._gif_cache
+            ]
+            if remaining_pil:
+                # Keep going with new items
+                self._root.after(10, lambda: self._convert_batch(remaining_pil, batch))
+                return
+            
+            # Truly finished
             self._gif_pil_cache.clear()
             print("[GifManager] Pre-load complete.")
             return
 
+        # 3. Process first GIF in pending list
         key, pil_list = pending[0]
         frames, delays = self._gif_cache.get(key, ([], []))
         converted = 0
@@ -80,11 +97,10 @@ class GifManager:
             converted += 1
         self._gif_cache[key] = (frames, delays)
 
-        if pil_list:
-            pending[0] = (key, pil_list)
-        else:
+        # 4. Advance pending list and loop
+        if not pil_list:
             pending.pop(0)
-
+            
         self._root.after(5, lambda: self._convert_batch(pending, batch))
 
     def evict(self, path: str, width: int, height: int):
@@ -155,25 +171,41 @@ class GifManager:
             pass
 
 
-# ── Standalone image helpers ──────────────────────────────────────────────────
+# ── Global image cache to avoid repeated slow PIL resizes ────────────────────
+_image_cache: dict[tuple, ImageTk.PhotoImage] = {}
+
 
 def load_avatar(path: str, size: int, border_color: str):
-    """Load an image, add a solid-colour border, and return a PhotoImage."""
+    """Load an image, add a solid-colour border, and return a PhotoImage.
+    Uses a global cache to avoid redrawing/resizing on every screen swap."""
+    key = (path, size, border_color, "avatar")
+    if key in _image_cache:
+        return _image_cache[key]
+
     try:
         img      = Image.open(path).resize((size - 6, size - 6), Image.LANCZOS)
         bordered = Image.new("RGB", (size, size), border_color)
         bordered.paste(img, (3, 3))
-        return ImageTk.PhotoImage(bordered)
+        photo = ImageTk.PhotoImage(bordered)
+        _image_cache[key] = photo
+        return photo
     except Exception as exc:
         print(f"[GifManager] Avatar load failed ({path}): {exc}")
         return None
 
 
 def load_image(path: str, width: int, height: int):
-    """Load and resize an image, return a PhotoImage (no border)."""
+    """Load and resize an image, return a PhotoImage (no border).
+    Uses a global cache for performance."""
+    key = (path, width, height, "plain")
+    if key in _image_cache:
+        return _image_cache[key]
+
     try:
-        img = Image.open(path).resize((width, height), Image.LANCZOS)
-        return ImageTk.PhotoImage(img)
+        img   = Image.open(path).resize((width, height), Image.LANCZOS)
+        photo = ImageTk.PhotoImage(img)
+        _image_cache[key] = photo
+        return photo
     except Exception as exc:
         print(f"[GifManager] Image load failed ({path}): {exc}")
         return None
