@@ -1,0 +1,7 @@
+{
+  "alwaysActivate": true,
+  "name": "tuio_controller",
+  "directory": "",
+  "resourceOnly": false,
+  "hmd_presence": []
+}

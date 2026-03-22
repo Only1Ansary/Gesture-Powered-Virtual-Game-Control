@@ -2,14 +2,17 @@
 vr_bridge.py
 ────────────
 Reads TUIO marker positions from a thread-safe queue and feeds them into
-SteamVR as virtual-controller poses via OpenVR-InputEmulator, so that
-Beat Saber sabers track the physical TUIO markers in real-time.
+SteamVR as virtual-controller poses via named pipes to the custom
+TUIO Controller SteamVR driver, so that Beat Saber sabers track the
+physical TUIO markers in real-time.
 
 Architecture
 ────────────
   reacTIVision ─► TUIOListener (OSC) ─► queue.Queue ─► VRBridge (this module)
                                                             │
-                                                  pyopenvrinputemu
+                                                    Named Pipes (Win32)
+                                                            │
+                                                  SteamVR driver DLL
                                                             │
                                                       SteamVR / Beat Saber
 
@@ -33,6 +36,7 @@ from __future__ import annotations
 
 import math
 import queue
+import struct
 import sys
 import threading
 import time
@@ -53,12 +57,13 @@ from config import (
     VR_Y_OFFSET,
 )
 
-# ── optional VR imports ───────────────────────────────────────────────────────
+# ── optional named-pipe imports (Windows only) ────────────────────────────────
 try:
-    from pyopenvrinputemu import VRInputSystem
-    VR_EMU_AVAILABLE = True
+    import win32file
+    import pywintypes
+    PIPE_AVAILABLE = True
 except ImportError:
-    VR_EMU_AVAILABLE = False
+    PIPE_AVAILABLE = False
 
 # ── data structures ────────────────────────────────────────────────────────────
 MarkerUpdate = namedtuple("MarkerUpdate", ["fid", "x", "y", "angle"])
@@ -106,6 +111,26 @@ def _tuio_to_vr(
     return (vr_x, vr_y, vr_z)
 
 
+def _open_pipe(name: str, retries: int = 10, delay: float = 1.0):
+    """Open a named pipe with retry logic (driver may take a moment to start)."""
+    for attempt in range(retries):
+        try:
+            handle = win32file.CreateFile(
+                name,
+                win32file.GENERIC_WRITE,
+                0,
+                None,
+                win32file.OPEN_EXISTING,
+                0,
+                None,
+            )
+            return handle
+        except pywintypes.error:
+            if attempt < retries - 1:
+                time.sleep(delay)
+    raise RuntimeError(f"Could not connect to pipe {name} after {retries} attempts")
+
+
 class VRBridge:
     """Background-thread bridge that translates TUIO → SteamVR controller poses."""
 
@@ -137,9 +162,9 @@ class VRBridge:
         self._thread: Optional[threading.Thread] = None
         self._running = False
 
-        # VR state (populated in _init_vr)
-        self._vr_input = None
-        self._trackers: Dict[str, object] = {}   # "left" / "right" → VirtualTracker
+        # Pipe handles (populated in _init_vr)
+        self._left_pipe = None
+        self._right_pipe = None
         self._last_pose: Dict[str, Tuple] = {}   # "left" / "right" → (x, y, z, qw, qx, qy, qz)
 
     # ── public API ────────────────────────────────────────────────────────────
@@ -149,11 +174,10 @@ class VRBridge:
         if self._running:
             return
         if not self.dry_run:
-            if not VR_EMU_AVAILABLE:
+            if not PIPE_AVAILABLE:
                 print(
-                    "[VRBridge] ERROR: pyopenvrinputemu is not available.\n"
-                    "           Extract the PyOpenVRInputEmulator release zip into\n"
-                    "           the project root so that 'pyopenvrinputemu/' is importable."
+                    "[VRBridge] ERROR: pywin32 is not installed.\n"
+                    "           Install it with: pip install pywin32"
                 )
                 return
             self._init_vr()
@@ -174,6 +198,15 @@ class VRBridge:
         self._running = False
         if self._thread:
             self._thread.join(timeout=3.0)
+        # Close pipe handles
+        for pipe in (self._left_pipe, self._right_pipe):
+            if pipe is not None:
+                try:
+                    win32file.CloseHandle(pipe)
+                except Exception:
+                    pass
+        self._left_pipe = None
+        self._right_pipe = None
         print("[VRBridge] Stopped.")
 
     def enqueue(self, fid: int, x: float, y: float, angle: float):
@@ -190,25 +223,16 @@ class VRBridge:
     # ── VR initialisation ─────────────────────────────────────────────────────
 
     def _init_vr(self):
-        """Create the VRInputSystem connection and add two virtual controllers."""
+        """Open named pipe connections to the SteamVR driver."""
         try:
-            self._vr_input = VRInputSystem(
-                global_offset=self.global_offset,
-                global_rotation=self.global_rotation,
-            )
-            self._trackers["left"] = self._vr_input.add_controller(
-                "tuio_left_saber", role="left"
-            )
-            self._trackers["right"] = self._vr_input.add_controller(
-                "tuio_right_saber", role="right"
-            )
-            print(
-                f"[VRBridge] VR initialised – "
-                f"{self._vr_input.tracker_count()} virtual device(s) registered."
-            )
+            print("[VRBridge] Connecting to driver pipes...")
+            self._left_pipe = _open_pipe(r'\\.\pipe\tuio_controller_left')
+            self._right_pipe = _open_pipe(r'\\.\pipe\tuio_controller_right')
+            print("[VRBridge] Connected to both controller pipes.")
         except Exception as exc:
-            print(f"[VRBridge] ERROR initialising VR: {exc}")
-            self._vr_input = None
+            print(f"[VRBridge] ERROR connecting to pipes: {exc}")
+            self._left_pipe = None
+            self._right_pipe = None
 
     # ── background loop ───────────────────────────────────────────────────────
 
@@ -250,16 +274,14 @@ class VRBridge:
                         f"q=({qw:.3f}, {qx:.3f}, {qy:.3f}, {qz:.3f})"
                     )
                 else:
-                    tracker = self._trackers.get(side)
-                    if tracker and self._vr_input:
+                    pipe = self._left_pipe if side == "left" else self._right_pipe
+                    if pipe is not None:
                         try:
-                            self._vr_input.update_tracker(
-                                tracker.device_id,
-                                vr_x, vr_y, vr_z,
-                                qw, qx, qy, qz,
-                            )
+                            data = struct.pack('7f', vr_x, vr_y, vr_z,
+                                               qw, qx, qy, qz)
+                            win32file.WriteFile(pipe, data)
                         except Exception as exc:
-                            print(f"[VRBridge] Pose update error ({side}): {exc}")
+                            print(f"[VRBridge] Pipe write error ({side}): {exc}")
 
             # Sleep the remainder of the interval
             elapsed = time.perf_counter() - t0
