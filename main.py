@@ -25,7 +25,7 @@ import tkinter as tk
 
 from character_map  import MAIN_BK_GIF, GAME_ICON, get_all_users
 from config         import BASE_DIR, IS_WINDOWS, REACTVISION_EXE, TUIO_HOST, TUIO_PORT, VR_BRIDGE_ENABLED
-from game_launcher  import launch_game
+from game_launcher  import launch_game, game_running
 from gif_utils      import GifManager, load_avatar, load_image
 from tuio_listener  import TUIOListener, OSC_AVAILABLE
 from vr_bridge      import VRBridge
@@ -110,6 +110,8 @@ class HCIApp(tk.Tk):
     # ── TUIO callbacks (dispatched to main thread via after(0, ...)) ──────────
 
     def _on_marker_detected(self, fid: int):
+        if game_running.is_set():
+            return
         if self._current_user is None and fid in self._users:
             self._current_user = fid
             self._show_user_page(fid)
@@ -117,10 +119,14 @@ class HCIApp(tk.Tk):
             self._set_tuio_light(True)
 
     def _on_marker_removed(self, fid: int):
+        if game_running.is_set():
+            return
         if self._current_user == fid:
             self._set_tuio_light(False)
 
     def _on_marker_rotated(self, direction: str, fid: int):
+        if game_running.is_set():
+            return
         if self._current_user != fid or self._rotation_triggered:
             return
         self._rotation_triggered = True
@@ -141,6 +147,8 @@ class HCIApp(tk.Tk):
             self._show_main_menu()
 
     def _simulate_rotation(self, direction: str):
+        if game_running.is_set():
+            return
         if self._current_user is None or self._rotation_triggered:
             return
         self._rotation_triggered = True
