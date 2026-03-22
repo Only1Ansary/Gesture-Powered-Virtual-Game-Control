@@ -1,15 +1,11 @@
 # Visual Studio build artifacts
 .vs/
 Debug/
-Release/
+VRDriver/VRDriver/x64/
 *.pch
 *.ipch
 *.obj
 *.ilk
-*.pdb
-*.exp
-*.lib
-*.dll
 ipch/
 
 # User-specific files
