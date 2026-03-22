@@ -1,0 +1,20 @@
+# Visual Studio build artifacts
+.vs/
+x64/
+Debug/
+Release/
+*.pch
+*.ipch
+*.obj
+*.ilk
+*.pdb
+*.exp
+*.lib
+*.dll
+ipch/
+
+# User-specific files
+*.user
+*.suo
+*.sdf
+*.opensdf
