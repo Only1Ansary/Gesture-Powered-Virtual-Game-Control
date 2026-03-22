@@ -1,6 +1,5 @@
 # Visual Studio build artifacts
 .vs/
-x64/
 Debug/
 Release/
 *.pch

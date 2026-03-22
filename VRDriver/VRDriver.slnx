@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="VRDriver/VRDriver.vcxproj" />
+  <Project Path="VRDriver/VRDriver.vcxproj" Id="75044d22-f715-4a24-923e-90bd114b926f" />
 </Solution>
