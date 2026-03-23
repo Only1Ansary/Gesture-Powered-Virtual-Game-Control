@@ -127,6 +127,8 @@ Add / enable the **admin** pattern (e.g. ID **9**) in your reacTIVision marker c
 
 User changes from the admin UI are saved to **`admin_users.json`** in the project folder.
 
+**On the admin screen (TUIO-only):** move the **admin marker** **up/down** (relative to a neutral hold) to change the highlighted user; **push the marker to the right** (displacement, edge-triggered) to **add** a random user; **rotate the marker right** to **remove** the selected user; **rotate left** to return to the main menu. Uses the same `menu_motion_threshold` / `menu_smooth_alpha` / `menu_volume_repeat_seconds` / `menu_action_cooldown_seconds` style tuning as the circular menu where applicable.
+
 ---
 
 ## Configuration (`config.json`) — core keys

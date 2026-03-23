@@ -10,8 +10,9 @@ Fullscreen Tkinter GUI driven by TUIO fiducial markers via reacTIVision.
   • Each user page has its own animated GIF background and colour theme.
   • Rotate the TUIO marker LEFT  → return to the main menu.
   • Rotate the TUIO marker RIGHT → launch the configured game.
-  • Admin: with the configured phone visible over Bluetooth, hold TUIO marker #9
-    (see config.json) on the main menu to open user management.
+  • Admin: Bluetooth + TUIO admin marker — on the admin page, move marker up/down to
+    change selection, push right (displacement) to add a random user, rotate ► to
+    remove selected, rotate ◄ to return to the main menu (no mouse required).
   • Circular menu: TUIO marker #10 (configurable) — move relative to neutral for
     volume / minimize others / exit game; remove marker to close the menu.
 
@@ -110,6 +111,14 @@ class HCIApp(tk.Tk):
         self._u_theme            = None
         self._current_gif_key    = None
         self._admin_screen       = False
+        self._admin_lb: tk.Listbox | None = None
+        self._admin_tuio_neutral: tuple[float, float] | None = None
+        self._admin_tuio_sx: float | None = None
+        self._admin_tuio_sy: float | None = None
+        self._admin_tuio_last_sector = "center"
+        self._admin_tuio_last_ud_time = 0.0
+        self._admin_tuio_last_add_time = 0.0
+        self._admin_tuio_last_remove_time = 0.0
 
         self._menu_ctrl = CircularMenuController(
             self,
@@ -179,6 +188,8 @@ class HCIApp(tk.Tk):
         self._vr_bridge.enqueue(fid, x, y, a)
         if fid == MENU_TUIO_MARKER and self._menu_ctrl.is_active:
             self.after(0, lambda xx=x, yy=y: self._menu_ctrl.feed_tuio(xx, yy))
+        if self._admin_screen and fid == ADMIN_TUIO_MARKER:
+            self.after(0, lambda xx=x, yy=y: self._admin_feed_tuio_motion(xx, yy))
 
     def _on_marker_detected(self, fid: int):
         if fid == MENU_TUIO_MARKER:
@@ -218,11 +229,16 @@ class HCIApp(tk.Tk):
         if game_running.is_set():
             return
         if self._admin_screen:
-            if fid != ADMIN_TUIO_MARKER or self._rotation_triggered:
+            if fid != ADMIN_TUIO_MARKER:
                 return
-            self._rotation_triggered = True
             if direction == "left":
+                if self._rotation_triggered:
+                    return
+                self._rotation_triggered = True
                 self._show_main_menu()
+                return
+            if direction == "right":
+                self._admin_tuio_remove_selected()
             return
         if self._current_user != fid or self._rotation_triggered:
             return
@@ -249,11 +265,14 @@ class HCIApp(tk.Tk):
         if game_running.is_set():
             return
         if self._admin_screen:
-            if self._rotation_triggered:
-                return
-            self._rotation_triggered = True
             if direction == "left":
+                if self._rotation_triggered:
+                    return
+                self._rotation_triggered = True
                 self._show_main_menu()
+                return
+            if direction == "right":
+                self._admin_tuio_remove_selected()
             return
         if self._current_user is None or self._rotation_triggered:
             return
@@ -328,6 +347,10 @@ class HCIApp(tk.Tk):
     # ── screen helpers ────────────────────────────────────────────────────────
 
     def _clear_screen(self):
+        self._admin_lb = None
+        self._admin_tuio_neutral = None
+        self._admin_tuio_sx = self._admin_tuio_sy = None
+        self._admin_tuio_last_sector = "center"
         self._admin_screen       = False
         self._rotation_triggered = False
         self._tuio_light_cv      = None
@@ -347,6 +370,114 @@ class HCIApp(tk.Tk):
                 self._tuio_light_oval, fill="#00ff00" if active else "#ff2222")
         except tk.TclError:
             pass
+
+    # ── Admin page: TUIO-only list / add / remove (marker displacement + rotation) ─
+
+    def _classify_admin_motion(self, dx: float, dy: float) -> str:
+        th = MENU_MOTION_THRESHOLD
+        if abs(dx) < th * 0.35 and abs(dy) < th * 0.35:
+            return "center"
+        if abs(dx) > abs(dy) and dx > th:
+            return "m_right"
+        if abs(dy) >= abs(dx) and dy < -th:
+            return "up"
+        if abs(dy) >= abs(dx) and dy > th:
+            return "down"
+        return "center"
+
+    def _admin_move_selection(self, delta: int) -> None:
+        lb = self._admin_lb
+        if lb is None or not self._admin_screen:
+            return
+        try:
+            n = lb.size()
+            if n <= 0:
+                return
+            sel = lb.curselection()
+            cur = int(sel[0]) if sel else 0
+            new = max(0, min(n - 1, cur + delta))
+            lb.selection_clear(0, tk.END)
+            lb.selection_set(new)
+            lb.activate(new)
+            lb.see(new)
+        except tk.TclError:
+            pass
+
+    def _admin_tuio_remove_selected(self) -> None:
+        """Rotate marker right — remove highlighted user (cooldown)."""
+        now = time.monotonic()
+        if now - self._admin_tuio_last_remove_time < MENU_ACTION_COOLDOWN_SECONDS:
+            return
+        lb = self._admin_lb
+        if lb is None or not self._admin_screen:
+            return
+        try:
+            sel = lb.curselection()
+            if not sel:
+                return
+            line = lb.get(sel[0])
+            uid = int(line.split("\t", 1)[0])
+        except (tk.TclError, ValueError, IndexError):
+            return
+        if uid not in self._users:
+            return
+        self._admin_tuio_last_remove_time = now
+        self._users.pop(uid)
+        save_users(self._users)
+        self._users = load_users()
+        self._show_admin_page()
+
+    def _admin_tuio_trigger_add_random(self) -> None:
+        """Displacement to the right (edge) — add user with random name."""
+        now = time.monotonic()
+        if now - self._admin_tuio_last_add_time < MENU_ACTION_COOLDOWN_SECONDS:
+            return
+        self._admin_tuio_last_add_time = now
+        nid = next_free_marker_id(self._users)
+        self._users[nid] = build_user_dict(nid, random_display_name())
+        save_users(self._users)
+        self._users = load_users()
+        self._show_admin_page()
+
+    def _admin_feed_tuio_motion(self, x: float, y: float) -> None:
+        if not self._admin_screen or self._admin_lb is None:
+            return
+        lb = self._admin_lb
+        try:
+            if not lb.winfo_exists():
+                return
+        except tk.TclError:
+            return
+
+        if self._admin_tuio_neutral is None:
+            self._admin_tuio_neutral = (float(x), float(y))
+            self._admin_tuio_sx = float(x)
+            self._admin_tuio_sy = float(y)
+            return
+
+        x0, y0 = self._admin_tuio_neutral
+        a = MENU_SMOOTH_ALPHA
+        self._admin_tuio_sx = a * self._admin_tuio_sx + (1.0 - a) * float(x)  # type: ignore[operator]
+        self._admin_tuio_sy = a * self._admin_tuio_sy + (1.0 - a) * float(y)  # type: ignore[operator]
+        dx = self._admin_tuio_sx - x0  # type: ignore[operator]
+        dy = self._admin_tuio_sy - y0  # type: ignore[operator]
+
+        sector = self._classify_admin_motion(dx, dy)
+        now = time.monotonic()
+        ud_gap = max(0.28, MENU_VOLUME_REPEAT_SECONDS)
+
+        if sector == "up":
+            if now - self._admin_tuio_last_ud_time >= ud_gap:
+                self._admin_tuio_last_ud_time = now
+                self._admin_move_selection(-1)
+        elif sector == "down":
+            if now - self._admin_tuio_last_ud_time >= ud_gap:
+                self._admin_tuio_last_ud_time = now
+                self._admin_move_selection(1)
+        elif sector == "m_right" and self._admin_tuio_last_sector != "m_right":
+            self._admin_tuio_trigger_add_random()
+
+        self._admin_tuio_last_sector = sector
 
     def _sw(self) -> int:
         return self.winfo_screenwidth()
@@ -686,13 +817,16 @@ class HCIApp(tk.Tk):
         tk.Label(
             body,
             text=(
-                f"Hold TUIO marker #{ADMIN_TUIO_MARKER} (admin) with your phone "
-                "visible to Bluetooth. Rotate marker ◄ to return to the main menu."
+                f"TUIO only — marker #{ADMIN_TUIO_MARKER}.  "
+                "Move UP / DOWN on the table to change selection • "
+                "Push marker RIGHT (displacement) once to add a random user • "
+                "Rotate marker ► to remove the selected user • "
+                "Rotate ◄ to main menu.  (Phone must satisfy Bluetooth gate.)"
             ),
-            font=("Bahnschrift", int(sh * 0.018)),
+            font=("Bahnschrift", int(sh * 0.017)),
             fg=fg,
             bg=bg,
-            wraplength=int(sw * 0.82),
+            wraplength=int(sw * 0.88),
             justify="center",
         ).pack(pady=(0, int(sh * 0.02)))
 
@@ -718,66 +852,10 @@ class HCIApp(tk.Tk):
             u = self._users[uid]
             lb.insert(tk.END, f"{uid}\t{u['name']}")
 
-        btn_row = tk.Frame(body, bg=bg)
-        btn_row.pack(fill="x", pady=int(sh * 0.03))
-
-        def do_remove():
-            sel = lb.curselection()
-            if not sel:
-                return
-            line = lb.get(sel[0])
-            try:
-                uid = int(line.split("\t", 1)[0])
-            except (ValueError, IndexError):
-                return
-            if uid not in self._users:
-                return
-            self._users.pop(uid)
-            save_users(self._users)
-            self._users = load_users()
-            self._show_admin_page()
-
-        def do_add_random():
-            nid = next_free_marker_id(self._users)
-            self._users[nid] = build_user_dict(nid, random_display_name())
-            save_users(self._users)
-            self._users = load_users()
-            self._show_admin_page()
-
-        def do_back():
-            self._show_main_menu()
-
-        pad_x = int(sw * 0.012)
-        tk.Button(
-            btn_row,
-            text="Remove selected user",
-            font=("Bahnschrift", int(sh * 0.018), "bold"),
-            bg=hdr,
-            fg=accent,
-            activebackground=accent,
-            activeforeground="white",
-            command=do_remove,
-        ).pack(side="left", padx=pad_x)
-
-        tk.Button(
-            btn_row,
-            text="Add user (random name)",
-            font=("Bahnschrift", int(sh * 0.018), "bold"),
-            bg=hdr,
-            fg=accent,
-            activebackground=accent,
-            activeforeground="white",
-            command=do_add_random,
-        ).pack(side="left", padx=pad_x)
-
-        tk.Button(
-            btn_row,
-            text="Back to menu",
-            font=("Bahnschrift", int(sh * 0.018)),
-            bg="#2a2a4a",
-            fg=fg,
-            command=do_back,
-        ).pack(side="right", padx=pad_x)
+        self._admin_lb = lb
+        if lb.size() > 0:
+            lb.selection_set(0)
+            lb.activate(0)
 
     # ── game launch ───────────────────────────────────────────────────────────
 
