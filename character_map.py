@@ -26,7 +26,7 @@ _A = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Assests")
 
 USERS: dict[int, dict] = {
     0: {
-        "name":      "Alex",
+        "name":      "Omar Hassan",
         "bg":        "#0d1b2a",
         "header_bg": "#03045e",
         "accent":    "#00b4d8",
@@ -36,7 +36,7 @@ USERS: dict[int, dict] = {
         "avatar":    os.path.join(_A, "user icons", "blue user.jpg"),
     },
     1: {
-        "name":      "Blake",
+        "name":      "Youssef Ali",
         "bg":        "#1b4332",
         "header_bg": "#081c15",
         "accent":    "#52b788",
@@ -46,7 +46,7 @@ USERS: dict[int, dict] = {
         "avatar":    os.path.join(_A, "user icons", "green user.jpg"),
     },
     2: {
-        "name":      "Casey",
+        "name":      "Ahmed Mostafa",
         "bg":        "#370617",
         "header_bg": "#03071e",
         "accent":    "#f48c06",
@@ -56,7 +56,7 @@ USERS: dict[int, dict] = {
         "avatar":    os.path.join(_A, "user icons", "orange user.jpg"),
     },
     3: {
-        "name":      "Dana",
+        "name":      "Seif Mostafa",
         "bg":        "#240046",
         "header_bg": "#10002b",
         "accent":    "#c77dff",
