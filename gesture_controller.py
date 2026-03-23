@@ -94,14 +94,27 @@ class GestureController:
         frame_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         print(f"[Gesture] Camera {CAMERA_INDEX} opened at {frame_w}×{frame_h}.")
 
-        mp_hands = mp.solutions.hands
-        hands = mp_hands.Hands(
-            static_image_mode=False,
-            max_num_hands=2,
-            model_complexity=0,
-            min_detection_confidence=0.6,
+        import os
+        model_path = os.path.join(os.path.dirname(__file__), "hand_landmarker.task")
+        if not os.path.exists(model_path):
+            print(f"[Gesture] ERROR: Model not found at {model_path}")
+            return
+
+        BaseOptions = mp.tasks.BaseOptions
+        HandLandmarker = mp.tasks.vision.HandLandmarker
+        HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+        VisionRunningMode = mp.tasks.vision.RunningMode
+
+        options = HandLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=model_path),
+            num_hands=2,
+            min_hand_detection_confidence=0.6,
+            min_hand_presence_confidence=0.6,
             min_tracking_confidence=0.6,
+            running_mode=VisionRunningMode.IMAGE
         )
+        
+        hands = HandLandmarker.create_from_options(options)
 
         interval = 1.0 / _TARGET_FPS
 
@@ -122,13 +135,14 @@ class GestureController:
 
                 # Pass the RAW (unflipped) frame to MediaPipe so its
                 # handedness labels are correct without any swap logic.
-                rgb     = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                results = hands.process(rgb)
+                rgb      = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+                results  = hands.detect(mp_image)
 
-                if results.multi_hand_landmarks and results.multi_handedness:
+                if results.hand_landmarks and results.handedness:
                     for hand_landmarks, handedness in zip(
-                        results.multi_hand_landmarks,
-                        results.multi_handedness,
+                        results.hand_landmarks,
+                        results.handedness,
                     ):
                         fid   = self._handedness_to_fid(handedness)
                         x, y  = self._get_position(hand_landmarks)
@@ -179,7 +193,7 @@ class GestureController:
           "Left"  → user's left hand  → LEFT  controller
           "Right" → user's right hand → RIGHT controller
         """
-        label = handedness.classification[0].label
+        label = handedness[0].category_name
         return VR_LEFT_MARKER if label == "Left" else VR_RIGHT_MARKER
 
     @staticmethod
@@ -191,7 +205,7 @@ class GestureController:
         We invert x here (once, and only here) so that moving right → x
         increases toward 1.0, matching SteamVR's coordinate convention.
         """
-        wrist = hand.landmark[0]
+        wrist = hand[0]
         x = 1.0 - wrist.x   # correct mirror flip
         y = wrist.y
         return x, y
@@ -209,8 +223,8 @@ class GestureController:
         dx is negated to stay consistent with the x = 1 - wrist.x correction
         applied in _get_position.
         """
-        wrist = hand.landmark[0]
-        mid   = hand.landmark[9]
+        wrist = hand[0]
+        mid   = hand[9]
 
         dx = -(mid.x - wrist.x) * frame_w   # negated to match corrected x
         dy =  (mid.y - wrist.y) * frame_h
@@ -240,8 +254,8 @@ class GestureController:
         """
         Hysteresis-based pinch/grip detection.
         """
-        thumb = hand.landmark[4]
-        index = hand.landmark[8]
+        thumb = hand[4]
+        index = hand[8]
 
         dx   = (thumb.x - index.x) * frame_w
         dy   = (thumb.y - index.y) * frame_h
