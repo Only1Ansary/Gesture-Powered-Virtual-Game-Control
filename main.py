@@ -865,6 +865,11 @@ class HCIApp(tk.Tk):
             lb.activate(0)
 
     # ── game launch ───────────────────────────────────────────────────────────
+
+    # Users whose game input comes from TUIO markers via the VR bridge.
+    # All other users fall back to MediaPipe (gesture_controller).
+    _TUIO_CONTROL_USERS = {0, 1}     # Omar Hassan, Youssef Ali
+
     def _on_game_exit(self):
         self.after(0, self._check_game_exit)
 
@@ -873,12 +878,20 @@ class HCIApp(tk.Tk):
         name = self._users[self._current_user]["name"] \
             if self._current_user is not None else ""
 
-        self._stop_reactivision()
+        # Decide control method based on the logged-in user
+        use_tuio = self._current_user in self._TUIO_CONTROL_USERS
+        self._use_tuio_control = use_tuio
 
-        if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
-            self._vr_bridge.start()
-
-        self._gesture_controller.start()
+        if use_tuio:
+            # TUIO users — keep reacTIVision running (markers drive the sabers)
+            if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
+                self._vr_bridge.start()
+            print(f"[INFO] Launching with TUIO controllers for {name}")
+        else:
+            # MediaPipe users — stop reacTIVision to free the webcam
+            self._stop_reactivision()
+            self._gesture_controller.start()
+            print(f"[INFO] Launching with MediaPipe controllers for {name}")
 
         success, error_msg = launch_game(
             character_name=name,
@@ -903,13 +916,13 @@ class HCIApp(tk.Tk):
 
         print("[INFO] Game exited → restoring system")
 
-        # 🔴 STOP gesture
-        self._gesture_controller.stop()
+        # 🔴 STOP whichever controller was active
+        if getattr(self, '_use_tuio_control', False):
+            self._vr_bridge.stop()
+        else:
+            self._gesture_controller.stop()
 
-        # 🔴 STOP VR
-        self._vr_bridge.stop()
-
-        # 🟢 RESTART reacTIVision
+        # 🟢 RESTART reacTIVision (MediaPipe path stopped it; TUIO path is a no-op if already running)
         self._launch_reactivision()
 
         # 🟢 Restore UI

@@ -14,7 +14,7 @@ Architecture
                                                             │
                                                   SteamVR driver DLL
                                                             │
-                                                      SteamVR / Beat Saber
+                                                      SteamVR / Fruit Ninja VR
 
 The bridge is **decoupled** from the GUI: any data source (TUIO, gesture,
 object-detection) can push ``MarkerUpdate`` named-tuples into the queue.
