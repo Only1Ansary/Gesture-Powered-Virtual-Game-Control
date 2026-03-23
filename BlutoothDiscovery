@@ -1,0 +1,19 @@
+# Legacy scratch snippet — Bluetooth scanning for the GUI lives in:
+#   bluetooth_admin.py
+#
+# Install (Linux / some setups): pip install pybluez
+# Windows often needs a matching PyBluez wheel or WSL; for dev without BT use
+#   "admin_bluetooth_force": true  in config.json
+
+try:
+    import bluetooth
+
+    nearby_devices = bluetooth.discover_devices(lookup_names=True)
+    print("found %d devices" % len(nearby_devices))
+
+    for addr, name in nearby_devices:
+        print(" %s - %s" % (addr, name))
+except ImportError:
+    print("PyBluez not installed. See bluetooth_admin.py and requirements.txt.")
+except Exception as exc:
+    print("Bluetooth scan failed:", exc)

@@ -21,5 +21,19 @@
   ],
   "vr_left_marker": 0,
   "vr_right_marker": 1,
-  "vr_update_rate": 60
+  "vr_update_rate": 60,
+  "admin_tuio_marker": 9,
+  "admin_bluetooth_mac": "7c:03:ab:2a:0c:ce",
+  "admin_bluetooth_name": "",
+  "admin_bluetooth_scan_seconds": 6,
+  "admin_bluetooth_poll_seconds": 3,
+  "admin_bluetooth_ttl_seconds": 45,
+  "admin_bluetooth_force": false,
+  "menu_tuio_marker": 10,
+  "menu_motion_threshold": 0.04,
+  "menu_smooth_alpha": 0.4,
+  "menu_volume_step": 0.045,
+  "menu_volume_repeat_seconds": 0.25,
+  "menu_action_cooldown_seconds": 2.2,
+  "menu_cursor_gain": 520.0
 }

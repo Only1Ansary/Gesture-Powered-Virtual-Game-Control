@@ -13,3 +13,8 @@ ipch/
 *.suo
 *.sdf
 *.opensdf
+
+# Python
+__pycache__/
+*.py[cod]
+admin_users.json

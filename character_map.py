@@ -1,7 +1,11 @@
 """
 character_map.py
 ----------------
-Maps TUIO fiducial marker IDs (0–3) to user data used by the GUI.
+Maps TUIO fiducial marker IDs to user data used by the GUI.
+
+Default sign-in markers are 0–3. Marker ID 9 is reserved for the admin screen
+(see config.json: admin_tuio_marker) together with Bluetooth verification.
+Marker ID 10 is the circular radial menu (config: menu_tuio_marker).
 
 Each user has:
   - name       : display name

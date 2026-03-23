@@ -77,3 +77,26 @@ VR_GLOBAL_ROTATION = list(_CFG.get("vr_global_rotation", [0, 0, 0]))# Euler rota
 VR_LEFT_MARKER     = int(_CFG.get("vr_left_marker", 0))             # fiducial ID → left saber
 VR_RIGHT_MARKER    = int(_CFG.get("vr_right_marker", 1))            # fiducial ID → right saber
 VR_UPDATE_RATE     = int(_CFG.get("vr_update_rate", 60))             # Hz
+
+# ── Admin: Bluetooth + dedicated TUIO marker (no collision with users 0–3) ─────
+# Exactly one device: set admin_bluetooth_mac (best) OR admin_bluetooth_name (exact match).
+ADMIN_TUIO_MARKER       = int(_CFG.get("admin_tuio_marker", 9))
+ADMIN_BLUETOOTH_MAC     = str(_CFG.get("admin_bluetooth_mac", "")).strip()
+ADMIN_BLUETOOTH_NAME    = str(_CFG.get("admin_bluetooth_name", "")).strip()
+# Legacy: first entry of admin_bluetooth_names if admin_bluetooth_name is empty
+_legacy_names = _CFG.get("admin_bluetooth_names", [])
+if not ADMIN_BLUETOOTH_NAME and isinstance(_legacy_names, list) and _legacy_names:
+    ADMIN_BLUETOOTH_NAME = str(_legacy_names[0]).strip()
+ADMIN_BT_SCAN_SECONDS   = int(_CFG.get("admin_bluetooth_scan_seconds", 6))
+ADMIN_BT_POLL_SECONDS   = float(_CFG.get("admin_bluetooth_poll_seconds", 3))
+ADMIN_BT_TTL_SECONDS    = float(_CFG.get("admin_bluetooth_ttl_seconds", 45))
+ADMIN_BLUETOOTH_FORCE   = bool(_CFG.get("admin_bluetooth_force", False))
+
+# ── Circular TUIO menu (marker must differ from users 0–3, admin, VR sabers) ───
+MENU_TUIO_MARKER              = int(_CFG.get("menu_tuio_marker", 10))
+MENU_MOTION_THRESHOLD           = float(_CFG.get("menu_motion_threshold", 0.04))
+MENU_SMOOTH_ALPHA               = float(_CFG.get("menu_smooth_alpha", 0.4))
+MENU_VOLUME_STEP                = float(_CFG.get("menu_volume_step", 0.045))
+MENU_VOLUME_REPEAT_SECONDS      = float(_CFG.get("menu_volume_repeat_seconds", 0.25))
+MENU_ACTION_COOLDOWN_SECONDS    = float(_CFG.get("menu_action_cooldown_seconds", 2.2))
+MENU_CURSOR_GAIN                = float(_CFG.get("menu_cursor_gain", 520.0))

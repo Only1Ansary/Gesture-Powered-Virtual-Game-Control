@@ -1,0 +1,13 @@
+# Optional: in-app Bluetooth scanning for the admin screen (bluetooth_admin.py).
+#
+# Install after the main requirements:
+#   pip install -r requirements-bluetooth.txt
+#
+# Linux / Raspberry Pi: usually works.
+# Windows: PyBluez often fails to build from PyPI; options:
+#   • Use list_bluetooth_devices.ps1 to get your device MAC, set admin_bluetooth_mac
+#     in config.json (no PyBluez needed for pairing-based setup if you add Windows
+#     paired-device detection later), OR
+#   • Try a prebuilt wheel for your Python version, or WSL with a USB BT adapter.
+#
+pybluez

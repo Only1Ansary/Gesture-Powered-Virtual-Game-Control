@@ -1,3 +1,8 @@
 Pillow
 python-osc
 pywin32
+pycaw
+comtypes
+
+# Optional Bluetooth admin (device discovery in the app). Often problematic on Windows;
+# see README.md and requirements-bluetooth.txt before installing.
