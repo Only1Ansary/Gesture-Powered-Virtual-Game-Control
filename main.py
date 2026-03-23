@@ -23,12 +23,13 @@ import subprocess
 import time
 import tkinter as tk
 
-from character_map  import MAIN_BK_GIF, GAME_ICON, get_all_users
-from config         import BASE_DIR, IS_WINDOWS, REACTVISION_EXE, TUIO_HOST, TUIO_PORT, VR_BRIDGE_ENABLED
-from game_launcher  import launch_game, game_running
-from gif_utils      import GifManager, load_avatar, load_image
-from tuio_listener  import TUIOListener, OSC_AVAILABLE
-from vr_bridge      import VRBridge
+from character_map      import MAIN_BK_GIF, GAME_ICON, get_all_users
+from config             import BASE_DIR, IS_WINDOWS, REACTVISION_EXE, TUIO_HOST, TUIO_PORT, VR_BRIDGE_ENABLED
+from game_launcher      import launch_game, game_running
+from gesture_controller import GestureController
+from gif_utils          import GifManager, load_avatar, load_image
+from tuio_listener      import TUIOListener, OSC_AVAILABLE
+from vr_bridge          import VRBridge
 
 
 class HCIApp(tk.Tk):
@@ -62,12 +63,14 @@ class HCIApp(tk.Tk):
         self._tuio_light_oval    = None
         self._u_theme            = None
         self._current_gif_key    = None
+        self._reactivision_process = None
 
         # ── start ─────────────────────────────────────────────────────────────
         self._launch_reactivision()
 
-        # ── VR bridge ─────────────────────────────────────────────────────────
+        # ── VR bridge + gesture controller ────────────────────────────────────
         self._vr_bridge = VRBridge(dry_run=not VR_BRIDGE_ENABLED)
+        self._gesture_controller = GestureController(self._vr_bridge)
 
         self._listener = TUIOListener(
             on_marker_detected=lambda fid:       self.after(0, lambda: self._on_marker_detected(fid)),
@@ -83,6 +86,7 @@ class HCIApp(tk.Tk):
     # ── lifecycle ─────────────────────────────────────────────────────────────
 
     def _on_exit(self, _event=None):
+        self._stop_reactivision()
         self._vr_bridge.stop()
         self._listener.stop()
         self.destroy()
@@ -90,6 +94,9 @@ class HCIApp(tk.Tk):
     # ── reacTIVision ──────────────────────────────────────────────────────────
 
     def _launch_reactivision(self):
+        if self._reactivision_process is not None:
+            # Already running — don't launch a second copy
+            return
         if not REACTVISION_EXE:
             print("[WARN] reacTIVision not found — set 'reactvision_exe' in config.json")
             return
@@ -101,11 +108,23 @@ class HCIApp(tk.Tk):
                 si.wShowWindow = 7   # SW_SHOWMINNOACTIVE
                 kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
                 kwargs["startupinfo"]   = si
-            subprocess.Popen([REACTVISION_EXE], **kwargs)
+            self._reactivision_process = subprocess.Popen([REACTVISION_EXE], **kwargs)
             time.sleep(1.5)
             print("[INFO] reacTIVision launched (minimised).")
         except Exception as exc:
             print(f"[ERROR] Could not launch reacTIVision: {exc}")
+
+    def _stop_reactivision(self):
+        """Terminate reacTIVision so the webcam is available for MediaPipe."""
+        if self._reactivision_process is None:
+            return
+        try:
+            self._reactivision_process.terminate()
+            self._reactivision_process.wait(timeout=3)
+            print("[INFO] reacTIVision terminated.")
+        except Exception:
+            pass
+        self._reactivision_process = None
 
     # ── TUIO callbacks (dispatched to main thread via after(0, ...)) ──────────
 
@@ -456,19 +475,58 @@ class HCIApp(tk.Tk):
 
     # ── game launch ───────────────────────────────────────────────────────────
 
+    # Users whose game input comes from TUIO markers via the VR bridge.
+    # All other users fall back to MediaPipe (gesture_controller).
+    _TUIO_CONTROL_USERS = {0, 1}     # Omar Hassan, Youssef Ali
+
     def _do_launch_game(self):
-        name    = self._users[self._current_user]["name"] \
-                  if self._current_user is not None else ""
-        # Start the VR bridge when the game launches
-        if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
-            self._vr_bridge.start()
+        name = self._users[self._current_user]["name"] \
+            if self._current_user is not None else ""
+
+        # Decide control method based on the logged-in user
+        use_tuio = self._current_user in self._TUIO_CONTROL_USERS
+        self._use_tuio_control = use_tuio
+
+        if use_tuio:
+            # TUIO users — keep reacTIVision running (markers drive the sabers)
+            if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
+                self._vr_bridge.start()
+            print(f"[INFO] Launching with TUIO controllers for {name}")
+        else:
+            # MediaPipe users — stop reacTIVision to free the webcam
+            self._stop_reactivision()
+            self._gesture_controller.start()
+            print(f"[INFO] Launching with MediaPipe controllers for {name}")
+
         success, error_msg = launch_game(character_name=name)
         if success:
             self.attributes("-fullscreen", False)
             self.iconify()
             self._rotation_triggered = False
+            self.after(1000, self._check_game_exit)
         else:
             self._show_error(error_msg)
+
+    def _check_game_exit(self):
+        """Poll until the game process exits, then restore the system."""
+        if game_running.is_set():
+            self.after(1000, self._check_game_exit)
+            return
+
+        print("[INFO] Game exited → restoring system")
+
+        # Stop whichever controller was active
+        if getattr(self, '_use_tuio_control', False):
+            self._vr_bridge.stop()
+        else:
+            self._gesture_controller.stop()
+
+        # Restart reacTIVision (for MediaPipe users it was killed; for TUIO it's a no-op)
+        self._launch_reactivision()
+
+        # Restore GUI
+        self.deiconify()
+        self.attributes("-fullscreen", True)
 
     def _show_error(self, message: str):
         if not (self._screen and self._screen.winfo_exists()):
