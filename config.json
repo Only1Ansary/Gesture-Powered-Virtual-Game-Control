@@ -34,6 +34,6 @@
   "menu_smooth_alpha": 0.4,
   "menu_volume_step": 0.045,
   "menu_volume_repeat_seconds": 0.25,
-  "menu_action_cooldown_seconds": 2.2,
+  "menu_action_cooldown_seconds": 2.0,
   "menu_cursor_gain": 520.0
 }

@@ -3,8 +3,8 @@ vr_bridge.py
 ────────────
 Reads TUIO marker positions from a thread-safe queue and feeds them into
 SteamVR as virtual-controller poses via named pipes to the custom
-TUIO Controller SteamVR driver, so that Beat Saber sabers track the
-physical TUIO markers in real-time.
+TUIO Controller SteamVR driver, so that games such as Ninja Fruit / Fruit Ninja
+can track physical TUIO markers as virtual sabers/controllers in real-time.
 
 Architecture
 ────────────

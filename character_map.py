@@ -68,7 +68,7 @@ USERS: dict[int, dict] = {
 }
 
 MAIN_BK_GIF = os.path.join(_A, "bk gifs",    "main bk.gif")
-GAME_ICON   = os.path.join(_A, "game icons", "Beat_Saber_logo.jpg")
+GAME_ICON   = os.path.join(_A, "game icons", "Fruit_Ninja_logo.png")
 
 
 def get_user(marker_id: int) -> dict | None:

@@ -16,32 +16,46 @@ _VOLUME_INTERFACE = None
 
 
 def _audio_volume_interface():
-    """Lazy-init IAudioEndpointVolume for default playback device."""
+    """
+    Lazy-init IAudioEndpointVolume for the default playback device.
+
+    Supports both the new pycaw API (>=20251023, AudioDevice.EndpointVolume)
+    and the legacy API (AudioDevice.Activate) transparently.
+    """
     global _VOLUME_INTERFACE
     if not IS_WINDOWS:
         return None
     if _VOLUME_INTERFACE is not None:
         return _VOLUME_INTERFACE
     try:
-        from ctypes import POINTER, cast
-
-        from comtypes import CLSCTX_ALL
-        from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+        from pycaw.pycaw import AudioUtilities
 
         dev = AudioUtilities.GetSpeakers()
         if dev is None:
-            return None
+            raise RuntimeError("GetSpeakers() returned None")
+
+        # New pycaw (>=20251023): AudioDevice exposes .EndpointVolume directly.
+        if hasattr(dev, "EndpointVolume") and dev.EndpointVolume is not None:
+            _VOLUME_INTERFACE = dev.EndpointVolume
+            return _VOLUME_INTERFACE
+
+        # Legacy pycaw: use .Activate() + comtypes cast.
+        from ctypes import POINTER, cast
+        from comtypes import CLSCTX_ALL
+        from pycaw.pycaw import IAudioEndpointVolume
+
         iface = dev.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
         _VOLUME_INTERFACE = cast(iface, POINTER(IAudioEndpointVolume))
         return _VOLUME_INTERFACE
+
     except Exception as exc:
-        print(f"[windows_controls] Volume init failed (install pycaw + comtypes): {exc}")
+        print(f"[windows_controls] Volume init failed: {exc}")
         return None
 
 
 def volume_step(delta_scalar: float) -> bool:
     """
-    Adjust master playback volume by *delta_scalar* (e.g. 0.04 = +4%).
+    Adjust master playback volume by *delta_scalar* (e.g. 0.045 = +4.5%).
     *delta_scalar* may be negative. Returns True if the call succeeded.
     """
     if not IS_WINDOWS:
@@ -53,9 +67,13 @@ def volume_step(delta_scalar: float) -> bool:
         cur = vol.GetMasterVolumeLevelScalar()
         nxt = max(0.0, min(1.0, cur + delta_scalar))
         vol.SetMasterVolumeLevelScalar(nxt, None)
+        print(f"[windows_controls] Volume {cur:.0%} -> {nxt:.0%}")
         return True
     except Exception as exc:
-        print(f"[windows_controls] volume_step: {exc}")
+        print(f"[windows_controls] volume_step failed: {exc}")
+        # Reset cached interface so next call retries init.
+        global _VOLUME_INTERFACE
+        _VOLUME_INTERFACE = None
         return False
 
 

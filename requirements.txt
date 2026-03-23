@@ -1,8 +1,31 @@
-Pillow
-python-osc
-pywin32
-pycaw
-comtypes
+# ============================================================
+#  Core requirements — install with:
+#      pip install -r requirements.txt
+#
+#  Python 3.10+ required (3.11 recommended on Windows).
+#  Tkinter ships with the standard CPython installer; if it
+#  is missing, reinstall Python and tick "tcl/tk" in the
+#  optional features.
+# ============================================================
 
-# Optional Bluetooth admin (device discovery in the app). Often problematic on Windows;
-# see README.md and requirements-bluetooth.txt before installing.
+# --- Images & GIF animation ------------------------------------
+Pillow>=12.0.0
+
+# --- TUIO / OSC ------------------------------------------------
+python-osc>=1.9.3
+
+# --- Windows-only: volume control & window management ----------
+# pywin32 provides win32gui / win32con / win32api used for
+# minimize-other-windows, fullscreen focus, game window control.
+pywin32>=311
+
+# pycaw + comtypes are needed for Windows master-volume control
+# in the circular TUIO menu (VOL +/−).
+pycaw>=20251023
+comtypes>=1.4.0
+
+# --- Hand-tracking / gesture controller (gesture_controller.py) -
+# Used by the VR bridge to translate webcam hand poses to VR input.
+# Skip these two if you do NOT use gesture tracking / VR bridge.
+opencv-python>=4.8.0
+mediapipe>=0.10.0
