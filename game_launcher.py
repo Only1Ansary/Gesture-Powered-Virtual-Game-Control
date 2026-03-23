@@ -24,15 +24,23 @@ _game_lock = threading.Lock()
 _game_process: subprocess.Popen | None = None
 
 
-def _watch_process(process: subprocess.Popen) -> None:
-    """Background daemon thread that waits for the game to exit."""
+def _watch_process(process: subprocess.Popen, on_exit=None) -> None:
     process.wait()
+
     with _game_lock:
         global _game_process
         if _game_process is process:
             _game_process = None
+
     game_running.clear()
-    print("[GameLauncher] Game process exited — GUI TUIO re-enabled.")
+
+    print("[GameLauncher] Game exited.")
+
+    if on_exit:
+        try:
+            on_exit()
+        except Exception as e:
+            print(f"[GameLauncher] on_exit error: {e}")
 
 
 def get_tracked_game_pid() -> int | None:
@@ -75,7 +83,7 @@ def terminate_game() -> bool:
         return False
 
 
-def launch_game(character_name: str = "") -> tuple[bool, str]:
+def launch_game(character_name: str = "", on_exit=None) -> tuple[bool, str]:
     """
     Launch the configured game executable.
 
@@ -117,10 +125,9 @@ def launch_game(character_name: str = "") -> tuple[bool, str]:
             # Mark game as running and start a watcher thread
             game_running.set()
             watcher = threading.Thread(
-                target=_watch_process,
-                args=(process,),
-                daemon=True,
-                name="GameWatcher",
+            target=_watch_process,
+            args=(process, on_exit),
+            daemon=True,
             )
             watcher.start()
 

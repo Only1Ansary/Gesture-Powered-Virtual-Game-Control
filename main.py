@@ -30,6 +30,7 @@ import subprocess
 import time
 import tkinter as tk
 
+from gesture_controller import GestureController
 from bluetooth_admin import BluetoothAdminPresence
 from character_map  import MAIN_BK_GIF, GAME_ICON
 from config         import (
@@ -119,6 +120,7 @@ class HCIApp(tk.Tk):
         self._admin_tuio_last_ud_time = 0.0
         self._admin_tuio_last_add_time = 0.0
         self._admin_tuio_last_remove_time = 0.0
+        self._reactivision_process = None
 
         self._menu_ctrl = CircularMenuController(
             self,
@@ -141,6 +143,8 @@ class HCIApp(tk.Tk):
 
         # ── VR bridge ─────────────────────────────────────────────────────────
         self._vr_bridge = VRBridge(dry_run=not VR_BRIDGE_ENABLED)
+        self._gesture_controller = GestureController(self._vr_bridge)
+
 
         self._listener = TUIOListener(
             on_marker_detected=lambda fid:       self.after(0, lambda: self._on_marker_detected(fid)),
@@ -165,21 +169,24 @@ class HCIApp(tk.Tk):
 
     def _launch_reactivision(self):
         if not REACTVISION_EXE:
-            print("[WARN] reacTIVision not found — set 'reactvision_exe' in config.json")
+            print("[WARN] reacTIVision not found")
             return
         try:
-            kwargs: dict = {"cwd": __import__("os").path.dirname(REACTVISION_EXE)}
-            if IS_WINDOWS:
-                si = subprocess.STARTUPINFO()
-                si.dwFlags    |= subprocess.STARTF_USESHOWWINDOW
-                si.wShowWindow = 7   # SW_SHOWMINNOACTIVE
-                kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
-                kwargs["startupinfo"]   = si
-            subprocess.Popen([REACTVISION_EXE], **kwargs)
+            self._reactivision_process = subprocess.Popen([REACTVISION_EXE])
             time.sleep(1.5)
-            print("[INFO] reacTIVision launched (minimised).")
+            print("[INFO] reacTIVision launched.")
         except Exception as exc:
             print(f"[ERROR] Could not launch reacTIVision: {exc}")
+
+    def _stop_reactivision(self):
+        if self._reactivision_process:
+            try:
+                self._reactivision_process.terminate()
+                self._reactivision_process.wait(timeout=3)
+                print("[INFO] reacTIVision terminated.")
+            except Exception:
+                pass
+            self._reactivision_process = None
 
     # ── TUIO callbacks (dispatched to main thread via after(0, ...)) ──────────
 
@@ -510,7 +517,7 @@ class HCIApp(tk.Tk):
         canvas.place(relx=0, rely=0, relwidth=1, relheight=1)
         self._screen = canvas
 
-        self._start_gif(canvas, MAIN_BK_GIF, sw, sh, canvas)
+        # self._start_gif(canvas, MAIN_BK_GIF, sw, sh, canvas)
 
         canvas.create_rectangle(0, 0, sw, sh,
                                  fill="#000000", stipple="gray50", outline="")
@@ -722,7 +729,7 @@ class HCIApp(tk.Tk):
                             bg=u["bg"], highlightthickness=0)
         body_cv.pack(fill="both", expand=True)
 
-        self._start_gif(body_cv, u["gif"], sw, body_h, frame)
+        # self._start_gif(body_cv, u["gif"], sw, body_h, frame)
 
         body_cv.create_rectangle(0, 0, sw, body_h,
                                   fill="#000000", stipple="gray25", outline="")
@@ -858,20 +865,56 @@ class HCIApp(tk.Tk):
             lb.activate(0)
 
     # ── game launch ───────────────────────────────────────────────────────────
+    def _on_game_exit(self):
+        self.after(0, self._check_game_exit)
+
 
     def _do_launch_game(self):
-        name    = self._users[self._current_user]["name"] \
-                  if self._current_user is not None else ""
-        # Start the VR bridge when the game launches
+        name = self._users[self._current_user]["name"] \
+            if self._current_user is not None else ""
+
+        self._stop_reactivision()
+
         if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
             self._vr_bridge.start()
-        success, error_msg = launch_game(character_name=name)
+
+        self._gesture_controller.start()
+
+        success, error_msg = launch_game(
+            character_name=name,
+            on_exit=self._on_game_exit
+        )
+
         if success:
             self.attributes("-fullscreen", False)
             self.iconify()
             self._rotation_triggered = False
+
+            self.after(1000, self._check_game_exit)
+
         else:
             self._show_error(error_msg)
+
+
+    def _check_game_exit(self):
+        if game_running.is_set():
+            self.after(1000, self._check_game_exit)
+            return
+
+        print("[INFO] Game exited → restoring system")
+
+        # 🔴 STOP gesture
+        self._gesture_controller.stop()
+
+        # 🔴 STOP VR
+        self._vr_bridge.stop()
+
+        # 🟢 RESTART reacTIVision
+        self._launch_reactivision()
+
+        # 🟢 Restore UI
+        self.deiconify()
+        self.attributes("-fullscreen", True)
 
     def _show_error(self, message: str):
         if not (self._screen and self._screen.winfo_exists()):

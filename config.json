@@ -1,6 +1,6 @@
 {
   "reactvision_exe": "reacTIVision-1.5.1-win64/reacTIVision.exe",
-  "game_exe": "C:\\Users\\CoziT\\Desktop\\Launcher.exe - Shortcut.lnk",
+  "game_exe": "D:\\FruitNinja\\FruitNinja.exe",
   "tuio_host": "0.0.0.0",
   "tuio_port": 3333,
   "rotation_threshold": 0.5,

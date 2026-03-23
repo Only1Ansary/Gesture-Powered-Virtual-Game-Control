@@ -170,43 +170,40 @@ class VRBridge:
     # ── public API ────────────────────────────────────────────────────────────
 
     def start(self):
-        """Initialise VR (unless dry-run) and start the background loop."""
         if self._running:
             return
         if not self.dry_run:
             if not PIPE_AVAILABLE:
-                print(
-                    "[VRBridge] ERROR: pywin32 is not installed.\n"
-                    "           Install it with: pip install pywin32"
-                )
+                print("[VRBridge] ERROR: pywin32 not installed")
                 return
             self._init_vr()
+
         self._running = True
         self._thread = threading.Thread(
             target=self._loop, daemon=True, name="VRBridge"
         )
         self._thread.start()
-        mode = "DRY-RUN" if self.dry_run else "LIVE"
-        print(
-            f"[VRBridge] Started ({mode}) – "
-            f"L=marker {self.left_marker}, R=marker {self.right_marker}, "
-            f"{self.update_rate} Hz"
-        )
+
+        print(f"[VRBridge] Started ({'DRY' if self.dry_run else 'LIVE'})")
 
     def stop(self):
-        """Signal the loop to exit and join the thread."""
         self._running = False
         if self._thread:
             self._thread.join(timeout=3.0)
-        # Close pipe handles
+
+        self._thread = None
+        self._last_pose.clear()
+
         for pipe in (self._left_pipe, self._right_pipe):
-            if pipe is not None:
+            if pipe:
                 try:
                     win32file.CloseHandle(pipe)
                 except Exception:
                     pass
+
         self._left_pipe = None
         self._right_pipe = None
+
         print("[VRBridge] Stopped.")
 
     def enqueue(self, fid: int, x: float, y: float, angle: float):
