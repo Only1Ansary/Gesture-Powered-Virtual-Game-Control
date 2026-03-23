@@ -495,6 +495,7 @@ class HCIApp(tk.Tk):
         else:
             # MediaPipe users — stop reacTIVision to free the webcam
             self._stop_reactivision()
+            time.sleep(1.5)  # give OS time to release the camera
             self._gesture_controller.start()
             print(f"[INFO] Launching with MediaPipe controllers for {name}")
 
