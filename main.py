@@ -587,19 +587,43 @@ class HCIApp(tk.Tk):
         use_tuio = self._current_user in self._TUIO_CONTROL_USERS
         self._use_tuio_control = use_tuio
 
+        # 🔥 ALWAYS ensure VRBridge is running (REQUIRED for both modes)
+        if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
+            self._vr_bridge.start()
+
         if use_tuio:
-            # TUIO users — keep reacTIVision running (markers drive the sabers)
-            if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
-                self._vr_bridge.start()
+            # ─────────────────────────────────────────────
+            # TUIO MODE (markers)
+            # ─────────────────────────────────────────────
             print(f"[INFO] Launching with TUIO controllers for {name}")
+
+            # Make sure gesture is NOT running
+            if hasattr(self, "_gesture_controller") and self._gesture_controller:
+                self._gesture_controller.stop()
+
         else:
-            # MediaPipe users — stop reacTIVision to free the webcam
-            self._stop_reactivision()
-            time.sleep(1.5)  # give OS time to release the camera
-            self._gesture_controller.start()
+            # ─────────────────────────────────────────────
+            # HAND TRACKING MODE (MediaPipe)
+            # ─────────────────────────────────────────────
             print(f"[INFO] Launching with MediaPipe controllers for {name}")
 
+            # 🔥 STOP reacTIVision → free camera
+            self._stop_reactivision()
+            time.sleep(2.0)  # give OS time to release camera properly
+
+            # 🔥 CREATE gesture controller if not exists
+            if not hasattr(self, "_gesture_controller") or self._gesture_controller is None:
+                from gesture_controller import GestureController
+                self._gesture_controller = GestureController(self._vr_bridge)
+
+            # 🔥 START hand tracking
+            self._gesture_controller.start()
+
+        # ─────────────────────────────────────────────
+        # Launch game
+        # ─────────────────────────────────────────────
         success, error_msg = launch_game(character_name=name)
+
         if success:
             self.attributes("-fullscreen", False)
             self.iconify()
