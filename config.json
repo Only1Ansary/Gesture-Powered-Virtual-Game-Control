@@ -1,6 +1,6 @@
 {
   "reactvision_exe": "reacTIVision-1.5.1-win64/reacTIVision.exe",
-  "game_exe": "D:\\FruitNinja\\FruitNinja.exe",
+  "game_exe": "D:\\Code\\FruitNinja.RexaGames.com\\FruitNinja.exe",
   "tuio_host": "0.0.0.0",
   "tuio_port": 3333,
   "rotation_threshold": 0.5,

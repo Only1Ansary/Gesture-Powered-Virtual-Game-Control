@@ -24,6 +24,11 @@ pywin32>=311
 pycaw>=20251023
 comtypes>=1.4.0
 
+# --- Bluetooth admin device detection --------------------------
+# Works on Windows/macOS/Linux — no build tools required.
+# Falls back to PyBluez (classic BT) if also installed.
+bleak>=0.22.0
+
 # --- Hand-tracking / gesture controller (gesture_controller.py) -
 # Used by the VR bridge to translate webcam hand poses to VR input.
 # Skip these two if you do NOT use gesture tracking / VR bridge.

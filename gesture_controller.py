@@ -23,8 +23,15 @@ import threading
 import time
 from typing import Optional
 
-import cv2
-import mediapipe as mp
+try:
+    import cv2
+    import mediapipe as mp
+except ImportError as _gc_import_err:
+    raise ImportError(
+        "gesture_controller requires opencv-python and mediapipe.\n"
+        "Install them with:  pip install opencv-python mediapipe\n"
+        f"(original error: {_gc_import_err})"
+    ) from _gc_import_err
 
 # ── project imports ───────────────────────────────────────────────────────────
 try:

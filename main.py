@@ -27,14 +27,15 @@ import time
 import tkinter as tk
 
 from character_map      import MAIN_BK_GIF, GAME_ICON, get_all_users
-from config             import BASE_DIR, IS_WINDOWS, REACTVISION_EXE, TUIO_HOST, TUIO_PORT, VR_BRIDGE_ENABLED
-from game_launcher      import launch_game, game_running
-from gesture_controller import GestureController
-from gif_utils          import GifManager, load_avatar, load_image
-from tuio_listener      import TUIOListener, OSC_AVAILABLE
-from vr_bridge          import VRBridge
-from character_map  import MAIN_BK_GIF, GAME_ICON, get_all_users
-from config         import (
+from bluetooth_admin    import BluetoothAdminPresence
+from config             import (
+    ADMIN_BLUETOOTH_FORCE,
+    ADMIN_BLUETOOTH_MAC,
+    ADMIN_BLUETOOTH_NAME,
+    ADMIN_BT_POLL_SECONDS,
+    ADMIN_BT_SCAN_SECONDS,
+    ADMIN_BT_TTL_SECONDS,
+    ADMIN_TUIO_MARKER,
     BASE_DIR,
     IS_WINDOWS,
     MENU_ACTION_COOLDOWN_SECONDS,
@@ -49,12 +50,25 @@ from config         import (
     TUIO_PORT,
     VR_BRIDGE_ENABLED,
 )
-from game_launcher  import game_running, get_tracked_game_pid, launch_game, terminate_game
-from gif_utils      import GifManager, load_avatar, load_image
+from user_store         import (
+    load_users,
+    save_users,
+    next_free_marker_id,
+    random_display_name,
+)
+from game_launcher      import game_running, get_tracked_game_pid, launch_game, terminate_game
+try:
+    from gesture_controller import GestureController
+    GESTURE_AVAILABLE = True
+except ImportError:
+    GestureController = None  # type: ignore[assignment,misc]
+    GESTURE_AVAILABLE = False
+    print("[main] gesture_controller unavailable (install opencv-python + mediapipe for hand tracking)")
+from gif_utils          import GifManager, load_avatar, load_image
 from tuio_circular_menu import CircularMenuController
-from tuio_listener  import TUIOListener, OSC_AVAILABLE
+from tuio_listener      import TUIOListener, OSC_AVAILABLE
 import windows_controls
-from vr_bridge      import VRBridge
+from vr_bridge          import VRBridge
 
 
 class HCIApp(tk.Tk):
@@ -67,7 +81,7 @@ class HCIApp(tk.Tk):
         self.configure(bg="#000000")
 
         self._gif   = GifManager(self)
-        self._users = get_all_users()
+        self._users = load_users()   # respects admin_users.json; falls back to character_map defaults
 
         # ── key bindings ──────────────────────────────────────────────────────
         self.bind("<Escape>", self._on_exit)
@@ -91,6 +105,23 @@ class HCIApp(tk.Tk):
         self._current_gif_key    = None
         self._reactivision_process = None
 
+        # ── admin state ───────────────────────────────────────────────────────
+        self._admin_mode         = False   # True while on the admin screen
+        self._admin_selected     = 0       # index of highlighted user row
+        self._admin_neutral_y: float | None = None
+        self._admin_sy: float   = 0.0
+        self._admin_triggered    = False   # edge guard for add/remove actions
+
+        self._bt_admin = BluetoothAdminPresence(
+            mac=ADMIN_BLUETOOTH_MAC,
+            name=ADMIN_BLUETOOTH_NAME,
+            scan_duration=ADMIN_BT_SCAN_SECONDS,
+            poll_interval=ADMIN_BT_POLL_SECONDS,
+            ttl_seconds=ADMIN_BT_TTL_SECONDS,
+            force_connected=ADMIN_BLUETOOTH_FORCE,
+        )
+        self._bt_admin.start()
+
         self._menu_ctrl = CircularMenuController(
             self,
             motion_threshold=MENU_MOTION_THRESHOLD,
@@ -111,7 +142,9 @@ class HCIApp(tk.Tk):
 
         # ── VR bridge + gesture controller ────────────────────────────────────
         self._vr_bridge = VRBridge(dry_run=not VR_BRIDGE_ENABLED)
-        self._gesture_controller = GestureController(self._vr_bridge)
+        self._gesture_controller = (
+            GestureController(self._vr_bridge) if GESTURE_AVAILABLE else None
+        )
 
         self._listener = TUIOListener(
             on_marker_detected=lambda fid:       self.after(0, lambda: self._on_marker_detected(fid)),
@@ -130,6 +163,7 @@ class HCIApp(tk.Tk):
         self._stop_reactivision()
         self._vr_bridge.stop()
         self._listener.stop()
+        self._bt_admin.stop()
         self.destroy()
 
     # ── reacTIVision ──────────────────────────────────────────────────────────
@@ -170,17 +204,31 @@ class HCIApp(tk.Tk):
     # ── TUIO callbacks (dispatched to main thread via after(0, ...)) ──────────
 
     def _on_tuio_marker_moved(self, fid: int, x: float, y: float, a: float):
-        """Background thread — VR queue + circular menu motion on UI thread."""
+        """Background thread — VR queue + circular menu + admin marker motion."""
         self._vr_bridge.enqueue(fid, x, y, a)
         if fid == MENU_TUIO_MARKER and self._menu_ctrl.is_active:
             self.after(0, lambda xx=x, yy=y: self._menu_ctrl.feed_tuio(xx, yy))
+        if fid == ADMIN_TUIO_MARKER and self._admin_mode:
+            self.after(0, lambda yy=y, xx=x: self._admin_marker_moved(xx, yy))
 
     def _on_marker_detected(self, fid: int):
-        # Menu marker works on main menu AND while a user profile is loaded.
+        # Circular menu — works everywhere.
         if fid == MENU_TUIO_MARKER:
             self._menu_ctrl.show()
             return
         if game_running.is_set():
+            return
+        # Admin marker — only on main menu and only if Bluetooth device is present.
+        if fid == ADMIN_TUIO_MARKER and self._current_user is None and not self._admin_mode:
+            if self._bt_admin.connected.is_set():
+                self._admin_neutral_y = None
+                self._admin_sy        = 0.0
+                self._admin_triggered = False
+                self._show_admin_screen()
+            else:
+                print("[Admin] Bluetooth device not detected — admin locked.")
+            return
+        if self._admin_mode:
             return
         if self._current_user is None and fid in self._users:
             self._current_user = fid
@@ -194,6 +242,10 @@ class HCIApp(tk.Tk):
             return
         if game_running.is_set():
             return
+        if fid == ADMIN_TUIO_MARKER and self._admin_mode:
+            self._admin_mode = False
+            self._show_main_menu()
+            return
         if self._current_user == fid:
             self._set_tuio_light(False)
 
@@ -201,6 +253,17 @@ class HCIApp(tk.Tk):
         if self._menu_ctrl.is_active:
             return
         if game_running.is_set():
+            return
+        # Admin screen: rotate right = remove selected user, rotate left = back to menu.
+        if self._admin_mode and fid == ADMIN_TUIO_MARKER:
+            if self._admin_triggered:
+                return
+            self._admin_triggered = True
+            if direction == "left":
+                self._admin_mode = False
+                self._show_main_menu()
+            else:
+                self._admin_remove_selected()
             return
         if self._current_user != fid or self._rotation_triggered:
             return
@@ -573,6 +636,142 @@ class HCIApp(tk.Tk):
         body_cv.create_rectangle(div_x, div_y, div_x + div_w, div_y + 4,
                                   fill=u["accent"], outline="")
 
+    # ══════════════════════════════════════════════════════════════════════════
+    #  ADMIN SCREEN
+    # ══════════════════════════════════════════════════════════════════════════
+
+    def _show_admin_screen(self):
+        self._admin_mode = True
+        self._admin_selected = 0
+        self._clear_screen()
+        sw, sh = self._sw(), self._sh()
+
+        frame = tk.Frame(self, bg="#0a0a1a")
+        frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self._screen = frame
+
+        # Header
+        hdr = tk.Frame(frame, bg="#1a1a3a", height=int(sh * 0.10))
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        tk.Label(hdr, text="  ADMIN PANEL",
+                 font=("Bahnschrift", int(sh * 0.034), "bold"),
+                 fg="#ff9900", bg="#1a1a3a").pack(side="left",
+                 padx=int(sw * 0.025), pady=int(sh * 0.020))
+        bt_ok = self._bt_admin.connected.is_set()
+        tk.Label(hdr,
+                 text=("BT DEVICE DETECTED" if bt_ok else "BT DEVICE OFFLINE"),
+                 font=("Consolas", int(sh * 0.016), "bold"),
+                 fg="#00ff88" if bt_ok else "#ff4444",
+                 bg="#1a1a3a").pack(side="right",
+                 padx=int(sw * 0.025))
+
+        # Instructions
+        instr = tk.Frame(frame, bg="#0a0a1a")
+        instr.pack(fill="x", pady=(int(sh * 0.015), 0))
+        for txt in (
+            "Move marker UP / DOWN to scroll users",
+            "Push marker RIGHT  to add a user",
+            "Rotate marker RIGHT to remove selected",
+            "Rotate marker LEFT  to go back",
+        ):
+            tk.Label(instr, text=txt,
+                     font=("Consolas", int(sh * 0.015)),
+                     fg="#666699", bg="#0a0a1a").pack()
+
+        sep = tk.Canvas(frame, height=2, bg="#333366",
+                        highlightthickness=0)
+        sep.pack(fill="x", pady=int(sh * 0.010))
+
+        # User list
+        list_frame = tk.Frame(frame, bg="#0a0a1a")
+        list_frame.pack(fill="both", expand=True,
+                        padx=int(sw * 0.06), pady=int(sh * 0.010))
+        self._admin_list_frame = list_frame
+        self._admin_row_labels: list[tk.Frame] = []
+        self._admin_rebuild_list()
+
+    def _admin_rebuild_list(self):
+        for w in self._admin_list_frame.winfo_children():
+            w.destroy()
+        self._admin_row_labels = []
+        sw, sh = self._sw(), self._sh()
+        for i, (uid, u) in enumerate(self._users.items()):
+            selected = (i == self._admin_selected)
+            bg  = "#2a2a5a" if selected else "#111133"
+            fg  = "#ffffff" if selected else "#aaaacc"
+            row = tk.Frame(self._admin_list_frame, bg=bg,
+                           highlightthickness=2 if selected else 1,
+                           highlightbackground="#ff9900" if selected else "#333366")
+            row.pack(fill="x", pady=3)
+            tk.Label(row,
+                     text=f"  MARKER #{uid}   {u['name']}",
+                     font=("Bahnschrift", int(sh * 0.026),
+                           "bold" if selected else "normal"),
+                     fg=fg, bg=bg, anchor="w").pack(
+                         side="left", padx=16, pady=int(sh * 0.010))
+            if selected:
+                tk.Label(row, text="<< SELECTED >>",
+                         font=("Consolas", int(sh * 0.016)),
+                         fg="#ff9900", bg=bg).pack(side="right", padx=16)
+            self._admin_row_labels.append(row)
+
+    def _admin_marker_moved(self, x: float, y: float):
+        """Called on UI thread. y in TUIO [0,1]. Scroll selection up/down.
+        Rightward displacement (x > 0.65) triggers add-user (edge)."""
+        th = MENU_MOTION_THRESHOLD
+        alpha = MENU_SMOOTH_ALPHA
+
+        if self._admin_neutral_y is None:
+            self._admin_neutral_y = float(y)
+            self._admin_sy = float(y)
+            return
+
+        self._admin_sy = alpha * self._admin_sy + (1.0 - alpha) * float(y)
+        dy = self._admin_sy - self._admin_neutral_y
+
+        if dy < -th * 1.5 and not self._admin_triggered:
+            self._admin_neutral_y = self._admin_sy
+            n = len(self._users)
+            self._admin_selected = max(0, self._admin_selected - 1) if n else 0
+            self._admin_rebuild_list()
+        elif dy > th * 1.5 and not self._admin_triggered:
+            self._admin_neutral_y = self._admin_sy
+            n = len(self._users)
+            self._admin_selected = min(n - 1, self._admin_selected + 1) if n else 0
+            self._admin_rebuild_list()
+
+        # Right push = add user (edge-triggered, re-arms when marker returns to center)
+        if float(x) > 0.65 and not self._admin_triggered:
+            self._admin_triggered = True
+            self._admin_add_user()
+        elif float(x) < 0.55:
+            self._admin_triggered = False
+
+    def _admin_add_user(self):
+        from user_store import build_user_dict
+        new_id   = next_free_marker_id(self._users)
+        new_name = random_display_name()
+        self._users[new_id] = build_user_dict(new_id, new_name)
+        save_users(self._users)
+        self._admin_selected = list(self._users.keys()).index(new_id)
+        self._admin_rebuild_list()
+        print(f"[Admin] Added user: marker={new_id} name={new_name!r}")
+
+    def _admin_remove_selected(self):
+        keys = list(self._users.keys())
+        if not keys:
+            self._admin_triggered = False
+            return
+        idx = min(self._admin_selected, len(keys) - 1)
+        uid = keys[idx]
+        del self._users[uid]
+        save_users(self._users)
+        self._admin_selected = max(0, idx - 1)
+        self._admin_rebuild_list()
+        self._admin_triggered = False
+        print(f"[Admin] Removed user: marker={uid}")
+
     # ── game launch ───────────────────────────────────────────────────────────
 
     # Users whose game input comes from TUIO markers via the VR bridge.
@@ -605,19 +804,20 @@ class HCIApp(tk.Tk):
             # ─────────────────────────────────────────────
             # HAND TRACKING MODE (MediaPipe)
             # ─────────────────────────────────────────────
-            print(f"[INFO] Launching with MediaPipe controllers for {name}")
-
-            # 🔥 STOP reacTIVision → free camera
+            # Stop reacTIVision to free the webcam for MediaPipe
             self._stop_reactivision()
             time.sleep(2.0)  # give OS time to release camera properly
 
-            # 🔥 CREATE gesture controller if not exists
-            if not hasattr(self, "_gesture_controller") or self._gesture_controller is None:
+            # Create gesture controller on first use if not already initialised
+            if self._gesture_controller is None and GESTURE_AVAILABLE:
                 from gesture_controller import GestureController
                 self._gesture_controller = GestureController(self._vr_bridge)
 
-            # 🔥 START hand tracking
-            self._gesture_controller.start()
+            if self._gesture_controller is not None:
+                self._gesture_controller.start()
+                print(f"[INFO] Launching with MediaPipe controllers for {name}")
+            else:
+                print(f"[INFO] Launching game for {name} (gesture unavailable — install opencv-python + mediapipe)")
 
         # ─────────────────────────────────────────────
         # Launch game
@@ -643,7 +843,7 @@ class HCIApp(tk.Tk):
         # Stop whichever controller was active
         if getattr(self, '_use_tuio_control', False):
             self._vr_bridge.stop()
-        else:
+        elif self._gesture_controller is not None:
             self._gesture_controller.stop()
 
         # Restart reacTIVision (for MediaPipe users it was killed; for TUIO it's a no-op)
