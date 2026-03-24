@@ -10,9 +10,12 @@ Fullscreen Tkinter GUI driven by TUIO fiducial markers via reacTIVision.
   • Each user page has its own animated GIF background and colour theme.
   • Rotate the TUIO marker LEFT  → return to the main menu.
   • Rotate the TUIO marker RIGHT → launch the configured game.
+  • Circular menu: TUIO marker #10 (configurable) works on main menu and user
+    pages — volume, window/game actions; remove marker to close.
 
 Keyboard shortcuts (for testing without hardware):
   0 / 1 / 2 / 3  – simulate placing / removing TUIO marker for that user
+  M              – toggle circular menu overlay
   ← Left arrow   – simulate rotating LEFT  (back to menu)
   → Right arrow  – simulate rotating RIGHT (launch game)
   ESC / Q        – exit
@@ -30,6 +33,28 @@ from gesture_controller import GestureController
 from gif_utils          import GifManager, load_avatar, load_image
 from tuio_listener      import TUIOListener, OSC_AVAILABLE
 from vr_bridge          import VRBridge
+from character_map  import MAIN_BK_GIF, GAME_ICON, get_all_users
+from config         import (
+    BASE_DIR,
+    IS_WINDOWS,
+    MENU_ACTION_COOLDOWN_SECONDS,
+    MENU_CURSOR_GAIN,
+    MENU_MOTION_THRESHOLD,
+    MENU_SMOOTH_ALPHA,
+    MENU_TUIO_MARKER,
+    MENU_VOLUME_REPEAT_SECONDS,
+    MENU_VOLUME_STEP,
+    REACTVISION_EXE,
+    TUIO_HOST,
+    TUIO_PORT,
+    VR_BRIDGE_ENABLED,
+)
+from game_launcher  import game_running, get_tracked_game_pid, launch_game, terminate_game
+from gif_utils      import GifManager, load_avatar, load_image
+from tuio_circular_menu import CircularMenuController
+from tuio_listener  import TUIOListener, OSC_AVAILABLE
+import windows_controls
+from vr_bridge      import VRBridge
 
 
 class HCIApp(tk.Tk):
@@ -51,6 +76,7 @@ class HCIApp(tk.Tk):
             "-fullscreen", not self.attributes("-fullscreen")))
         for k in "0123":
             self.bind(k, lambda e, uid=int(k): self._simulate_tuio(uid))
+        self.bind("m", self._simulate_menu_toggle)
         self.bind("<Left>",  lambda e: self._simulate_rotation("left"))
         self.bind("<Right>", lambda e: self._simulate_rotation("right"))
         self.bind("<Map>",   lambda e: self.attributes("-fullscreen", True))
@@ -65,6 +91,21 @@ class HCIApp(tk.Tk):
         self._current_gif_key    = None
         self._reactivision_process = None
 
+        self._menu_ctrl = CircularMenuController(
+            self,
+            motion_threshold=MENU_MOTION_THRESHOLD,
+            smooth_alpha=MENU_SMOOTH_ALPHA,
+            volume_repeat_s=MENU_VOLUME_REPEAT_SECONDS,
+            action_cooldown_s=MENU_ACTION_COOLDOWN_SECONDS,
+            cursor_gain=MENU_CURSOR_GAIN,
+            on_volume_up=lambda: windows_controls.volume_step(MENU_VOLUME_STEP),
+            on_volume_down=lambda: windows_controls.volume_step(-MENU_VOLUME_STEP),
+            on_action_left=self._menu_action_left,
+            on_action_right=self._menu_action_right,
+            on_action_right_up=self._menu_action_right_up,
+            on_action_right_down=self._menu_action_right_down,
+        )
+
         # ── start ─────────────────────────────────────────────────────────────
         self._launch_reactivision()
 
@@ -76,7 +117,7 @@ class HCIApp(tk.Tk):
             on_marker_detected=lambda fid:       self.after(0, lambda: self._on_marker_detected(fid)),
             on_marker_rotated= lambda d, fid:    self.after(0, lambda: self._on_marker_rotated(d, fid)),
             on_marker_removed= lambda fid:       self.after(0, lambda: self._on_marker_removed(fid)),
-            on_marker_moved=   lambda fid, x, y, a: self._vr_bridge.enqueue(fid, x, y, a),
+            on_marker_moved=   self._on_tuio_marker_moved,
             host=TUIO_HOST,
             port=TUIO_PORT,
         )
@@ -128,7 +169,17 @@ class HCIApp(tk.Tk):
 
     # ── TUIO callbacks (dispatched to main thread via after(0, ...)) ──────────
 
+    def _on_tuio_marker_moved(self, fid: int, x: float, y: float, a: float):
+        """Background thread — VR queue + circular menu motion on UI thread."""
+        self._vr_bridge.enqueue(fid, x, y, a)
+        if fid == MENU_TUIO_MARKER and self._menu_ctrl.is_active:
+            self.after(0, lambda xx=x, yy=y: self._menu_ctrl.feed_tuio(xx, yy))
+
     def _on_marker_detected(self, fid: int):
+        # Menu marker works on main menu AND while a user profile is loaded.
+        if fid == MENU_TUIO_MARKER:
+            self._menu_ctrl.show()
+            return
         if game_running.is_set():
             return
         if self._current_user is None and fid in self._users:
@@ -138,12 +189,17 @@ class HCIApp(tk.Tk):
             self._set_tuio_light(True)
 
     def _on_marker_removed(self, fid: int):
+        if fid == MENU_TUIO_MARKER:
+            self._menu_ctrl.hide()
+            return
         if game_running.is_set():
             return
         if self._current_user == fid:
             self._set_tuio_light(False)
 
     def _on_marker_rotated(self, direction: str, fid: int):
+        if self._menu_ctrl.is_active:
+            return
         if game_running.is_set():
             return
         if self._current_user != fid or self._rotation_triggered:
@@ -166,6 +222,8 @@ class HCIApp(tk.Tk):
             self._show_main_menu()
 
     def _simulate_rotation(self, direction: str):
+        if self._menu_ctrl.is_active:
+            return
         if game_running.is_set():
             return
         if self._current_user is None or self._rotation_triggered:
@@ -176,6 +234,48 @@ class HCIApp(tk.Tk):
             self._show_main_menu()
         else:
             self._do_launch_game()
+
+    def _simulate_menu_toggle(self, _event=None):
+        if self._menu_ctrl.is_active:
+            self._menu_ctrl.hide()
+        else:
+            self._menu_ctrl.show()
+
+    def _menu_action_left(self):
+        terminate_game()
+        windows_controls.restore_focus_fullscreen(self)
+
+    def _menu_action_right(self):
+        hwnd = windows_controls.tk_hwnd(self)
+        windows_controls.minimize_other_windows(hwnd)
+        windows_controls.restore_focus_fullscreen(self)
+
+    def _menu_action_right_up(self):
+        if not game_running.is_set():
+            return
+        pid = get_tracked_game_pid()
+        if pid is None:
+            return
+        ghwnd = windows_controls.find_main_window_hwnd_for_pid(pid)
+        if not ghwnd:
+            return
+        if not windows_controls.window_is_fullscreen_or_maximized(ghwnd):
+            return
+        windows_controls.minimize_window(ghwnd)
+        windows_controls.restore_focus_fullscreen(self)
+
+    def _menu_action_right_down(self):
+        if not game_running.is_set():
+            return
+        pid = get_tracked_game_pid()
+        if pid is None:
+            return
+        ghwnd = windows_controls.find_main_window_hwnd_for_pid(pid)
+        if not ghwnd:
+            return
+        self._menu_ctrl.hide()
+        windows_controls.restore_maximize_and_foreground(ghwnd)
+        windows_controls.minimize_tk_root(self)
 
     # ── screen helpers ────────────────────────────────────────────────────────
 
@@ -411,13 +511,13 @@ class HCIApp(tk.Tk):
         tk.Label(r_row, text="  ►",
                  font=("Bahnschrift", int(sh * 0.034), "bold"),
                  fg=u["header_bg"], bg=u["glow"]).pack(side="left")
-        tk.Label(r_body, text="Launch Beat Saber",
+        tk.Label(r_body, text="Launch Ninja Fruit",
                  font=("Consolas", int(sh * 0.014)),
                  fg=u["bg"], bg=u["glow"]).pack(pady=(2, 6))
         tk.Canvas(right_box, height=2, bg=u["header_bg"],
                   highlightthickness=0).pack(fill="x", side="bottom")
 
-        # Beat Saber icon
+        # Ninja Fruit icon
         border     = 4
         icon_sz    = int(bar_h * 0.62)
         icon_pad_y = (bar_h - icon_sz - border * 2) // 2
@@ -425,7 +525,7 @@ class HCIApp(tk.Tk):
 
         icon_wrapper = tk.Frame(game_bar, bg=u["header_bg"])
         icon_wrapper.pack(side="right", padx=int(sw * 0.032), pady=icon_pad_y)
-        tk.Label(icon_wrapper, text="BEAT SABER",
+        tk.Label(icon_wrapper, text="NINJA FRUIT",
                  font=("Bahnschrift", int(sh * 0.022), "bold"),
                  fg=u["accent"], bg=u["header_bg"]).pack()
         icon_frame = tk.Frame(icon_wrapper, bg=u["accent"],
@@ -553,7 +653,7 @@ if __name__ == "__main__":
             "\n[WARN] python-osc is not installed.\n"
             "       Install it with:  pip install python-osc\n"
             "       The app will still run but TUIO hardware will not work.\n"
-            "       Use keyboard keys  0 / 1 / 2 / 3  to simulate markers.\n"
+            "       Use keys 0–3 for users; M toggles circular menu.\n"
         )
     app = HCIApp()
     app.mainloop()

@@ -55,7 +55,7 @@ Each `PipeListener` creates a named pipe server and runs a background thread tha
 2. Confirm two controller icons appear in the SteamVR status window (not tracker icons)
 3. Run the Python bridge: `python vr_bridge.py` (from the project root)
 4. Move TUIO markers → controllers should move in SteamVR Home mirror window
-5. Launch Beat Saber → sabers respond to marker movement
+5. Launch Ninja Fruit (or your VR title) → controllers/sabers respond to marker movement
 
 ### Dry-run (no SteamVR needed)
 
