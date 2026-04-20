@@ -1,32 +1,11 @@
-"""
-gesture_controller.py
-─────────────────────
-Real-time hand-tracking controller that feeds hand pose data into VRBridge.
-
-Mirror / handedness strategy (important — do not change partially):
-  • The frame is NOT flipped before MediaPipe inference.
-  • This means MediaPipe's handedness labels are ground truth:
-      "Left"  → user's left hand  → LEFT  controller  (VR_LEFT_MARKER)
-      "Right" → user's right hand → RIGHT controller  (VR_RIGHT_MARKER)
-  • Because the raw camera image is a mirror (x=0 is user's right side),
-    we correct x with  x = 1 - x  ONCE in _get_position so that moving
-    your right hand rightward increases x toward 1.0 in VR space.
-  • dx is also negated in _get_stable_angle to stay consistent with the
-    corrected x direction.
-  • cv2.flip is used only for any debug window display, never for inference.
-"""
-
 from __future__ import annotations
-
 import math
 import threading
 import time
 from typing import Optional
-
 import cv2
 import mediapipe as mp
 
-# ── project imports ───────────────────────────────────────────────────────────
 try:
     from config import (
         CAMERA_INDEX,
@@ -38,7 +17,6 @@ except ImportError:
     VR_LEFT_MARKER  = 0
     VR_RIGHT_MARKER = 1
 
-# ── constants ─────────────────────────────────────────────────────────────────
 _TARGET_FPS        = 60
 _CAMERA_OPEN_TRIES = 10
 _CAMERA_RETRY_S    = 0.3
