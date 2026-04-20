@@ -1,25 +1,25 @@
 # ============================================================
-#  Optional: in-app Bluetooth scanning for the admin screen.
+#  Optional: classic Bluetooth scanning (PyBluez).
+#
+#  bleak (BLE) is already in requirements.txt and works on
+#  Windows out of the box — you do NOT need this file for
+#  normal use.
+#
+#  Only install this if your admin device does NOT support BLE
+#  (e.g. a very old phone or headset).
 #
 #  Install AFTER the main requirements:
 #      pip install -r requirements-bluetooth.txt
 #
-#  This enables bluetooth_admin.py to scan for your admin
-#  device at runtime.  You can skip this if you use the
-#  static MAC / name approach (see README § Admin Bluetooth).
-#
 #  Platform notes
 #  --------------
 #  Linux / macOS   — pybluez usually installs cleanly.
-#  Windows         — PyBluez often fails to build from PyPI.
-#                    Options:
-#                      • Use list_bluetooth_devices.ps1 to get
-#                        your device MAC and set admin_bluetooth_mac
-#                        in config.json (no PyBluez needed).
-#                      • Try a pre-built wheel for your Python
-#                        version from an unofficial mirror.
-#                      • Or set admin_bluetooth_force: true in
-#                        config.json for local testing only.
+#  Windows         — PyBluez requires C++ build tools and
+#                    often fails to compile.  Use bleak instead
+#                    (already installed via requirements.txt).
+#
+#  If PyBluez is not installed, bluetooth_admin.py automatically
+#  falls back to bleak (BLE).  No code changes needed.
 # ============================================================
 
 pybluez
