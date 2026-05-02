@@ -1,8 +1,8 @@
 ﻿#nullable disable
 
-namespace NinjaFruit
+namespace FruitNinjaGame
 {
-    partial class Form1
+    partial class GUIForm
     {
         private System.ComponentModel.IContainer components = null;
 

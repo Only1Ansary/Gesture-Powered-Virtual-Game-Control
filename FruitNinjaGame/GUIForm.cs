@@ -9,7 +9,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace NinjaFruit
+namespace FruitNinjaGame
 {
     // ═══════════════════════════════════════════════════════════════════════════
     //  DATA MODELS
@@ -344,7 +344,7 @@ namespace NinjaFruit
     //  FORM1
     // ═══════════════════════════════════════════════════════════════════════════
 
-    public partial class Form1 : Form
+    public partial class GUIForm : Form
     {
         private readonly Dictionary<int, UserProfile> _users;
         private int? _currentUser = null;
@@ -367,7 +367,7 @@ namespace NinjaFruit
         private CircularMenuOverlay _menuOverlay = null;
 
         // ── ctor ───────────────────────────────────────────────────────────────
-        public Form1()
+        public GUIForm()
         {
             InitializeComponent();
 
@@ -998,8 +998,22 @@ namespace NinjaFruit
 
         private bool LaunchGame(string characterName, out string errorMsg)
         {
-            errorMsg = "Game executable not configured. Set game path in AppConfig.";
-            return false;
+            errorMsg = "";
+            try
+            {
+                var gameForm = new Form1(); // FruitNinjaGame.Form1 — the actual game
+                gameForm.FormClosed += (s, e) =>
+                {
+                    _gameRunning = false;
+                };
+                gameForm.Show();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMsg = ex.Message;
+                return false;
+            }
         }
 
         private void CheckGameExit(object sender, EventArgs e)
