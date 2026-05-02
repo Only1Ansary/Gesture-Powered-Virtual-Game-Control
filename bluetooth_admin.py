@@ -11,9 +11,9 @@ Detection strategy (first successful wins):
   2. bleak  — BLE advertisement scan fallback for BLE-only devices.
   3. force_connected flag in config.json — bypass for development / demo.
 
-Match by MAC (admin_bluetooth_mac) or name (admin_bluetooth_name):
-  * MAC  — normalized hex, e.g. "7c:03:ab:2a:0c:ce"
-  * name — case-insensitive exact friendly name stored in Windows pairing info
+Match by friendly name (admin_bluetooth_name) only:
+  * name — case-insensitive match to the friendly name Windows shows for the paired device
+  * admin_bluetooth_mac may remain in config for your records; it is not used for unlock.
 
 NOTE:
   BLE devices often rotate their MAC for privacy.  For BLE-only devices use
@@ -118,18 +118,20 @@ class BluetoothAdminPresence:
         force_connected: bool = False,
         on_log: Callable[[str], None] | None = None,
     ):
-        self._mac  = _normalize_mac(mac) if mac else ""
+        self._mac_config = _normalize_mac(mac) if mac else ""  # unused for unlock; kept for config parity
         self._name = (name or "").strip().lower()
         self._scan_duration = max(2, int(scan_duration))
         self._poll          = max(1.0, float(poll_interval))
         self._ttl           = max(5.0, float(ttl_seconds))
         self._force         = bool(force_connected)
         self._on_log        = on_log
+        self._resolved_mac = ""  # filled from registry when matching by name (WinRT)
 
         self.connected      = threading.Event()
         self._stop          = threading.Event()
         self._thread: threading.Thread | None = None
         self._last_seen: float = 0.0
+        self._matched_display_name = ""
 
         if _WINRT_OK:
             backend = "WinRT (instant connection check — no scan needed)"
@@ -143,8 +145,18 @@ class BluetoothAdminPresence:
         self._log(f"[BluetoothAdmin] Backend: {backend}")
         if force_connected:
             self._log("[BluetoothAdmin] force_connected=true — admin always unlocked.")
+        elif self._mac_config and not self._name:
+            self._log(
+                "[BluetoothAdmin] admin_bluetooth_mac is set but ignored — "
+                "set admin_bluetooth_name to the device name shown in Windows."
+            )
 
     # ── public API ─────────────────────────────────────────────────────────────
+
+    @property
+    def matched_device_name(self) -> str:
+        """Friendly name of the device when connected (WinRT); may be empty."""
+        return self._matched_display_name
 
     def start(self) -> None:
         if self._force:
@@ -157,10 +169,10 @@ class BluetoothAdminPresence:
                 "  Or set admin_bluetooth_force=true in config.json."
             )
             return
-        if not self._mac and not self._name:
+        if not self._name:
             self._log(
-                "[BluetoothAdmin] No device configured — set admin_bluetooth_mac "
-                "or admin_bluetooth_name in config.json."
+                "[BluetoothAdmin] No device name configured — set admin_bluetooth_name "
+                "in config.json (MAC-only unlock is disabled)."
             )
             return
 
@@ -227,7 +239,7 @@ class BluetoothAdminPresence:
         (falls through to the next backend).
         """
         try:
-            target_mac = self._resolve_mac()
+            target_mac = self._resolve_mac_from_name()
             if not target_mac:
                 return None
 
@@ -239,28 +251,34 @@ class BluetoothAdminPresence:
             is_conn = (
                 device.connection_status == BluetoothConnectionStatus.CONNECTED
             )
+            try:
+                nm = device.name
+                self._matched_display_name = (str(nm) if nm else "").strip()
+            except Exception:
+                self._matched_display_name = ""
+            if not is_conn:
+                self._matched_display_name = ""
             return is_conn
 
         except Exception as exc:
             self._log(f"[BluetoothAdmin] WinRT check error: {exc}")
             return None
 
-    def _resolve_mac(self) -> str:
-        """
-        Return the MAC to check.
-        * If admin_bluetooth_mac is set, use it directly.
-        * If admin_bluetooth_name is set, look it up in the Windows registry.
-        """
-        if self._mac:
-            return self._mac
-        if self._name:
-            paired = _registry_paired_devices()
-            for mac, dev_name in paired.items():
-                if dev_name.strip().lower() == self._name:
-                    self._log(f"[BluetoothAdmin] Resolved name {self._name!r} -> {mac}")
-                    # Cache the MAC so we don't hit the registry every poll
-                    self._mac = mac
-                    return mac
+    def _resolve_mac_from_name(self) -> str:
+        """Bluetooth address from registry using admin_bluetooth_name only (not config MAC)."""
+        if not self._name:
+            return ""
+        if self._resolved_mac:
+            return self._resolved_mac
+        paired = _registry_paired_devices()
+        want = self._name.strip().lower()
+        for mac, dev_name in paired.items():
+            dn = dev_name.strip().lower()
+            if dn and want in dn:
+                self._resolved_mac = mac
+                self._log(f"[BluetoothAdmin] Resolved name {self._name!r} -> {mac}")
+                return mac
+        self._resolved_mac = ""
         return ""
 
     # ── PyBluez: classic BT scan ───────────────────────────────────────────────
@@ -296,10 +314,9 @@ class BluetoothAdminPresence:
     # ── shared helpers ─────────────────────────────────────────────────────────
 
     def _match_addr_name(self, addr: str | None, name: str | None) -> bool:
-        if self._mac and addr:
-            return _normalize_mac(str(addr)) == self._mac
         if self._name and name:
-            return name.strip().lower() == self._name
+            nn = name.strip().lower()
+            return self._name in nn if nn else False
         return False
 
     def _update_state(self, found: bool) -> None:
@@ -307,12 +324,14 @@ class BluetoothAdminPresence:
         if found:
             self._last_seen = now
             if not self.connected.is_set():
-                self._log("[BluetoothAdmin] Device connected — admin unlocked.")
+                label = self._matched_display_name or self._name or "device"
+                self._log(f"[BluetoothAdmin] Connected — admin unlocked ({label}).")
             self.connected.set()
         elif now - self._last_seen > self._ttl:
             if self.connected.is_set():
                 self._log("[BluetoothAdmin] Device disconnected — admin locked.")
             self.connected.clear()
+            self._matched_display_name = ""
 
     def _log(self, msg: str) -> None:
         if self._on_log:
