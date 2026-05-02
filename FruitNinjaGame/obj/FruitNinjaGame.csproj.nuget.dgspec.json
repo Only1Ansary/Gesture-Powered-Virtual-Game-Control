@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj": {}
+    "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj": {}
   },
   "projects": {
-    "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj": {
+    "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
+        "projectUniqueName": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
         "projectName": "FruitNinjaGame",
-        "projectPath": "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
+        "projectPath": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
         "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-        "outputPath": "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\obj\\",
+        "outputPath": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",

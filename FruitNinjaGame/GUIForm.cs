@@ -1,13 +1,17 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
-using System.Diagnostics;
 using System.Windows.Forms;
+using static CircularMenu.Form1;
 
 namespace FruitNinjaGame
 {
@@ -159,7 +163,6 @@ namespace FruitNinjaGame
 
             if (_frames.Length == 0) return;
 
-            // Fire first frame immediately so there is no blank flash
             _onFrame?.Invoke(_frames[0]);
 
             _timer = new System.Windows.Forms.Timer { Interval = _delays[0] };
@@ -256,15 +259,53 @@ namespace FruitNinjaGame
 
     // ═══════════════════════════════════════════════════════════════════════════
     //  CIRCULAR MENU OVERLAY
+    //  — Transparent topmost Form driven by TUIO marker rotation.
+    //    The form's background is punched out via TransparencyKey so only
+    //    the wedge shapes are visible over whatever is underneath.
     // ═══════════════════════════════════════════════════════════════════════════
 
-    public class CircularMenuOverlay : PaintCanvas
+    public class CircularMenuOverlay : Form
     {
-        public bool IsActive { get; private set; }
+        // ── transparency colour — must never appear in drawn wedges ────────────
+        private static readonly Color TransKey = Color.FromArgb(1, 2, 3);
 
-        private readonly Action _onLeft, _onRight, _onRightUp, _onRightDown;
-        private readonly Action _onVolUp, _onVolDown;
+        // ── IsActive property so GUIForm can check visibility ─────────────────
+        public bool IsActive => Visible;
 
+        // ── TUIO listener (reuses the one already in Form1 namespace) ─────────
+        private readonly MinimalTuioListener _tuioListener;
+        private float _markerAngle = -1f;
+        private string _hoveredWedge = "center";
+
+        private DateTime _lastGlobalAction = DateTime.MinValue;
+        private DateTime _lastVolTime = DateTime.MinValue;
+        private string _lastTriggeredSector = "";
+
+        private const int MarkerId = 10;
+        private const double ActionCooldownS = 2.2;
+        private const double VolRepeatS = 0.25;
+
+        // ── wedge callbacks ───────────────────────────────────────────────────
+        private readonly Action _onLeft;
+        private readonly Action _onRight;
+        private readonly Action _onRightUp;
+        private readonly Action _onRightDown;
+        private readonly Action _onVolUp;
+        private readonly Action _onVolDown;
+
+        // ── wedge spec ────────────────────────────────────────────────────────
+        private class WedgeSpec
+        {
+            public string Name;
+            public float StartAngle, SweepAngle;
+            public Color DimColor, BrightColor;
+            public string Text;
+            public Font TextFont;
+            public PointF TextOffset;
+        }
+        private List<WedgeSpec> _wedges;
+
+        // ── ctor ──────────────────────────────────────────────────────────────
         public CircularMenuOverlay(
             Control parent,
             Action onLeft, Action onRight,
@@ -278,70 +319,290 @@ namespace FruitNinjaGame
             _onVolUp = onVolUp;
             _onVolDown = onVolDown;
 
+            // ── window properties ─────────────────────────────────────────────
+            FormBorderStyle = FormBorderStyle.None;
+            WindowState = FormWindowState.Maximized;
+            TopMost = true;
+            DoubleBuffered = true;
+            ShowInTaskbar = false;
+
+            // ── transparency ──────────────────────────────────────────────────
+            BackColor = TransKey;
+            TransparencyKey = TransKey;
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+
+            // ── start hidden ──────────────────────────────────────────────────
             Visible = false;
-            parent.Controls.Add(this);
-            BringToFront();
+
+            InitWedges();
+
+            // ── TUIO ──────────────────────────────────────────────────────────
+            _tuioListener = new MinimalTuioListener();
+            _tuioListener.OnMarkerRotated += OnTuioMarkerRotated;
+            _tuioListener.Start(3333);
+
+            // ── render / logic timer (~60 fps) ────────────────────────────────
+            var timer = new System.Windows.Forms.Timer { Interval = 16 };
+            timer.Tick += Timer_Tick;
+            timer.Start();
         }
 
-        public void ShowMenu() { IsActive = true; Visible = true; BringToFront(); Invalidate(); }
-        public void HideMenu() { IsActive = false; Visible = false; }
+        // ── make transparent pixels click-through ─────────────────────────────
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                var cp = base.CreateParams;
+                cp.ExStyle |= 0x00080000; // WS_EX_LAYERED
+                cp.ExStyle |= 0x00000020; // WS_EX_TRANSPARENT
+                return cp;
+            }
+        }
 
+        // ── public show / hide ────────────────────────────────────────────────
+        public void ShowMenu()
+        {
+            Visible = true;
+            BringToFront();
+            Invalidate();
+        }
+
+        public void HideMenu()
+        {
+            Visible = false;
+        }
+
+        // ── wedge definitions ─────────────────────────────────────────────────
+        private void InitWedges()
+        {
+            _wedges = new List<WedgeSpec>();
+            Font fontLarge = new Font("Bahnschrift", 20, FontStyle.Bold);
+            Font fontSmall = new Font("Bahnschrift", 16, FontStyle.Regular);
+
+            _wedges.Add(new WedgeSpec
+            {
+                Name = "right",
+                StartAngle = 0f,
+                SweepAngle = 60f,
+                DimColor = ColorTranslator.FromHtml("#1a2a4a"),
+                BrightColor = ColorTranslator.FromHtml("#5b8cff"),
+                Text = "MIN OTHERS\n+ GUI",
+                TextFont = fontLarge,
+                TextOffset = new PointF(214, 124)
+            });
+
+            _wedges.Add(new WedgeSpec
+            {
+                Name = "down",
+                StartAngle = 60f,
+                SweepAngle = 60f,
+                DimColor = ColorTranslator.FromHtml("#3d2a1a"),
+                BrightColor = ColorTranslator.FromHtml("#ffb020"),
+                Text = "VOL -",
+                TextFont = fontLarge,
+                TextOffset = new PointF(0, 248)
+            });
+
+            _wedges.Add(new WedgeSpec
+            {
+                Name = "right_down",
+                StartAngle = 120f,
+                SweepAngle = 60f,
+                DimColor = ColorTranslator.FromHtml("#2a3555"),
+                BrightColor = ColorTranslator.FromHtml("#7eb8ff"),
+                Text = "GUI\n(full)\nif game FS",
+                TextFont = fontSmall,
+                TextOffset = new PointF(-214, 124)
+            });
+
+            _wedges.Add(new WedgeSpec
+            {
+                Name = "left",
+                StartAngle = 180f,
+                SweepAngle = 60f,
+                DimColor = ColorTranslator.FromHtml("#3d1a2a"),
+                BrightColor = ColorTranslator.FromHtml("#ff5b8c"),
+                Text = "EXIT GAME\n+ GUI",
+                TextFont = fontLarge,
+                TextOffset = new PointF(-214, -124)
+            });
+
+            _wedges.Add(new WedgeSpec
+            {
+                Name = "up",
+                StartAngle = 240f,
+                SweepAngle = 60f,
+                DimColor = ColorTranslator.FromHtml("#1a3d2e"),
+                BrightColor = ColorTranslator.FromHtml("#2ee59d"),
+                Text = "VOL +",
+                TextFont = fontLarge,
+                TextOffset = new PointF(0, -248)
+            });
+
+            _wedges.Add(new WedgeSpec
+            {
+                Name = "right_up",
+                StartAngle = 300f,
+                SweepAngle = 60f,
+                DimColor = ColorTranslator.FromHtml("#2a3d5a"),
+                BrightColor = ColorTranslator.FromHtml("#6ec0ff"),
+                Text = "GAME ->\nGUI\n(fullscr)",
+                TextFont = fontSmall,
+                TextOffset = new PointF(214, -124)
+            });
+        }
+
+        // ── TUIO callback ─────────────────────────────────────────────────────
+        private void OnTuioMarkerRotated(int markerId, float angle)
+        {
+            if (markerId == MarkerId)
+                _markerAngle = angle;
+        }
+
+        // ── timer ─────────────────────────────────────────────────────────────
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            UpdateLogic();
+            if (Visible) Invalidate();
+        }
+
+        // ── logic ─────────────────────────────────────────────────────────────
+        private void UpdateLogic()
+        {
+            if (_markerAngle < 0) return;
+
+            float degrees = _markerAngle * 180f / (float)Math.PI;
+            float graphicsAngle = degrees - 90f;
+            if (graphicsAngle < 0) graphicsAngle += 360f;
+
+            _hoveredWedge = "center";
+            foreach (var w in _wedges)
+            {
+                float end = w.StartAngle + w.SweepAngle;
+                bool inside = end > 360f
+                    ? (graphicsAngle >= w.StartAngle || graphicsAngle <= end - 360f)
+                    : (graphicsAngle >= w.StartAngle && graphicsAngle <= end);
+                if (inside) { _hoveredWedge = w.Name; break; }
+            }
+
+            DateTime now = DateTime.Now;
+
+            if (_hoveredWedge == "up" || _hoveredWedge == "down")
+            {
+                if ((now - _lastVolTime).TotalSeconds >= VolRepeatS)
+                {
+                    _lastVolTime = now;
+                    if (_hoveredWedge == "up") { _onVolUp?.Invoke(); Console.WriteLine("ACTION: Volume UP"); }
+                    else { _onVolDown?.Invoke(); Console.WriteLine("ACTION: Volume DOWN"); }
+                }
+            }
+            else if (_hoveredWedge != "center" && _hoveredWedge != _lastTriggeredSector)
+            {
+                if ((now - _lastGlobalAction).TotalSeconds >= ActionCooldownS)
+                {
+                    _lastGlobalAction = now;
+                    Console.WriteLine($"ACTION: Triggered {_hoveredWedge}");
+                    switch (_hoveredWedge)
+                    {
+                        case "left": _onLeft?.Invoke(); break;
+                        case "right": _onRight?.Invoke(); break;
+                        case "right_up": _onRightUp?.Invoke(); break;
+                        case "right_down": _onRightDown?.Invoke(); break;
+                    }
+                }
+            }
+
+            _lastTriggeredSector = _hoveredWedge;
+        }
+
+        // ── paint ─────────────────────────────────────────────────────────────
         protected override void OnPaint(PaintEventArgs e)
         {
+            base.OnPaint(e);
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            int cx = Width / 2, cy = Height / 2;
-            int r = Math.Min(Width, Height) / 3;
 
-            using var dim = new SolidBrush(Color.FromArgb(160, 0, 0, 0));
-            g.FillRectangle(dim, 0, 0, Width, Height);
+            int cx = Width / 2;
+            int cy = Height / 2;
+            int R = (int)(Math.Min(Width, Height) * 0.28f);
 
-            DrawSlice(g, cx, cy, r, -90, 90, "◄ TERMINATE", Color.FromArgb(180, 220, 50, 50));
-            DrawSlice(g, cx, cy, r, 0, 90, "▲ MIN GAME", Color.FromArgb(130, 100, 100, 200));
-            DrawSlice(g, cx, cy, r, 90, 90, "MINIMIZE ►", Color.FromArgb(180, 0, 180, 216));
-            DrawSlice(g, cx, cy, r, 180, 90, "▼ SHOW GAME", Color.FromArgb(130, 50, 200, 100));
+            // outer ring (drawn only — background punched through)
+            using (var outlinePen = new Pen(Color.FromArgb(80, 42, 42, 68), 2))
+                g.DrawEllipse(outlinePen, cx - R - 40, cy - R - 40, (R + 40) * 2, (R + 40) * 2);
 
-            using var rp = new Pen(Color.FromArgb(200, 0, 180, 216), 3);
-            g.DrawEllipse(rp, cx - r, cy - r, r * 2, r * 2);
+            var rect = new Rectangle(cx - R, cy - R, R * 2, R * 2);
 
-            using var cf = new Font("Consolas", 11, FontStyle.Bold);
-            using var cb = new SolidBrush(Color.White);
-            var csz = g.MeasureString("MENU", cf);
-            g.DrawString("MENU", cf, cb, cx - csz.Width / 2, cy - csz.Height / 2);
+            foreach (var w in _wedges)
+            {
+                Color fillWithAlpha = _hoveredWedge == w.Name
+                    ? Color.FromArgb(230, w.BrightColor)
+                    : Color.FromArgb(200, w.DimColor);
+
+                using (var brush = new SolidBrush(fillWithAlpha))
+                    g.FillPie(brush, rect, w.StartAngle, w.SweepAngle);
+
+                using (var pen = new Pen(Color.FromArgb(100, 68, 68, 102), 2))
+                    g.DrawPie(pen, rect, w.StartAngle, w.SweepAngle);
+
+                var sf = new StringFormat
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Center
+                };
+                using (var textBrush = new SolidBrush(Color.FromArgb(220, 204, 204, 204)))
+                    g.DrawString(w.Text, w.TextFont, textBrush,
+                                 cx + w.TextOffset.X, cy + w.TextOffset.Y, sf);
+            }
+
+            // TUIO cursor
+            if (_markerAngle >= 0)
+            {
+                float deg = _markerAngle * 180f / (float)Math.PI;
+                float gAng = deg - 90f;
+                float rad = gAng * (float)Math.PI / 180f;
+                float px = (float)Math.Cos(rad) * (R - 20);
+                float py = (float)Math.Sin(rad) * (R - 20);
+
+                using (var linePen = new Pen(Color.FromArgb(200, 255, 255, 255), 3))
+                    g.DrawLine(linePen, cx, cy, cx + px, cy + py);
+
+                using (var dotBrush = new SolidBrush(Color.White))
+                using (var dotPen = new Pen(ColorTranslator.FromHtml("#00fff7"), 3))
+                {
+                    g.FillEllipse(dotBrush, cx + px - 14, cy + py - 14, 28, 28);
+                    g.DrawEllipse(dotPen, cx + px - 14, cy + py - 14, 28, 28);
+                }
+            }
+
+            // instructions
+            using (var instFont = new Font("Consolas", 12))
+            using (var instBrush = new SolidBrush(Color.FromArgb(140, 102, 102, 136)))
+            {
+                var sf = new StringFormat { Alignment = StringAlignment.Center };
+                g.DrawString(
+                    $"Rotate TUIO marker {MarkerId} to select a wedge.  Actions have a {ActionCooldownS}s cooldown.",
+                    instFont, instBrush, cx, Height - 60, sf);
+                g.DrawString("Press ESC to close", instFont, instBrush, 100, 50);
+            }
         }
 
-        private static void DrawSlice(Graphics g, int cx, int cy, int r,
-                                      float start, float sweep, string label, Color col)
+        // ── keyboard ──────────────────────────────────────────────────────────
+        protected override void OnKeyDown(KeyEventArgs e)
         {
-            using var path = new GraphicsPath();
-            path.AddPie(cx - r, cy - r, r * 2, r * 2, start, sweep);
-            using var brush = new SolidBrush(col);
-            g.FillPath(brush, path);
-
-            double mid = (start + sweep / 2.0) * Math.PI / 180.0;
-            float tx = cx + r * 0.65f * (float)Math.Cos(mid);
-            float ty = cy + r * 0.65f * (float)Math.Sin(mid);
-            using var f = new Font("Consolas", 9, FontStyle.Bold);
-            using var b = new SolidBrush(Color.White);
-            var sz = g.MeasureString(label, f);
-            g.DrawString(label, f, b, tx - sz.Width / 2, ty - sz.Height / 2);
+            if (e.KeyCode == Keys.Escape) HideMenu();
+            base.OnKeyDown(e);
         }
 
-        protected override void OnMouseClick(MouseEventArgs e)
+        // ── cleanup ───────────────────────────────────────────────────────────
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            int cx = Width / 2, cy = Height / 2;
-            double angle = Math.Atan2(e.Y - cy, e.X - cx) * 180.0 / Math.PI;
-            if (angle < 0) angle += 360;
-
-            if (angle >= 270 || angle < 90) _onLeft?.Invoke();
-            else if (angle >= 90 && angle < 180) _onRightDown?.Invoke();
-            else if (angle >= 180 && angle < 270) _onRight?.Invoke();
-            else _onRightUp?.Invoke();
+            _tuioListener?.Stop();
+            base.OnFormClosing(e);
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    //  FORM1
+    //  FORM1  (GUIForm)
     // ═══════════════════════════════════════════════════════════════════════════
 
     public partial class GUIForm : Form
@@ -352,7 +613,7 @@ namespace FruitNinjaGame
         private bool _useTuioControl = false;
         private Control _screen = null;
         private GifPlayer _gifPlayer = null;
-        private Bitmap _currentGifFrame = null;   // ← current GIF frame
+        private Bitmap _currentGifFrame = null;
         private Panel _tuioLight = null;
         private Process _reactivisionProcess = null;
         private bool _gameRunning = false;
@@ -364,6 +625,7 @@ namespace FruitNinjaGame
         private Label _blinkLabel = null;
         private bool _blinkState = true;
 
+        // Single declaration — CircularMenuOverlay is now the transparent Form
         private CircularMenuOverlay _menuOverlay = null;
 
         // ── ctor ───────────────────────────────────────────────────────────────
@@ -385,13 +647,16 @@ namespace FruitNinjaGame
             Load += OnFormLoad;
             Resize += (s, e) =>
             {
-                if (_menuOverlay != null) _menuOverlay.Bounds = ClientRectangle;
+                // The overlay is now a separate topmost Form — no bounds to sync
             };
         }
 
         // ── load ───────────────────────────────────────────────────────────────
         private void OnFormLoad(object sender, EventArgs e)
         {
+            // CircularMenuOverlay is a transparent topmost Form.
+            // We pass 'this' as parent only so the overlay stays alive with GUIForm;
+            // it manages its own window — no Bounds sync needed.
             _menuOverlay = new CircularMenuOverlay(
                 this,
                 onLeft: MenuActionLeft,
@@ -401,7 +666,6 @@ namespace FruitNinjaGame
                 onVolUp: () => { },
                 onVolDown: () => { }
             );
-            _menuOverlay.Bounds = ClientRectangle;
 
             LaunchReactivision();
             ShowMainMenu();
@@ -414,6 +678,7 @@ namespace FruitNinjaGame
             _blinkTimer?.Stop();
             _gifPlayer?.Dispose();
             FreeScreenBitmaps();
+            _menuOverlay?.Close();
         }
 
         // ── bitmap lifetime ────────────────────────────────────────────────────
@@ -482,7 +747,7 @@ namespace FruitNinjaGame
             else DoLaunchGame();
         }
 
-        // ── keyboard simulation ────────────────────────────────────────────────
+        // ── keyboard ──────────────────────────────────────────────────────────
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
@@ -518,6 +783,7 @@ namespace FruitNinjaGame
             else DoLaunchGame();
         }
 
+        // ── menu toggle (M key) ────────────────────────────────────────────────
         private void SimulateMenuToggle()
         {
             if (_menuOverlay == null) return;
@@ -545,7 +811,7 @@ namespace FruitNinjaGame
 
             _gifPlayer?.Dispose();
             _gifPlayer = null;
-            _currentGifFrame = null;    // ← clear stale frame
+            _currentGifFrame = null;
 
             FreeScreenBitmaps();
 
@@ -583,7 +849,6 @@ namespace FruitNinjaGame
             _screen = root;
             root.Resize += (s, e) => { if (_screen == root) root.Bounds = ClientRectangle; };
 
-            // Pre-build avatar bitmaps
             int cardW = (int)(sw * 0.130);
             int cardH = (int)(sh * 0.200);
             int gap = (int)(sw * 0.020);
@@ -600,7 +865,6 @@ namespace FruitNinjaGame
             int capCardW = cardW, capCardH = cardH, capGap = gap;
             int capStartX = startX, capCardTop = cardTop, capAvSz = avSz;
 
-            // Single PaintCanvas — GIF frame first, then all UI on top
             var canvas = new PaintCanvas { Bounds = root.ClientRectangle };
             root.Controls.Add(canvas);
             root.Resize += (s, e) =>
@@ -615,46 +879,39 @@ namespace FruitNinjaGame
                 g.SmoothingMode = SmoothingMode.AntiAlias;
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                // 1. GIF background
                 if (_currentGifFrame != null)
                     g.DrawImage(_currentGifFrame, 0, 0, canvas.Width, canvas.Height);
                 else
                     g.Clear(Color.Black);
 
-                // 2. Title
                 using var tf = new Font("Bahnschrift", capSh * 0.038f, FontStyle.Bold);
                 using var tw = new SolidBrush(Color.White);
                 string title = "GESTURE-POWERED  VIRTUAL  GAME  CONTROL";
                 var tsz = g.MeasureString(title, tf);
                 g.DrawString(title, tf, tw, (capSw - tsz.Width) / 2f, capSh * 0.17f);
 
-                // 3. Divider line
                 int lx = (int)(capSw * 0.225);
                 using var sp = new Pen(Color.FromArgb(80, 80, 80), 2);
                 g.DrawLine(sp, lx, (int)(capSh * 0.26f), capSw - lx, (int)(capSh * 0.26f));
 
-                // 4. Welcome text
                 using var wf = new Font("Bahnschrift", capSh * 0.042f, FontStyle.Bold);
                 using var wb = new SolidBrush(ColorTranslator.FromHtml("#00b4d8"));
                 string wlc = "Welcome, User!";
                 var wsz = g.MeasureString(wlc, wf);
                 g.DrawString(wlc, wf, wb, (capSw - wsz.Width) / 2f, capSh * 0.34f);
 
-                // 5. Sub-text
                 using var suf = new Font("Bahnschrift", capSh * 0.020f);
                 using var sub = new SolidBrush(Color.FromArgb(170, 170, 170));
                 string subTxt = "Please sign in by holding a TUIO marker in front of the camera.";
                 var ssz = g.MeasureString(subTxt, suf);
                 g.DrawString(subTxt, suf, sub, (capSw - ssz.Width) / 2f, capSh * 0.43f);
 
-                // 6. Section heading
                 using var hf = new Font("Consolas", capSh * 0.013f, FontStyle.Bold);
                 using var hb = new SolidBrush(Color.FromArgb(85, 85, 85));
                 string sec = "REGISTERED USERS";
                 var secsz = g.MeasureString(sec, hf);
                 g.DrawString(sec, hf, hb, (capSw - secsz.Width) / 2f, capSh * 0.530f);
 
-                // 7. User cards
                 int ci = 0;
                 foreach (var kv in _users)
                 {
@@ -689,7 +946,6 @@ namespace FruitNinjaGame
                 }
             };
 
-            // Blink label
             _blinkLabel = new Label
             {
                 Text = "●  LISTENING FOR TUIO",
@@ -713,7 +969,6 @@ namespace FruitNinjaGame
             };
             _blinkTimer.Start();
 
-            // Start GIF
             BeginInvoke(new Action(() =>
             {
                 if (_screen != root) return;
@@ -725,8 +980,6 @@ namespace FruitNinjaGame
                         if (!canvas.IsDisposed) canvas.Invalidate();
                     });
             }));
-
-            if (_menuOverlay != null) { _menuOverlay.Bounds = ClientRectangle; _menuOverlay.BringToFront(); }
         }
 
         // ═══════════════════════════════════════════════════════════════════════
@@ -852,11 +1105,9 @@ namespace FruitNinjaGame
             var body = new Panel { Bounds = new Rectangle(0, hdrH, sw, bodyH), BackColor = u.Bg };
             root.Controls.Add(body);
 
-            // Pre-build avatar
             int avSz = (int)(bodyH * 0.38);
             Bitmap avBmp = Track(AvatarHelper.Make(u.AvatarPath, avSz, u.Accent));
 
-            // Capture locals for Paint lambda
             var capU = u;
             Bitmap capAv = avBmp;
             int capAvSz = avSz;
@@ -865,7 +1116,6 @@ namespace FruitNinjaGame
             int capSh = sh;
             int capBodyH = bodyH;
 
-            // Single PaintCanvas — GIF first, overlays on top
             var canvas = new PaintCanvas { Bounds = body.ClientRectangle };
             body.Controls.Add(canvas);
             body.Resize += (s, e) =>
@@ -880,44 +1130,37 @@ namespace FruitNinjaGame
                 g.SmoothingMode = SmoothingMode.AntiAlias;
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                // 1. GIF background
                 if (_currentGifFrame != null)
                     g.DrawImage(_currentGifFrame, 0, 0, canvas.Width, canvas.Height);
                 else
                     g.Clear(capU.Bg);
 
-                // 2. Avatar
                 g.DrawImage(capAv,
                             (capSw - capAvSz) / 2,
                             (int)(capBodyH * 0.04),
                             capAvSz, capAvSz);
 
-                // 3. "Welcome,"
                 using var wf = new Font("Bahnschrift", capSh * 0.035f);
                 using var wb = new SolidBrush(capU.Fg);
                 var wsz = g.MeasureString("Welcome,", wf);
                 g.DrawString("Welcome,", wf, wb, (capSw - wsz.Width) / 2f, capBodyH * 0.47f);
 
-                // 4. User name
                 using var nf = new Font("Impact", capSh * 0.088f, FontStyle.Bold);
                 using var nb = new SolidBrush(capU.Accent);
                 var nsz = g.MeasureString(capU.Name, nf);
                 g.DrawString(capU.Name, nf, nb, (capSw - nsz.Width) / 2f, capBodyH * 0.59f);
 
-                // 5. Marker recognised
                 using var mf = new Font("Consolas", capSh * 0.015f);
                 using var mg = new SolidBrush(capU.Glow);
                 string mt = $"TUIO marker  #{capUid}  recognised";
                 var msz = g.MeasureString(mt, mf);
                 g.DrawString(mt, mf, mg, (capSw - msz.Width) / 2f, capBodyH * 0.76f);
 
-                // 6. Accent divider
                 int dw = (int)(capSw * 0.40), dx = (capSw - dw) / 2, dy = (int)(capBodyH * 0.855);
                 using var db = new SolidBrush(capU.Accent);
                 g.FillRectangle(db, dx, dy, dw, 4);
             };
 
-            // Start GIF
             BeginInvoke(new Action(() =>
             {
                 if (_screen != root) return;
@@ -927,8 +1170,6 @@ namespace FruitNinjaGame
                     if (!canvas.IsDisposed) canvas.Invalidate();
                 });
             }));
-
-            if (_menuOverlay != null) { _menuOverlay.Bounds = ClientRectangle; _menuOverlay.BringToFront(); }
         }
 
         // ── hint box ───────────────────────────────────────────────────────────
@@ -1001,11 +1242,8 @@ namespace FruitNinjaGame
             errorMsg = "";
             try
             {
-                var gameForm = new Form1(); // FruitNinjaGame.Form1 — the actual game
-                gameForm.FormClosed += (s, e) =>
-                {
-                    _gameRunning = false;
-                };
+                var gameForm = new Form1();
+                gameForm.FormClosed += (s, e) => { _gameRunning = false; };
                 gameForm.Show();
                 return true;
             }

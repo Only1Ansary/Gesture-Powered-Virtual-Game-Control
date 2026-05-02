@@ -8,19 +8,19 @@
     "net8.0-windows7.0": []
   },
   "packageFolders": {
-    "C:\\Users\\LENOVO\\.nuget\\packages\\": {}
+    "C:\\Users\\PC\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\LENOVO\\Desktop\\HCI Project\\Gesture-Powered-Virtual-Game-Control\\TuioCircularMenuCSharp\\TuioCircularMenuCSharp.csproj",
+      "projectUniqueName": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\TuioCircularMenuCSharp\\TuioCircularMenuCSharp.csproj",
       "projectName": "TuioCircularMenuCSharp",
-      "projectPath": "C:\\Users\\LENOVO\\Desktop\\HCI Project\\Gesture-Powered-Virtual-Game-Control\\TuioCircularMenuCSharp\\TuioCircularMenuCSharp.csproj",
-      "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\LENOVO\\Desktop\\HCI Project\\Gesture-Powered-Virtual-Game-Control\\TuioCircularMenuCSharp\\obj\\",
+      "projectPath": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\TuioCircularMenuCSharp\\TuioCircularMenuCSharp.csproj",
+      "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\TuioCircularMenuCSharp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\LENOVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -32,6 +32,7 @@
       },
       "frameworks": {
         "net8.0-windows7.0": {
+          "framework": "net8.0-windows7.0",
           "targetAlias": "net8.0-windows",
           "projectReferences": {}
         }
@@ -50,6 +51,7 @@
     },
     "frameworks": {
       "net8.0-windows7.0": {
+        "framework": "net8.0-windows7.0",
         "targetAlias": "net8.0-windows",
         "imports": [
           "net461",
