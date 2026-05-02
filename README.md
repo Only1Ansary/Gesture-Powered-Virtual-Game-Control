@@ -22,7 +22,7 @@ A **circular radial menu** opens while a dedicated **menu TUIO marker** (default
 - **Rotation navigation** -- left = menu, right = launch game.
 - **Admin mode** -- Bluetooth gate + TUIO marker `9` (configurable) to manage users (stored in `admin_users.json`).
 - **Circular TUIO menu** -- marker `10` (configurable) for volume + window actions; see `tuio_circular_menu.py` and `menu_*` keys in `config.json`.
-- **`config.json`** -- game path, TUIO, VR bridge, admin Bluetooth, menu tuning, etc.
+- **`config.json`** -- game path, TUIO, admin Bluetooth, menu tuning, etc.
 
 ---
 
@@ -45,9 +45,9 @@ pip install -r requirements.txt
 | `pycaw` | 20251023 | Windows master-volume control in circular menu |
 | `comtypes` | 1.4 | Required by pycaw |
 | `opencv-python` | 4.8 | Webcam capture for hand-tracking (gesture controller) |
-| `mediapipe` | 0.10 | Hand-pose detection (gesture controller / VR bridge) |
+| `mediapipe` | 0.10 | Hand-pose detection (gesture controller) |
 
-> **`opencv-python` and `mediapipe`** are only used by `gesture_controller.py` (VR hand-tracking). If you are not using the VR feature you can skip them -- the app runs fine without them.
+> **`opencv-python` and `mediapipe`** are only used by `gesture_controller.py` (hand-tracking). If you are not using hand tracking you can skip them -- the app runs fine without them.
 
 > **`pywin32`, `pycaw`, `comtypes`** are Windows-only. On Linux/macOS the code no-ops safely, but the circular menu volume and window actions will not function.
 
@@ -86,7 +86,7 @@ pip install -r requirements.txt
 #    "game_exe":        "path/to/YourGame.exe"
 
 # 4. Run
-python main.py
+python app_entry.py
 ```
 
 **TUIO marker IDs to configure in reacTIVision:**
@@ -178,8 +178,6 @@ User changes from the admin UI are saved to **`admin_users.json`** in the projec
 | `tuio_host` / `tuio_port` | OSC listen address / port (default **3333**) |
 | `rotation_threshold` | Angular velocity (rad/s) for rotation events |
 
-VR bridge keys are optional; see `config.py` for defaults.
-
 ### Circular menu (`config.json`)
 
 | Key | Description |
@@ -200,7 +198,7 @@ VR bridge keys are optional; see `config.py` for defaults.
 
 | File | Description |
 |------|-------------|
-| `main.py` | Tkinter app -- screens, TUIO callbacks, admin UI, menu wiring |
+| `app_entry.py` | Tkinter app -- screens, TUIO callbacks, admin UI, menu wiring |
 | `tuio_circular_menu.py` | Fullscreen radial overlay + TUIO motion to sectors |
 | `windows_controls.py` | Volume (pycaw), minimize-other-windows, focus GUI |
 | `tuio_listener.py` | TUIO OSC listener thread |
@@ -208,11 +206,10 @@ VR bridge keys are optional; see `config.py` for defaults.
 | `user_store.py` | Load/save `admin_users.json`, random names, presets |
 | `bluetooth_admin.py` | Optional PyBluez scan; sets "admin device present" flag |
 | `game_launcher.py` | Launches game; process tracking for terminate/PID |
-| `gesture_controller.py` | Webcam hand-tracking feeding the VR bridge |
+| `gesture_controller.py` | Webcam hand-tracking controller |
 | `config.py` | Loads `config.json` |
 | `gif_utils.py` | GIF load / cache / animate |
-| `vr_bridge.py` | Optional VR input bridge |
-| `config.json` | Local settings (paths, TUIO, admin Bluetooth, VR) |
+| `config.json` | Local settings (paths, TUIO, admin Bluetooth, menu tuning) |
 | `list_bluetooth_devices.ps1` | Windows helper -- list paired BT devices for config |
 | `requirements.txt` | Core Python dependencies |
 | `requirements-bluetooth.txt` | Optional `pybluez` for in-app Bluetooth scanning |

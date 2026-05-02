@@ -1,28 +1,11 @@
 {
-  "reactvision_exe": "reacTIVision-1.5.1-win64/reacTIVision.exe",
+  "reactvision_exe": "D:\\Code\\HCI PROJ UI\\reacTIVision-1.5.1-win64\\reacTIVision.exe",
   "game_exe": "D:\\Code\\FruitNinja.RexaGames.com\\FruitNinja.exe",
   "tuio_host": "0.0.0.0",
   "tuio_port": 3333,
   "rotation_threshold": 0.5,
-  "vr_bridge_enabled": true,
-  "vr_play_width": 2.0,
-  "vr_play_height": 2.0,
-  "vr_depth": 1.0,
-  "vr_y_offset": 0.0,
-  "vr_global_offset": [
-    0,
-    0,
-    0
-  ],
-  "vr_global_rotation": [
-    0,
-    0,
-    0
-  ],
-  "vr_left_marker": 0,
-  "vr_right_marker": 1,
-  "vr_update_rate": 60,
   "admin_tuio_marker": 9,
+  "admin_bluetooth_auto_connected": false,
   "admin_bluetooth_mac": "8c:6a:3b:66:d2:1a",
   "admin_bluetooth_name": "",
   "admin_bluetooth_scan_seconds": 6,

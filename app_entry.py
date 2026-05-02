@@ -48,7 +48,6 @@ from config             import (
     REACTVISION_EXE,
     TUIO_HOST,
     TUIO_PORT,
-    VR_BRIDGE_ENABLED,
 )
 from user_store         import (
     load_users,
@@ -57,18 +56,10 @@ from user_store         import (
     random_display_name,
 )
 from game_launcher      import game_running, get_tracked_game_pid, launch_game, terminate_game
-try:
-    from gesture_controller import GestureController
-    GESTURE_AVAILABLE = True
-except ImportError:
-    GestureController = None  # type: ignore[assignment,misc]
-    GESTURE_AVAILABLE = False
-    print("[main] gesture_controller unavailable (install opencv-python + mediapipe for hand tracking)")
 from gif_utils          import GifManager, load_avatar, load_image
 from tuio_circular_menu import CircularMenuController
 from tuio_listener      import TUIOListener, OSC_AVAILABLE
 import windows_controls
-from vr_bridge          import VRBridge
 
 
 class HCIApp(tk.Tk):
@@ -140,12 +131,6 @@ class HCIApp(tk.Tk):
         # ── start ─────────────────────────────────────────────────────────────
         self._launch_reactivision()
 
-        # ── VR bridge + gesture controller ────────────────────────────────────
-        self._vr_bridge = VRBridge(dry_run=not VR_BRIDGE_ENABLED)
-        self._gesture_controller = (
-            GestureController(self._vr_bridge) if GESTURE_AVAILABLE else None
-        )
-
         self._listener = TUIOListener(
             on_marker_detected=lambda fid:       self.after(0, lambda: self._on_marker_detected(fid)),
             on_marker_rotated= lambda d, fid:    self.after(0, lambda: self._on_marker_rotated(d, fid)),
@@ -161,7 +146,6 @@ class HCIApp(tk.Tk):
 
     def _on_exit(self, _event=None):
         self._stop_reactivision()
-        self._vr_bridge.stop()
         self._listener.stop()
         self._bt_admin.stop()
         self.destroy()
@@ -204,8 +188,7 @@ class HCIApp(tk.Tk):
     # ── TUIO callbacks (dispatched to main thread via after(0, ...)) ──────────
 
     def _on_tuio_marker_moved(self, fid: int, x: float, y: float, a: float):
-        """Background thread — VR queue + circular menu + admin marker motion."""
-        self._vr_bridge.enqueue(fid, x, y, a)
+        """Background thread — circular menu + admin marker motion."""
         if fid == MENU_TUIO_MARKER and self._menu_ctrl.is_active:
             self.after(0, lambda xx=x, yy=y: self._menu_ctrl.feed_tuio(xx, yy))
         if fid == ADMIN_TUIO_MARKER and self._admin_mode:
@@ -774,50 +757,10 @@ class HCIApp(tk.Tk):
 
     # ── game launch ───────────────────────────────────────────────────────────
 
-    # Users whose game input comes from TUIO markers via the VR bridge.
-    # All other users fall back to MediaPipe (gesture_controller).
-    _TUIO_CONTROL_USERS = {0, 1}     # Omar Hassan, Youssef Ali
-
     def _do_launch_game(self):
         name = self._users[self._current_user]["name"] \
             if self._current_user is not None else ""
-
-        # Decide control method based on the logged-in user
-        use_tuio = self._current_user in self._TUIO_CONTROL_USERS
-        self._use_tuio_control = use_tuio
-
-        # 🔥 ALWAYS ensure VRBridge is running (REQUIRED for both modes)
-        if VR_BRIDGE_ENABLED and not self._vr_bridge.is_running:
-            self._vr_bridge.start()
-
-        if use_tuio:
-            # ─────────────────────────────────────────────
-            # TUIO MODE (markers)
-            # ─────────────────────────────────────────────
-            print(f"[INFO] Launching with TUIO controllers for {name}")
-
-            # Make sure gesture is NOT running
-            if hasattr(self, "_gesture_controller") and self._gesture_controller:
-                self._gesture_controller.stop()
-
-        else:
-            # ─────────────────────────────────────────────
-            # HAND TRACKING MODE (MediaPipe)
-            # ─────────────────────────────────────────────
-            # Stop reacTIVision to free the webcam for MediaPipe
-            self._stop_reactivision()
-            time.sleep(2.0)  # give OS time to release camera properly
-
-            # Create gesture controller on first use if not already initialised
-            if self._gesture_controller is None and GESTURE_AVAILABLE:
-                from gesture_controller import GestureController
-                self._gesture_controller = GestureController(self._vr_bridge)
-
-            if self._gesture_controller is not None:
-                self._gesture_controller.start()
-                print(f"[INFO] Launching with MediaPipe controllers for {name}")
-            else:
-                print(f"[INFO] Launching game for {name} (gesture unavailable — install opencv-python + mediapipe)")
+        print(f"[INFO] Launching game for {name} (VR bridge disabled)")
 
         # ─────────────────────────────────────────────
         # Launch game
@@ -840,13 +783,7 @@ class HCIApp(tk.Tk):
 
         print("[INFO] Game exited → restoring system")
 
-        # Stop whichever controller was active
-        if getattr(self, '_use_tuio_control', False):
-            self._vr_bridge.stop()
-        elif self._gesture_controller is not None:
-            self._gesture_controller.stop()
-
-        # Restart reacTIVision (for MediaPipe users it was killed; for TUIO it's a no-op)
+        # Ensure reacTIVision is available again after gameplay.
         self._launch_reactivision()
 
         # Restore GUI

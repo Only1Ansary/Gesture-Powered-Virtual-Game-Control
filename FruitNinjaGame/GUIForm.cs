@@ -5,8 +5,11 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text;
 using System.Windows.Forms;
 
 namespace FruitNinjaGame
@@ -33,18 +36,153 @@ namespace FruitNinjaGame
 
     public static class AppConfig
     {
+        private static readonly Dictionary<string, JsonElement> _cfg = LoadConfig();
+
         public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
-        public static readonly string ReactvisionExe = "";
-        public static readonly string TuioHost = "127.0.0.1";
-        public static readonly int TuioPort = 3333;
-        public static readonly bool VrBridgeEnabled = false;
-        public static readonly int MenuTuioMarker = 10;
-        public static readonly float MenuVolumeStep = 5f;
-        public static readonly double MenuVolRepeatSec = 0.4;
-        public static readonly double MenuActionCooldown = 0.6;
-        public static readonly float MenuMotionThresh = 0.015f;
-        public static readonly float MenuSmoothAlpha = 0.25f;
-        public static readonly float MenuCursorGain = 2.5f;
+        public static readonly string AssetsDir = ResolveAssetsDir();
+        public static readonly string ReactvisionExe = ResolveReactvisionExe();
+        public static readonly string TuioHost = ReadString("tuio_host", "0.0.0.0");
+        public static readonly int TuioPort = ReadInt("tuio_port", 3333);
+        /// <summary>Minimum absolute angle change (radians) on /tuio/2Dobj before a rotation event fires.</summary>
+        public static readonly float TuioRotationThresholdRad = ReadFloat("rotation_threshold", 0.45f);
+        public static readonly int MenuTuioMarker = ReadInt("menu_tuio_marker", 10);
+        public static readonly int AdminTuioMarker = ReadInt("admin_tuio_marker", 9);
+        /// <summary>Stored in config for reference; admin gate matches by <see cref="AdminBluetoothName"/> only.</summary>
+        public static readonly string AdminBluetoothMac = ReadString("admin_bluetooth_mac", "");
+        public static readonly string AdminBluetoothName = ReadString("admin_bluetooth_name", "");
+        public static readonly bool AdminBluetoothForce = ReadBool("admin_bluetooth_force", false);
+        /// <summary>If true, admin unlocks when any paired Bluetooth peripheral is present (OK), instead of matching name.</summary>
+        public static readonly bool AdminBluetoothAutoConnected = ReadBool("admin_bluetooth_auto_connected", false);
+        public static readonly int AdminBtPollSeconds = ReadInt("admin_bluetooth_poll_seconds", 3);
+        public static readonly string RepoRoot = ResolveRepoRoot();
+        public static readonly string AdminUsersJsonPath = Path.Combine(RepoRoot, "admin_users.json");
+        public static readonly float MenuVolumeStep = ReadFloat("menu_volume_step", 0.045f);
+        public static readonly double MenuVolRepeatSec = ReadFloat("menu_volume_repeat_seconds", 0.25f);
+        public static readonly double MenuActionCooldown = ReadFloat("menu_action_cooldown_seconds", 2f);
+        public static readonly float MenuMotionThresh = ReadFloat("menu_motion_threshold", 0.04f);
+        public static readonly float MenuSmoothAlpha = ReadFloat("menu_smooth_alpha", 0.4f);
+        public static readonly float MenuCursorGain = ReadFloat("menu_cursor_gain", 520f);
+
+        private static string ResolveRepoRoot()
+        {
+            string cfg = FindFileUpTree(BaseDir, "config.json");
+            if (!string.IsNullOrEmpty(cfg))
+                return Path.GetDirectoryName(cfg) ?? BaseDir;
+            return BaseDir;
+        }
+
+        private static Dictionary<string, JsonElement> LoadConfig()
+        {
+            var result = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                string p = FindFileUpTree(BaseDir, "config.json");
+                if (string.IsNullOrEmpty(p)) return result;
+                using var doc = JsonDocument.Parse(File.ReadAllText(p, Encoding.UTF8));
+                foreach (var prop in doc.RootElement.EnumerateObject())
+                {
+                    result[prop.Name] = prop.Value;
+                }
+            }
+            catch { }
+            return result;
+        }
+
+        private static string ResolveReactvisionExe()
+        {
+            string cfg = ReadString("reactvision_exe", "");
+            if (!string.IsNullOrWhiteSpace(cfg))
+            {
+                string candidate = Path.IsPathRooted(cfg)
+                    ? cfg
+                    : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(FindFileUpTree(BaseDir, "config.json") ?? BaseDir) ?? BaseDir, cfg));
+                if (File.Exists(candidate)) return candidate;
+            }
+            string repoRoot = ResolveRepoRoot();
+            string bundled = Path.Combine(repoRoot, "reacTIVision-1.5.1-win64", "reacTIVision.exe");
+            if (File.Exists(bundled)) return bundled;
+            return "";
+        }
+
+        private static string ResolveAssetsDir()
+        {
+            try
+            {
+                string[] candidates =
+                {
+                    Path.Combine(BaseDir, "assets"),
+                    Path.GetFullPath(Path.Combine(BaseDir, "..", "..", "assets")),
+                    Path.GetFullPath(Path.Combine(BaseDir, "..", "..", "..", "assets"))
+                };
+
+                foreach (string candidate in candidates)
+                {
+                    if (Directory.Exists(candidate))
+                        return candidate;
+                }
+            }
+            catch { }
+
+            return Path.Combine(BaseDir, "assets");
+        }
+
+        public static string GetAssetPath(string fileName)
+        {
+            return Path.Combine(AssetsDir, fileName);
+        }
+
+        private static string FindFileUpTree(string startDir, string fileName)
+        {
+            try
+            {
+                var dir = new DirectoryInfo(startDir);
+                for (int i = 0; i < 8 && dir != null; i++, dir = dir.Parent)
+                {
+                    string candidate = Path.Combine(dir.FullName, fileName);
+                    if (File.Exists(candidate)) return candidate;
+                }
+            }
+            catch { }
+            return "";
+        }
+
+        private static string ReadString(string key, string fallback)
+        {
+            if (_cfg.TryGetValue(key, out var el) && el.ValueKind == JsonValueKind.String)
+            {
+                return el.GetString() ?? fallback;
+            }
+            return fallback;
+        }
+
+        private static int ReadInt(string key, int fallback)
+        {
+            if (_cfg.TryGetValue(key, out var el) && el.TryGetInt32(out int i)) return i;
+            return fallback;
+        }
+
+        private static bool ReadBool(string key, bool fallback)
+        {
+            if (_cfg.TryGetValue(key, out var el))
+            {
+                if (el.ValueKind == JsonValueKind.True) return true;
+                if (el.ValueKind == JsonValueKind.False) return false;
+            }
+            return fallback;
+        }
+
+        private static float ReadFloat(string key, float fallback)
+        {
+            if (_cfg.TryGetValue(key, out var el))
+            {
+                if (el.TryGetDouble(out double d)) return (float)d;
+                if (el.ValueKind == JsonValueKind.String &&
+                    float.TryParse(el.GetString(), System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out float fs))
+                    return fs;
+            }
+            return fallback;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -55,7 +193,6 @@ namespace FruitNinjaGame
     {
         public static Dictionary<int, UserProfile> GetAllUsers()
         {
-            string assets = Path.Combine(AppConfig.BaseDir, "assets");
             return new Dictionary<int, UserProfile>
             {
                 [0] = new UserProfile
@@ -66,8 +203,8 @@ namespace FruitNinjaGame
                     Accent = ColorTranslator.FromHtml("#00b4d8"),
                     Fg = Color.White,
                     Glow = ColorTranslator.FromHtml("#90e0ef"),
-                    AvatarPath = Path.Combine(assets, "blue user.jpg"),
-                    GifPath = Path.Combine(assets, "blue animation.gif"),
+                    AvatarPath = AppConfig.GetAssetPath("blue user.jpg"),
+                    GifPath = AppConfig.GetAssetPath("blue animation.gif"),
                 },
                 [1] = new UserProfile
                 {
@@ -77,8 +214,8 @@ namespace FruitNinjaGame
                     Accent = ColorTranslator.FromHtml("#9d4edd"),
                     Fg = Color.White,
                     Glow = ColorTranslator.FromHtml("#c77dff"),
-                    AvatarPath = Path.Combine(assets, "purple user.jpg"),
-                    GifPath = Path.Combine(assets, "purple animation.gif"),
+                    AvatarPath = AppConfig.GetAssetPath("purple user.jpg"),
+                    GifPath = AppConfig.GetAssetPath("purple animation.gif"),
                 },
                 [2] = new UserProfile
                 {
@@ -88,8 +225,8 @@ namespace FruitNinjaGame
                     Accent = ColorTranslator.FromHtml("#57cc99"),
                     Fg = Color.White,
                     Glow = ColorTranslator.FromHtml("#80ed99"),
-                    AvatarPath = Path.Combine(assets, "green user.jpg"),
-                    GifPath = Path.Combine(assets, "green animation.gif"),
+                    AvatarPath = AppConfig.GetAssetPath("green user.jpg"),
+                    GifPath = AppConfig.GetAssetPath("green animation.gif"),
                 },
                 [3] = new UserProfile
                 {
@@ -99,9 +236,28 @@ namespace FruitNinjaGame
                     Accent = ColorTranslator.FromHtml("#ff6b6b"),
                     Fg = Color.White,
                     Glow = ColorTranslator.FromHtml("#ff9e9e"),
-                    AvatarPath = Path.Combine(assets, "orange user.jpg"),
-                    GifPath = Path.Combine(assets, "orange animation.gif"),
+                    AvatarPath = AppConfig.GetAssetPath("orange user.jpg"),
+                    GifPath = AppConfig.GetAssetPath("orange animation.gif"),
                 },
+            };
+        }
+
+        /// <summary>Theme preset rotated by marker id (Python user_store.build_user_dict).</summary>
+        public static UserProfile BuildUserProfile(int markerId, string name)
+        {
+            var all = GetAllUsers();
+            int k = ((markerId % 4) + 4) % 4;
+            var t = all[k];
+            return new UserProfile
+            {
+                Name = name,
+                Bg = t.Bg,
+                HeaderBg = t.HeaderBg,
+                Accent = t.Accent,
+                Fg = t.Fg,
+                Glow = t.Glow,
+                AvatarPath = t.AvatarPath,
+                GifPath = t.GifPath,
             };
         }
     }
@@ -235,6 +391,164 @@ namespace FruitNinjaGame
         }
     }
 
+    public sealed class BluetoothAdminGate : IDisposable
+    {
+        /// <summary>Kept for config compatibility; admin unlock does not use MAC matching.</summary>
+        private readonly string _macIgnored;
+        private readonly string _name;
+        private readonly bool _force;
+        private readonly bool _autoConnected;
+        private readonly System.Windows.Forms.Timer _timer;
+
+        public bool IsConnected { get; private set; }
+
+        /// <summary>Windows friendly name of the paired peripheral that satisfied the gate, if any.</summary>
+        public string MatchedBluetoothName { get; private set; }
+
+        public BluetoothAdminGate(string mac, string name, bool force, bool autoConnected, int pollSeconds = 3)
+        {
+            _macIgnored = NormalizeMac(mac);
+            _name = (name ?? "").Trim().ToLowerInvariant();
+            _force = force;
+            _autoConnected = autoConnected;
+            _timer = new System.Windows.Forms.Timer
+            {
+                Interval = Math.Max(1, pollSeconds) * 1000
+            };
+            _timer.Tick += (s, e) => Refresh();
+        }
+
+        public void Start()
+        {
+            Refresh();
+            _timer.Start();
+        }
+
+        public void Stop() => _timer.Stop();
+
+        public void Refresh()
+        {
+            MatchedBluetoothName = null;
+            if (_force)
+            {
+                IsConnected = true;
+                MatchedBluetoothName = "(force unlock)";
+                return;
+            }
+
+            var devices = QueryEligibleBluetoothPeripherals();
+            if (_autoConnected)
+            {
+                IsConnected = devices.Count > 0;
+                if (IsConnected) MatchedBluetoothName = devices[0].FriendlyName;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_name))
+            {
+                IsConnected = false;
+                return;
+            }
+
+            foreach (var d in devices)
+            {
+                if (d.FriendlyName.IndexOf(_name, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    IsConnected = true;
+                    MatchedBluetoothName = d.FriendlyName;
+                    return;
+                }
+            }
+            IsConnected = false;
+        }
+
+        private readonly struct BtPnpRow
+        {
+            public BtPnpRow(string friendlyName) => FriendlyName = friendlyName;
+            public string FriendlyName { get; }
+        }
+
+        private static List<BtPnpRow> QueryEligibleBluetoothPeripherals()
+        {
+            const string script = @"
+$devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Object {
+  $_.Status -eq 'OK' -and
+  $_.InstanceId -match 'BTHENUM\\DEV_[0-9A-F]{12}' -and
+  $_.FriendlyName -notlike '*Enumerator*' -and
+  $_.FriendlyName -notlike '*Wireless Bluetooth*'
+} | Select-Object -ExpandProperty FriendlyName
+@($devs) | ConvertTo-Json -Compress
+";
+            string json = (RunPowerShellEncoded(script) ?? "").Trim();
+            return ParseFriendlyNameJsonArray(json);
+        }
+
+        private static List<BtPnpRow> ParseFriendlyNameJsonArray(string json)
+        {
+            var list = new List<BtPnpRow>();
+            if (string.IsNullOrWhiteSpace(json)) return list;
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var el in root.EnumerateArray())
+                    {
+                        if (el.ValueKind == JsonValueKind.String)
+                        {
+                            string s = el.GetString();
+                            if (!string.IsNullOrWhiteSpace(s)) list.Add(new BtPnpRow(s));
+                        }
+                    }
+                }
+                else if (root.ValueKind == JsonValueKind.String)
+                {
+                    string s = root.GetString();
+                    if (!string.IsNullOrWhiteSpace(s)) list.Add(new BtPnpRow(s));
+                }
+            }
+            catch { }
+            return list;
+        }
+
+        private static string RunPowerShellEncoded(string script)
+        {
+            try
+            {
+                string b64 = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+                var psi = new ProcessStartInfo("powershell.exe",
+                    $"-NoProfile -ExecutionPolicy Bypass -EncodedCommand {b64}")
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+                using var p = Process.Start(psi);
+                if (p == null) return "";
+                string output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit(8000);
+                return output;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private static string NormalizeMac(string value)
+        {
+            return (value ?? "").Trim().ToLowerInvariant().Replace("-", ":");
+        }
+
+        public void Dispose()
+        {
+            Stop();
+            _timer.Dispose();
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     //  PAINT CANVAS
     // ═══════════════════════════════════════════════════════════════════════════
@@ -356,22 +670,30 @@ namespace FruitNinjaGame
         private Panel _tuioLight = null;
         private Process _reactivisionProcess = null;
         private bool _gameRunning = false;
+        private Form1 _activeGameForm = null;
 
         private readonly List<Bitmap> _screenBitmaps = new List<Bitmap>();
-        private readonly HashSet<int> _tuioControlUsers = new HashSet<int> { 0, 1 };
 
         private System.Windows.Forms.Timer _blinkTimer = null;
         private Label _blinkLabel = null;
         private bool _blinkState = true;
 
         private CircularMenuOverlay _menuOverlay = null;
+        private TuioAdapter _tuioAdapter = null;
+        private BluetoothAdminGate _adminGate = null;
+        private bool _adminMode = false;
+        private FlowLayoutPanel _adminListFlow = null;
+        private int _adminSelected = 0;
+        private float? _adminNeutralY = null;
+        private float _adminSmoothedY = 0f;
+        private bool _adminTriggered = false;
 
         // ── ctor ───────────────────────────────────────────────────────────────
         public GUIForm()
         {
             InitializeComponent();
 
-            _users = CharacterMap.GetAllUsers();
+            _users = UserStore.LoadUsers();
 
             Text = "Gesture-Powered Virtual Game Control";
             FormBorderStyle = FormBorderStyle.None;
@@ -403,6 +725,26 @@ namespace FruitNinjaGame
             );
             _menuOverlay.Bounds = ClientRectangle;
 
+            _tuioAdapter = new TuioAdapter(
+                AppConfig.TuioHost,
+                AppConfig.TuioPort,
+                onMarkerDetected: fid => OnMarkerDetected(fid),
+                onMarkerRemoved: fid => OnMarkerRemoved(fid),
+                onMarkerRotated: (dir, fid) => OnMarkerRotated(dir, fid),
+                rotationThresholdRad: AppConfig.TuioRotationThresholdRad,
+                onMarkerMoved: (fid, x, y) => OnTuioMarkerMoved(fid, x, y)
+            );
+            _tuioAdapter.Start();
+
+            _adminGate = new BluetoothAdminGate(
+                AppConfig.AdminBluetoothMac,
+                AppConfig.AdminBluetoothName,
+                AppConfig.AdminBluetoothForce,
+                AppConfig.AdminBluetoothAutoConnected,
+                AppConfig.AdminBtPollSeconds
+            );
+            _adminGate.Start();
+
             LaunchReactivision();
             ShowMainMenu();
         }
@@ -410,6 +752,14 @@ namespace FruitNinjaGame
         // ── exit ───────────────────────────────────────────────────────────────
         private void OnAppExit()
         {
+            _adminGate?.Stop();
+            _adminGate?.Dispose();
+            _adminGate = null;
+
+            _tuioAdapter?.Stop();
+            _tuioAdapter?.Dispose();
+            _tuioAdapter = null;
+
             StopReactivision();
             _blinkTimer?.Stop();
             _gifPlayer?.Dispose();
@@ -427,18 +777,72 @@ namespace FruitNinjaGame
         // ── reacTIVision ───────────────────────────────────────────────────────
         private void LaunchReactivision()
         {
-            if (_reactivisionProcess != null || string.IsNullOrEmpty(AppConfig.ReactvisionExe)) return;
+            if (_reactivisionProcess != null && _reactivisionProcess.HasExited)
+                _reactivisionProcess = null;
+            if (string.IsNullOrEmpty(AppConfig.ReactvisionExe)) return;
+            if (_reactivisionProcess != null) return;
             try
             {
+                Process[] already = Process.GetProcessesByName("reacTIVision");
+                try
+                {
+                    foreach (var p in already)
+                    {
+                        try
+                        {
+                            if (!p.HasExited) return;
+                        }
+                        catch { }
+                    }
+                }
+                finally
+                {
+                    foreach (var p in already)
+                    {
+                        try { p.Dispose(); } catch { }
+                    }
+                }
+
                 var psi = new ProcessStartInfo(AppConfig.ReactvisionExe)
                 {
                     WorkingDirectory = Path.GetDirectoryName(AppConfig.ReactvisionExe),
-                    WindowStyle = ProcessWindowStyle.Minimized,
+                    UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Normal,
                 };
                 _reactivisionProcess = Process.Start(psi);
                 Thread.Sleep(1500);
+                if (_reactivisionProcess == null)
+                {
+                    MessageBox.Show(
+                        "Failed to start reacTIVision process.",
+                        "reacTIVision",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (_reactivisionProcess.HasExited)
+                {
+                    MessageBox.Show(
+                        "reacTIVision started then exited immediately.\n" +
+                        $"Path: {AppConfig.ReactvisionExe}\n" +
+                        $"Exit code: {_reactivisionProcess.ExitCode}",
+                        "reacTIVision",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    _reactivisionProcess = null;
+                }
             }
-            catch (Exception ex) { Console.WriteLine($"[ERROR] {ex.Message}"); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Could not launch reacTIVision.\n" +
+                    $"Path: {AppConfig.ReactvisionExe}\n" +
+                    $"Error: {ex.Message}",
+                    "reacTIVision",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         private void StopReactivision()
@@ -454,8 +858,30 @@ namespace FruitNinjaGame
         {
             if (!IsHandleCreated) return;
             if (InvokeRequired) { Invoke(new Action(() => OnMarkerDetected(fid))); return; }
+            // Circular menu marker — allowed even while the game is running (same as Python).
             if (fid == AppConfig.MenuTuioMarker) { _menuOverlay?.ShowMenu(); return; }
             if (_gameRunning) return;
+            // Admin marker — only from main menu (no current user), not while already in admin.
+            if (fid == AppConfig.AdminTuioMarker && _currentUser == null && !_adminMode)
+            {
+                if (_adminGate != null && _adminGate.IsConnected)
+                {
+                    _adminNeutralY = null;
+                    _adminSmoothedY = 0f;
+                    _adminTriggered = false;
+                    ShowAdminScreen();
+                }
+                else
+                    MessageBox.Show(
+                        "Bluetooth device not detected — admin locked.\n\n" +
+                        "Set admin_bluetooth_name in config.json to your device’s friendly name.\n" +
+                        "(admin_bluetooth_mac is kept in config but not used for unlock.)",
+                        "Admin",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                return;
+            }
+            if (_adminMode) return;
             if (_currentUser == null && _users.ContainsKey(fid))
             { _currentUser = fid; ShowUserPage(fid); }
             else if (_currentUser == fid)
@@ -468,6 +894,12 @@ namespace FruitNinjaGame
             if (InvokeRequired) { Invoke(new Action(() => OnMarkerRemoved(fid))); return; }
             if (fid == AppConfig.MenuTuioMarker) { _menuOverlay?.HideMenu(); return; }
             if (_gameRunning) return;
+            if (fid == AppConfig.AdminTuioMarker && _adminMode)
+            {
+                _adminMode = false;
+                ShowMainMenu();
+                return;
+            }
             if (_currentUser == fid) SetTuioLight(false);
         }
 
@@ -476,7 +908,22 @@ namespace FruitNinjaGame
             if (!IsHandleCreated) return;
             if (InvokeRequired) { Invoke(new Action(() => OnMarkerRotated(direction, fid))); return; }
             if (_menuOverlay != null && _menuOverlay.IsActive) return;
-            if (_gameRunning || _currentUser != fid || _rotationTriggered) return;
+            if (_gameRunning) return;
+            if (_adminMode && fid == AppConfig.AdminTuioMarker)
+            {
+                if (_adminTriggered)
+                    return;
+                _adminTriggered = true;
+                if (direction == "left")
+                {
+                    _adminMode = false;
+                    ShowMainMenu();
+                }
+                else
+                    AdminRemoveSelected();
+                return;
+            }
+            if (_currentUser != fid || _rotationTriggered) return;
             _rotationTriggered = true;
             if (direction == "left") { _currentUser = null; ShowMainMenu(); }
             else DoLaunchGame();
@@ -537,6 +984,10 @@ namespace FruitNinjaGame
         {
             _rotationTriggered = false;
             _tuioLight = null;
+            _adminListFlow = null;
+            _adminNeutralY = null;
+            _adminSmoothedY = 0f;
+            _adminTriggered = false;
 
             _blinkTimer?.Stop();
             _blinkTimer?.Dispose();
@@ -718,7 +1169,7 @@ namespace FruitNinjaGame
             {
                 if (_screen != root) return;
                 _gifPlayer = new GifPlayer(
-                    Path.Combine(AppConfig.BaseDir, "assets", "mainbk.gif"),
+                    AppConfig.GetAssetPath("mainbk.gif"),
                     frame =>
                     {
                         _currentGifFrame = frame;
@@ -833,7 +1284,7 @@ namespace FruitNinjaGame
                 SizeMode = PictureBoxSizeMode.StretchImage,
                 BackColor = u.Accent,
             };
-            string iconPath = Path.Combine(AppConfig.BaseDir, "assets", "Fruit_Ninja_logo.png");
+            string iconPath = AppConfig.GetAssetPath("Fruit_Ninja_logo.png");
             if (File.Exists(iconPath))
             {
                 try
@@ -973,13 +1424,297 @@ namespace FruitNinjaGame
         }
 
         // ═══════════════════════════════════════════════════════════════════════
+        //  ADMIN SCREEN
+        // ═══════════════════════════════════════════════════════════════════════
+        private void ShowAdminScreen()
+        {
+            _adminMode = true;
+            _adminSelected = 0;
+            _adminNeutralY = null;
+            _adminSmoothedY = 0f;
+            _adminTriggered = false;
+
+            ClearScreen();
+            int sw = SW, sh = SH;
+            int marginX = (int)(sw * 0.06);
+
+            var root = new Panel { Bounds = ClientRectangle, BackColor = Color.FromArgb(10, 10, 26) };
+            Controls.Add(root);
+            root.BringToFront();
+            _screen = root;
+
+            var header = new Panel
+            {
+                Bounds = new Rectangle(0, 0, sw, (int)(sh * 0.10)),
+                BackColor = Color.FromArgb(26, 26, 58)
+            };
+            root.Controls.Add(header);
+
+            var title = new Label
+            {
+                Text = "  ADMIN PANEL",
+                Font = new Font("Bahnschrift", sh * 0.03f, FontStyle.Bold),
+                ForeColor = Color.Orange,
+                BackColor = Color.Transparent,
+                AutoSize = true,
+                Left = (int)(sw * 0.02),
+                Top = (int)(sh * 0.02)
+            };
+            header.Controls.Add(title);
+
+            string btText;
+            if (_adminGate != null && _adminGate.IsConnected)
+            {
+                string n = _adminGate.MatchedBluetoothName;
+                btText = string.IsNullOrWhiteSpace(n) ? "BT DEVICE DETECTED" : $"BT: {n}";
+            }
+            else
+                btText = "BT DEVICE OFFLINE";
+            var bt = new Label
+            {
+                Text = btText,
+                Font = new Font("Consolas", sh * 0.015f, FontStyle.Bold),
+                ForeColor = (_adminGate != null && _adminGate.IsConnected) ? Color.LimeGreen : Color.OrangeRed,
+                BackColor = Color.Transparent,
+                AutoSize = true,
+                Left = sw - (int)(sw * 0.30),
+                Top = (int)(sh * 0.03)
+            };
+            header.Controls.Add(bt);
+
+            int y = (int)(sh * 0.11);
+            foreach (string line in new[]
+                     {
+                         "Move marker UP / DOWN to scroll users",
+                         "Push marker RIGHT to add a user",
+                         "Rotate marker RIGHT to remove selected",
+                         "Rotate marker LEFT to go back",
+                         "Remove admin marker to return to main menu",
+                     })
+            {
+                var ln = new Label
+                {
+                    Text = line,
+                    Font = new Font("Consolas", sh * 0.015f),
+                    ForeColor = Color.FromArgb(102, 102, 153),
+                    BackColor = Color.Transparent,
+                    AutoSize = true,
+                    Left = marginX,
+                    Top = y,
+                };
+                root.Controls.Add(ln);
+                y += ln.Height + 4;
+            }
+
+            y += 6;
+            var sep = new Panel
+            {
+                Bounds = new Rectangle(marginX, y, sw - 2 * marginX, 2),
+                BackColor = Color.FromArgb(51, 51, 102),
+            };
+            root.Controls.Add(sep);
+            y += 12;
+
+            _adminListFlow = new FlowLayoutPanel
+            {
+                Location = new Point(marginX, y),
+                Size = new Size(sw - 2 * marginX, Math.Max(80, sh - y - 16)),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                BackColor = Color.FromArgb(10, 10, 26),
+            };
+            root.Controls.Add(_adminListFlow);
+
+            root.Resize += AdminRootResize;
+            RebuildAdminList();
+        }
+
+        private void AdminRootResize(object sender, EventArgs e)
+        {
+            if (sender is not Panel root || _screen != root || _adminListFlow == null) return;
+            int sh = root.ClientSize.Height;
+            int sw = root.ClientSize.Width;
+            int marginX = (int)(sw * 0.06);
+            int y = _adminListFlow.Top;
+            _adminListFlow.Width = Math.Max(60, sw - 2 * marginX);
+            _adminListFlow.Height = Math.Max(80, sh - y - 16);
+            int w = Math.Max(60, _adminListFlow.ClientSize.Width - 24);
+            foreach (Control c in _adminListFlow.Controls)
+                c.Width = w;
+        }
+
+        private void RebuildAdminList()
+        {
+            if (_adminListFlow == null || _adminListFlow.IsDisposed) return;
+            int n = _users.Count;
+            if (n == 0)
+                _adminSelected = 0;
+            else
+                _adminSelected = Math.Max(0, Math.Min(_adminSelected, n - 1));
+
+            int sh = ClientSize.Height;
+            int rowW = Math.Max(60, _adminListFlow.ClientSize.Width - 24);
+
+            _adminListFlow.SuspendLayout();
+            _adminListFlow.Controls.Clear();
+
+            int idx = 0;
+            foreach (var kv in _users.OrderBy(k => k.Key))
+            {
+                bool sel = idx == _adminSelected;
+                var row = new Panel
+                {
+                    Height = Math.Max(44, (int)(sh * 0.072)),
+                    Width = rowW,
+                    Margin = new Padding(3),
+                    BackColor = sel ? Color.FromArgb(42, 42, 90) : Color.FromArgb(17, 17, 51),
+                };
+                if (sel)
+                {
+                    row.Paint += (s, pe) =>
+                    {
+                        using var pen = new Pen(Color.FromArgb(255, 153, 0), 2);
+                        pe.Graphics.DrawRectangle(pen, 1, 1, row.Width - 3, row.Height - 3);
+                    };
+                }
+
+                var lbl = new Label
+                {
+                    Text = $"  MARKER #{kv.Key}   {kv.Value.Name}",
+                    Font = new Font("Bahnschrift", sh * 0.022f, sel ? FontStyle.Bold : FontStyle.Regular),
+                    ForeColor = sel ? Color.White : Color.FromArgb(170, 170, 204),
+                    BackColor = Color.Transparent,
+                    AutoSize = false,
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    Padding = new Padding(16, 0, 0, 0),
+                };
+                row.Controls.Add(lbl);
+                if (sel)
+                {
+                    var tag = new Label
+                    {
+                        Text = "<< SELECTED >>",
+                        AutoSize = true,
+                        ForeColor = Color.FromArgb(255, 153, 0),
+                        BackColor = Color.Transparent,
+                        Dock = DockStyle.Right,
+                        TextAlign = ContentAlignment.MiddleRight,
+                        Padding = new Padding(0, 0, 16, 0),
+                    };
+                    row.Controls.Add(tag);
+                }
+
+                _adminListFlow.Controls.Add(row);
+                idx++;
+            }
+
+            _adminListFlow.ResumeLayout();
+        }
+
+        private void OnTuioMarkerMoved(int fid, float x, float y)
+        {
+            if (!IsHandleCreated) return;
+            if (InvokeRequired)
+            {
+                try { BeginInvoke(new Action(() => OnTuioMarkerMoved(fid, x, y))); } catch { }
+                return;
+            }
+
+            if (_gameRunning && _activeGameForm != null && !_activeGameForm.IsDisposed &&
+                _currentUser.HasValue && fid == _currentUser.Value && _users.ContainsKey(fid))
+            {
+                _activeGameForm.FeedTuioPointer(x, y);
+                return;
+            }
+
+            if (_adminMode && fid == AppConfig.AdminTuioMarker)
+                AdminMarkerMoved(x, y);
+        }
+
+        private void AdminMarkerMoved(float x, float y)
+        {
+            if (!_adminMode || _adminListFlow == null) return;
+
+            float th = AppConfig.MenuMotionThresh;
+            float alpha = AppConfig.MenuSmoothAlpha;
+            alpha = Math.Clamp(alpha, 0.05f, 0.95f);
+
+            if (_adminNeutralY == null)
+            {
+                _adminNeutralY = y;
+                _adminSmoothedY = y;
+                return;
+            }
+
+            _adminSmoothedY = alpha * _adminSmoothedY + (1f - alpha) * y;
+            float dy = _adminSmoothedY - _adminNeutralY.Value;
+
+            if (dy < -th * 1.5f && !_adminTriggered)
+            {
+                _adminNeutralY = _adminSmoothedY;
+                int c = _users.Count;
+                _adminSelected = c > 0 ? Math.Max(0, _adminSelected - 1) : 0;
+                RebuildAdminList();
+            }
+            else if (dy > th * 1.5f && !_adminTriggered)
+            {
+                _adminNeutralY = _adminSmoothedY;
+                int c = _users.Count;
+                _adminSelected = c > 0 ? Math.Min(c - 1, _adminSelected + 1) : 0;
+                RebuildAdminList();
+            }
+
+            if (x > 0.65f && !_adminTriggered)
+            {
+                _adminTriggered = true;
+                AdminAddUser();
+            }
+            else if (x < 0.55f)
+                _adminTriggered = false;
+        }
+
+        private void AdminAddUser()
+        {
+            int newId = UserStore.NextFreeMarkerId(_users);
+            string newName = UserStore.RandomDisplayName();
+            _users[newId] = CharacterMap.BuildUserProfile(newId, newName);
+            UserStore.SaveUsers(_users);
+            var keys = _users.Keys.OrderBy(k => k).ToList();
+            _adminSelected = keys.IndexOf(newId);
+            if (_adminSelected < 0) _adminSelected = Math.Max(0, keys.Count - 1);
+            RebuildAdminList();
+        }
+
+        private void AdminRemoveSelected()
+        {
+            var keys = _users.Keys.OrderBy(k => k).ToList();
+            if (keys.Count == 0)
+            {
+                _adminTriggered = false;
+                return;
+            }
+
+            int idx = Math.Min(_adminSelected, keys.Count - 1);
+            int uid = keys[idx];
+            _users.Remove(uid);
+            UserStore.SaveUsers(_users);
+            _adminSelected = Math.Max(0, idx - 1);
+            RebuildAdminList();
+            _adminTriggered = false;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
         //  GAME LAUNCH
         // ═══════════════════════════════════════════════════════════════════════
 
         private void DoLaunchGame()
         {
             string name = _currentUser.HasValue ? _users[_currentUser.Value].Name : "";
-            _useTuioControl = _currentUser.HasValue && _tuioControlUsers.Contains(_currentUser.Value);
+            // Keep reacTIVision/TUIO for every user so in-game pointer tracks the same marker as the mouse.
+            _useTuioControl = _currentUser.HasValue && _users.ContainsKey(_currentUser.Value);
 
             if (!_useTuioControl) { StopReactivision(); Thread.Sleep(2000); }
 
@@ -993,7 +1728,11 @@ namespace FruitNinjaGame
                 t.Tick += CheckGameExit;
                 t.Start();
             }
-            else ShowError(errMsg);
+            else
+            {
+                _rotationTriggered = false;
+                ShowError(errMsg);
+            }
         }
 
         private bool LaunchGame(string characterName, out string errorMsg)
@@ -1002,9 +1741,12 @@ namespace FruitNinjaGame
             try
             {
                 var gameForm = new Form1(); // FruitNinjaGame.Form1 — the actual game
+                _activeGameForm = gameForm;
                 gameForm.FormClosed += (s, e) =>
                 {
                     _gameRunning = false;
+                    if (ReferenceEquals(_activeGameForm, gameForm))
+                        _activeGameForm = null;
                 };
                 gameForm.Show();
                 return true;

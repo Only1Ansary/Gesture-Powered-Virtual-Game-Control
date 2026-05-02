@@ -23,7 +23,7 @@ if os.path.isfile(_CONFIG_FILE):
         print(f"[Config] Could not parse config.json: {_e}")
 else:
     print(
-        "[Config] No config.json found next to main.py.\n"
+        "[Config] No config.json found next to app_entry.py.\n"
         "         Copy config.json.example → config.json and set your paths.\n"
         "         The app will still run; reacTIVision/game paths may be wrong."
     )
@@ -66,20 +66,8 @@ TUIO_HOST          = _CFG.get("tuio_host", "0.0.0.0")
 TUIO_PORT          = int(_CFG.get("tuio_port", 3333))
 ROTATION_THRESHOLD = float(_CFG.get("rotation_threshold", 0.5))  # rad/s angular velocity
 
-# ── VR bridge settings ────────────────────────────────────────────────────────
-VR_BRIDGE_ENABLED  = bool(_CFG.get("vr_bridge_enabled", False))
-VR_PLAY_WIDTH      = float(_CFG.get("vr_play_width", 2.0))          # metres
-VR_PLAY_HEIGHT     = float(_CFG.get("vr_play_height", 2.0))         # metres
-VR_DEPTH           = float(_CFG.get("vr_depth", 1.0))               # metres (Z into screen)
-VR_Y_OFFSET        = float(_CFG.get("vr_y_offset", 1.2))            # metres (base height)
-VR_GLOBAL_OFFSET   = list(_CFG.get("vr_global_offset", [0, 0, 0]))  # XYZ camera alignment
-VR_GLOBAL_ROTATION = list(_CFG.get("vr_global_rotation", [0, 0, 0]))# Euler rotation
-VR_LEFT_MARKER     = int(_CFG.get("vr_left_marker", 0))             # fiducial ID → left saber
-VR_RIGHT_MARKER    = int(_CFG.get("vr_right_marker", 1))            # fiducial ID → right saber
-VR_UPDATE_RATE     = int(_CFG.get("vr_update_rate", 60))             # Hz
-
 # ── Admin: Bluetooth + dedicated TUIO marker (no collision with users 0–3) ─────
-# Exactly one device: set admin_bluetooth_mac (best) OR admin_bluetooth_name (exact match).
+# Unlock uses admin_bluetooth_name (Windows friendly name). admin_bluetooth_mac may stay in JSON but is not used.
 ADMIN_TUIO_MARKER       = int(_CFG.get("admin_tuio_marker", 9))
 ADMIN_BLUETOOTH_MAC     = str(_CFG.get("admin_bluetooth_mac", "")).strip()
 ADMIN_BLUETOOTH_NAME    = str(_CFG.get("admin_bluetooth_name", "")).strip()
@@ -92,7 +80,7 @@ ADMIN_BT_POLL_SECONDS   = float(_CFG.get("admin_bluetooth_poll_seconds", 3))
 ADMIN_BT_TTL_SECONDS    = float(_CFG.get("admin_bluetooth_ttl_seconds", 45))
 ADMIN_BLUETOOTH_FORCE   = bool(_CFG.get("admin_bluetooth_force", False))
 
-# ── Circular TUIO menu (marker must differ from users 0–3, admin, VR sabers) ───
+# ── Circular TUIO menu (marker must differ from users 0–3 and admin) ───────────
 MENU_TUIO_MARKER              = int(_CFG.get("menu_tuio_marker", 10))
 MENU_MOTION_THRESHOLD           = float(_CFG.get("menu_motion_threshold", 0.04))
 MENU_SMOOTH_ALPHA               = float(_CFG.get("menu_smooth_alpha", 0.4))

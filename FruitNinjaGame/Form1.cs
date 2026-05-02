@@ -18,21 +18,41 @@ namespace FruitNinjaGame
             this.MouseMove += Form1_MouseMove;
         }
 
-        private void Form1_MouseMove(object? sender, MouseEventArgs e)
-        {
+        private void Form1_MouseMove(object? sender, MouseEventArgs e) => ProcessPointerMove(e.X, e.Y);
 
+        /// <summary>TUIO normalized [0,1] × [0,1] → same logic as the physical mouse (menu + blade).</summary>
+        public void FeedTuioPointer(float tuioX, float tuioY)
+        {
+            if (IsDisposed) return;
+            if (InvokeRequired)
+            {
+                try { BeginInvoke(new Action(() => FeedTuioPointer(tuioX, tuioY))); } catch { }
+                return;
+            }
+
+            int w = Math.Max(1, ClientSize.Width);
+            int h = Math.Max(1, ClientSize.Height);
+            tuioX = Math.Clamp(tuioX, 0f, 1f);
+            tuioY = Math.Clamp(tuioY, 0f, 1f);
+            int cx = (int)(tuioX * (w - 1));
+            int cy = (int)(tuioY * (h - 1));
+            ProcessPointerMove(cx, cy);
+        }
+
+        private void ProcessPointerMove(int px, int py)
+        {
             if (isMenu)
             {
-                if (e.X >= StartIcon.X && e.X <= StartIcon.X + StartIcon.img[0].Width + 10
-                && e.Y >= StartIcon.Y && e.Y <= StartIcon.Y + StartIcon.img[0].Height + 10)
+                if (px >= StartIcon.X && px <= StartIcon.X + StartIcon.img[0].Width + 10
+                && py >= StartIcon.Y && py <= StartIcon.Y + StartIcon.img[0].Height + 10)
                 {
                     StartIconState = 1;
                 }
 
                 if (ExitIconState == 0)
                 {
-                    if (e.X >= ExitIcon.X && e.X <= ExitIcon.X + 130
-                        && e.Y >= ExitIcon.Y && e.Y <= ExitIcon.Y + 130)
+                    if (px >= ExitIcon.X && px <= ExitIcon.X + 130
+                        && py >= ExitIcon.Y && py <= ExitIcon.Y + 130)
                     {
                         ExitIconState = 1;
                         create_explosion(ExitIcon.X, ExitIcon.Y);
@@ -44,11 +64,11 @@ namespace FruitNinjaGame
                 }
             }
 
-            if(isGame && !isOver)
+            if (isGame && !isOver)
             {
                 Rectangle swordRect = new Rectangle(
-                    e.X - 60,
-                    e.Y - 60,
+                    px - 60,
+                    py - 60,
                     120,
                     120
                 );
@@ -67,10 +87,10 @@ namespace FruitNinjaGame
                     if (prevX != -1)
                     {
                         Rectangle swipeRect = new Rectangle(
-                            Math.Min(prevX, e.X),
-                            Math.Min(prevY, e.Y),
-                            Math.Abs(prevX - e.X),
-                            Math.Abs(prevY - e.Y)
+                            Math.Min(prevX, px),
+                            Math.Min(prevY, py),
+                            Math.Abs(prevX - px),
+                            Math.Abs(prevY - py)
                         );
 
                         hit = hit || swipeRect.IntersectsWith(fruitRect);
@@ -97,10 +117,10 @@ namespace FruitNinjaGame
                     if (prevX != -1)
                     {
                         Rectangle swipeRect = new Rectangle(
-                            Math.Min(prevX, e.X),
-                            Math.Min(prevY, e.Y),
-                            Math.Abs(prevX - e.X),
-                            Math.Abs(prevY - e.Y)
+                            Math.Min(prevX, px),
+                            Math.Min(prevY, py),
+                            Math.Abs(prevX - px),
+                            Math.Abs(prevY - py)
                         );
 
                         hit = hit || swipeRect.IntersectsWith(bombRect);
@@ -112,7 +132,7 @@ namespace FruitNinjaGame
                         animate_exp();
                         Bombs.RemoveAt(i);
                         LivesCount--;
-                        if(LivesCount == 0)
+                        if (LivesCount == 0)
                         {
                             isOver = true;
                             T.Stop();
@@ -123,10 +143,10 @@ namespace FruitNinjaGame
                 }
             }
 
-            Blade.X = e.X; 
-            Blade.Y = e.Y;
-            prevX = e.X;
-            prevY = e.Y;
+            Blade.X = px;
+            Blade.Y = py;
+            prevX = px;
+            prevY = py;
         }
 
         public class Score
