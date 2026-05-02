@@ -62,19 +62,19 @@ namespace TuioCircularMenu
             Font fontSmall = new Font("Bahnschrift", 16, FontStyle.Regular);
 
             // C# Graphics.FillPie angles: 0 is Right, 90 is Down
-            // Match Python wedges manually by rotation (Clockwise):
-            // Right: 337.5 to 22.5 (Start 337.5, Sweep 45)
-            wedges.Add(new WedgeSpec { Name = "right", StartAngle = 337.5f, SweepAngle = 45f, DimColor = ColorTranslator.FromHtml("#1a2a4a"), BrightColor = ColorTranslator.FromHtml("#5b8cff"), Text = "MIN OTHERS\n+ GUI", TextFont = fontLarge, TextOffset = new PointF(180, 0) });
-            // Right-Down: 22.5 to 67.5
-            wedges.Add(new WedgeSpec { Name = "right_down", StartAngle = 22.5f, SweepAngle = 45f, DimColor = ColorTranslator.FromHtml("#2a3555"), BrightColor = ColorTranslator.FromHtml("#7eb8ff"), Text = "GUI\n(full)\nif game FS", TextFont = fontSmall, TextOffset = new PointF(130, 130) });
-            // Down: 67.5 to 112.5
-            wedges.Add(new WedgeSpec { Name = "down", StartAngle = 67.5f, SweepAngle = 45f, DimColor = ColorTranslator.FromHtml("#3d2a1a"), BrightColor = ColorTranslator.FromHtml("#ffb020"), Text = "VOL -", TextFont = fontLarge, TextOffset = new PointF(0, 248) });
-            // Left: 112.5 to 247.5
-            wedges.Add(new WedgeSpec { Name = "left", StartAngle = 112.5f, SweepAngle = 135f, DimColor = ColorTranslator.FromHtml("#3d1a2a"), BrightColor = ColorTranslator.FromHtml("#ff5b8c"), Text = "EXIT GAME\n+ GUI", TextFont = fontLarge, TextOffset = new PointF(-252, 0) });
-            // Up: 247.5 to 292.5
-            wedges.Add(new WedgeSpec { Name = "up", StartAngle = 247.5f, SweepAngle = 45f, DimColor = ColorTranslator.FromHtml("#1a3d2e"), BrightColor = ColorTranslator.FromHtml("#2ee59d"), Text = "VOL +", TextFont = fontLarge, TextOffset = new PointF(0, -248) });
-            // Right-Up: 292.5 to 337.5
-            wedges.Add(new WedgeSpec { Name = "right_up", StartAngle = 292.5f, SweepAngle = 45f, DimColor = ColorTranslator.FromHtml("#2a3d5a"), BrightColor = ColorTranslator.FromHtml("#6ec0ff"), Text = "GAME ->\nGUI\n(fullscr)", TextFont = fontSmall, TextOffset = new PointF(130, -130) });
+            // All 6 wedges are now 60 degrees each.
+            // Right (Bottom-Right): 0 to 60
+            wedges.Add(new WedgeSpec { Name = "right", StartAngle = 0f, SweepAngle = 60f, DimColor = ColorTranslator.FromHtml("#1a2a4a"), BrightColor = ColorTranslator.FromHtml("#5b8cff"), Text = "MIN OTHERS\n+ GUI", TextFont = fontLarge, TextOffset = new PointF(214, 124) });
+            // Down: 60 to 120
+            wedges.Add(new WedgeSpec { Name = "down", StartAngle = 60f, SweepAngle = 60f, DimColor = ColorTranslator.FromHtml("#3d2a1a"), BrightColor = ColorTranslator.FromHtml("#ffb020"), Text = "VOL -", TextFont = fontLarge, TextOffset = new PointF(0, 248) });
+            // Right-Down (Bottom-Left): 120 to 180
+            wedges.Add(new WedgeSpec { Name = "right_down", StartAngle = 120f, SweepAngle = 60f, DimColor = ColorTranslator.FromHtml("#2a3555"), BrightColor = ColorTranslator.FromHtml("#7eb8ff"), Text = "GUI\n(full)\nif game FS", TextFont = fontSmall, TextOffset = new PointF(-214, 124) });
+            // Left (Top-Left): 180 to 240
+            wedges.Add(new WedgeSpec { Name = "left", StartAngle = 180f, SweepAngle = 60f, DimColor = ColorTranslator.FromHtml("#3d1a2a"), BrightColor = ColorTranslator.FromHtml("#ff5b8c"), Text = "EXIT GAME\n+ GUI", TextFont = fontLarge, TextOffset = new PointF(-214, -124) });
+            // Up: 240 to 300
+            wedges.Add(new WedgeSpec { Name = "up", StartAngle = 240f, SweepAngle = 60f, DimColor = ColorTranslator.FromHtml("#1a3d2e"), BrightColor = ColorTranslator.FromHtml("#2ee59d"), Text = "VOL +", TextFont = fontLarge, TextOffset = new PointF(0, -248) });
+            // Right-Up (Top-Right): 300 to 360
+            wedges.Add(new WedgeSpec { Name = "right_up", StartAngle = 300f, SweepAngle = 60f, DimColor = ColorTranslator.FromHtml("#2a3d5a"), BrightColor = ColorTranslator.FromHtml("#6ec0ff"), Text = "GAME ->\nGUI\n(fullscr)", TextFont = fontSmall, TextOffset = new PointF(214, -124) });
         }
 
         private void TuioListener_OnMarkerRotated(int markerId, float angle)
