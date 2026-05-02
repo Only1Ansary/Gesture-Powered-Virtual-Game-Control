@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using static CircularMenu.Form1;
 
 namespace FruitNinjaGame
@@ -416,7 +417,7 @@ namespace FruitNinjaGame
         public BluetoothAdminGate(string mac, string name, bool force, bool autoConnected, int pollSeconds = 3)
         {
             _macIgnored = NormalizeMac(mac);
-            _name = (name ?? "").Trim().ToLowerInvariant();
+            _name = NormalizeBluetoothNameKey(name);
             _force = force;
             _autoConnected = autoConnected;
             _timer = new System.Windows.Forms.Timer
@@ -460,14 +461,31 @@ namespace FruitNinjaGame
 
             foreach (var d in devices)
             {
-                if (d.FriendlyName.IndexOf(_name, StringComparison.OrdinalIgnoreCase) >= 0)
+                if (NormalizeBluetoothNameKey(d.FriendlyName).Contains(_name, StringComparison.Ordinal))
                 {
                     IsConnected = true;
                     MatchedBluetoothName = d.FriendlyName;
                     return;
                 }
             }
+
+            // Paired phone names live in the BTPORT registry even when PnP children are not all "OK".
+            if (TryFindPairedDeviceNameInRegistry(_name, out string regName))
+            {
+                IsConnected = true;
+                MatchedBluetoothName = regName;
+                return;
+            }
+
             IsConnected = false;
+        }
+
+        /// <summary>Lowercase + normalize apostrophes (ASCII vs U+2019) for matching.</summary>
+        private static string NormalizeBluetoothNameKey(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return "";
+            return value.Trim().ToLowerInvariant()
+                .Replace('\u2019', '\'').Replace('\u2018', '\'');
         }
 
         private readonly struct BtPnpRow
@@ -480,8 +498,11 @@ namespace FruitNinjaGame
         {
             const string script = @"
 $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Object {
-  $_.Status -eq 'OK' -and
-  $_.InstanceId -match 'BTHENUM\\DEV_[0-9A-F]{12}' -and
+  $_.Status -notin @('Error','Degraded') -and
+  (
+    $_.InstanceId -match 'BTHENUM\\DEV_[0-9A-F]{12}' -or
+    $_.InstanceId -match 'BTHLE\\DEV_[0-9A-F]{12,}'
+  ) -and
   $_.FriendlyName -notlike '*Enumerator*' -and
   $_.FriendlyName -notlike '*Wireless Bluetooth*'
 } | Select-Object -ExpandProperty FriendlyName
@@ -489,6 +510,46 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
 ";
             string json = (RunPowerShellEncoded(script) ?? "").Trim();
             return ParseFriendlyNameJsonArray(json);
+        }
+
+        /// <summary>True if a device paired to this PC has a matching friendly name (Bluetooth registration DB).</summary>
+        private static bool TryFindPairedDeviceNameInRegistry(string nameKeyNorm, out string friendlyDisplay)
+        {
+            friendlyDisplay = null;
+            if (string.IsNullOrEmpty(nameKeyNorm)) return false;
+            try
+            {
+                using RegistryKey key = Registry.LocalMachine.OpenSubKey(
+                    @"SYSTEM\CurrentControlSet\Services\BTHPORT\Parameters\Devices");
+                if (key == null) return false;
+                foreach (string subName in key.GetSubKeyNames())
+                {
+                    using RegistryKey subPtr = key.OpenSubKey(subName);
+                    if (subPtr == null) continue;
+                    object raw = subPtr.GetValue("Name");
+                    string friendly = DecodeBluetoothRegistryName(raw);
+                    if (string.IsNullOrWhiteSpace(friendly)) continue;
+                    if (NormalizeBluetoothNameKey(friendly).Contains(nameKeyNorm, StringComparison.Ordinal))
+                    {
+                        friendlyDisplay = friendly.Trim();
+                        return true;
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        private static string DecodeBluetoothRegistryName(object raw)
+        {
+            if (raw == null) return "";
+            if (raw is byte[] bytes && bytes.Length > 0)
+            {
+                if (bytes.Length >= 2 && bytes[1] == 0)
+                    return Encoding.Unicode.GetString(bytes).TrimEnd('\0').Trim();
+                return Encoding.UTF8.GetString(bytes).TrimEnd('\0').Trim();
+            }
+            return raw.ToString()?.Trim() ?? "";
         }
 
         private static List<BtPnpRow> ParseFriendlyNameJsonArray(string json)
@@ -591,8 +652,7 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
         // ── IsActive property so GUIForm can check visibility ─────────────────
         public bool IsActive => Visible;
 
-        // ── TUIO listener (reuses the one already in Form1 namespace) ─────────
-        private readonly MinimalTuioListener _tuioListener;
+        // ── TUIO marker angle comes from GUIForm's single TuioAdapter (one UDP port).
         private float _markerAngle = -1f;
         private string _hoveredWedge = "center";
 
@@ -600,9 +660,21 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
         private DateTime _lastVolTime = DateTime.MinValue;
         private string _lastTriggeredSector = "";
 
-        private const int MarkerId = 10;
         private const double ActionCooldownS = 2.2;
         private const double VolRepeatS = 0.25;
+
+        /// <summary>Called from GUIForm when /tuio/2Dobj set includes angle for the menu fid.</summary>
+        public void FeedMenuMarkerAngle(int markerId, float angleRadians)
+        {
+            if (markerId != AppConfig.MenuTuioMarker) return;
+            _markerAngle = angleRadians;
+        }
+
+        /// <summary>Clear wedge pointer when the menu marker is removed.</summary>
+        public void ResetMenuMarkerTracking()
+        {
+            _markerAngle = -1f;
+        }
 
         // ── wedge callbacks ───────────────────────────────────────────────────
         private readonly Action _onLeft;
@@ -655,10 +727,7 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
 
             InitWedges();
 
-            // ── TUIO ──────────────────────────────────────────────────────────
-            _tuioListener = new MinimalTuioListener();
-            _tuioListener.OnMarkerRotated += OnTuioMarkerRotated;
-            _tuioListener.Start(3333);
+            // No per-overlay UDP — shares FruitNinjaGame.TuioAdapter on port 3333.
 
             // ── render / logic timer (~60 fps) ────────────────────────────────
             var timer = new System.Windows.Forms.Timer { Interval = 16 };
@@ -771,12 +840,7 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
             });
         }
 
-        // ── TUIO callback ─────────────────────────────────────────────────────
-        private void OnTuioMarkerRotated(int markerId, float angle)
-        {
-            if (markerId == MarkerId)
-                _markerAngle = angle;
-        }
+        // ── marker angle supplied by TuioAdapter via FeedMenuMarkerAngle ────
 
         // ── timer ─────────────────────────────────────────────────────────────
         private void Timer_Tick(object sender, EventArgs e)
@@ -899,7 +963,7 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
             {
                 var sf = new StringFormat { Alignment = StringAlignment.Center };
                 g.DrawString(
-                    $"Rotate TUIO marker {MarkerId} to select a wedge.  Actions have a {ActionCooldownS}s cooldown.",
+                    $"Rotate TUIO marker {AppConfig.MenuTuioMarker} to select a wedge.  Actions have a {ActionCooldownS}s cooldown.",
                     instFont, instBrush, cx, Height - 60, sf);
                 g.DrawString("Press ESC to close", instFont, instBrush, 100, 50);
             }
@@ -910,13 +974,6 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
         {
             if (e.KeyCode == Keys.Escape) HideMenu();
             base.OnKeyDown(e);
-        }
-
-        // ── cleanup ───────────────────────────────────────────────────────────
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            _tuioListener?.Stop();
-            base.OnFormClosing(e);
         }
     }
 
@@ -1001,7 +1058,7 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
                 onMarkerRemoved: fid => OnMarkerRemoved(fid),
                 onMarkerRotated: (dir, fid) => OnMarkerRotated(dir, fid),
                 rotationThresholdRad: AppConfig.TuioRotationThresholdRad,
-                onMarkerMoved: (fid, x, y) => OnTuioMarkerMoved(fid, x, y)
+                onMarkerMoved: (fid, x, y, a) => OnTuioMarkerMoved(fid, x, y, a)
             );
             _tuioAdapter.Start();
 
@@ -1164,7 +1221,12 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
         {
             if (!IsHandleCreated) return;
             if (InvokeRequired) { Invoke(new Action(() => OnMarkerRemoved(fid))); return; }
-            if (fid == AppConfig.MenuTuioMarker) { _menuOverlay?.HideMenu(); return; }
+            if (fid == AppConfig.MenuTuioMarker)
+            {
+                _menuOverlay?.HideMenu();
+                _menuOverlay?.ResetMenuMarkerTracking();
+                return;
+            }
             if (_gameRunning) return;
             if (fid == AppConfig.AdminTuioMarker && _adminMode)
             {
@@ -1862,12 +1924,12 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
             _adminListFlow.ResumeLayout();
         }
 
-        private void OnTuioMarkerMoved(int fid, float x, float y)
+        private void OnTuioMarkerMoved(int fid, float x, float y, float angleRad)
         {
             if (!IsHandleCreated) return;
             if (InvokeRequired)
             {
-                try { BeginInvoke(new Action(() => OnTuioMarkerMoved(fid, x, y))); } catch { }
+                try { BeginInvoke(new Action(() => OnTuioMarkerMoved(fid, x, y, angleRad))); } catch { }
                 return;
             }
 
@@ -1877,6 +1939,8 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
                 _activeGameForm.FeedTuioPointer(x, y);
                 return;
             }
+
+            _menuOverlay?.FeedMenuMarkerAngle(fid, angleRad);
 
             if (_adminMode && fid == AppConfig.AdminTuioMarker)
                 AdminMarkerMoved(x, y);

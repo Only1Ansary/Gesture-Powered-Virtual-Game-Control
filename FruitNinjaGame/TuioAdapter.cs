@@ -19,7 +19,8 @@ namespace FruitNinjaGame
         private readonly Action<int> _onMarkerDetected;
         private readonly Action<int> _onMarkerRemoved;
         private readonly Action<string, int> _onMarkerRotated;
-        private readonly Action<int, float, float>? _onMarkerMoved;
+        /// <summary>fid, x, y (normalized), angle (radians).</summary>
+        private readonly Action<int, float, float, float>? _onMarkerMoved;
         private readonly float _rotationThresholdRad;
 
         private UdpClient? _udp;
@@ -39,7 +40,7 @@ namespace FruitNinjaGame
             Action<int> onMarkerRemoved,
             Action<string, int> onMarkerRotated,
             float rotationThresholdRad = 0.45f,
-            Action<int, float, float>? onMarkerMoved = null)
+            Action<int, float, float, float>? onMarkerMoved = null)
         {
             _host = host;
             _port = port;
@@ -222,7 +223,7 @@ namespace FruitNinjaGame
             float y = Convert.ToSingle(args[4]);
             float angle = Convert.ToSingle(args[5]);
 
-            _onMarkerMoved?.Invoke(fid, x, y);
+            _onMarkerMoved?.Invoke(fid, x, y, angle);
 
             lock (_sync)
             {

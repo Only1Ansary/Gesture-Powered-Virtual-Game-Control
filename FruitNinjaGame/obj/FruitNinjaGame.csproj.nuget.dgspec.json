@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj": {}
+    "D:\\Code\\HCI PROJ UI\\FruitNinjaGame\\FruitNinjaGame.csproj": {}
   },
   "projects": {
-    "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj": {
+    "D:\\Code\\HCI PROJ UI\\FruitNinjaGame\\FruitNinjaGame.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
+        "projectUniqueName": "D:\\Code\\HCI PROJ UI\\FruitNinjaGame\\FruitNinjaGame.csproj",
         "projectName": "FruitNinjaGame",
-        "projectPath": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
-        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\obj\\",
+        "projectPath": "D:\\Code\\HCI PROJ UI\\FruitNinjaGame\\FruitNinjaGame.csproj",
+        "packagesPath": "C:\\Users\\aline\\.nuget\\packages\\",
+        "outputPath": "D:\\Code\\HCI PROJ UI\\FruitNinjaGame\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\aline\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -25,8 +25,7 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net10.0-windows": {
-            "framework": "net10.0-windows7.0",
+          "net10.0-windows7.0": {
             "targetAlias": "net10.0-windows",
             "projectReferences": {}
           }
@@ -41,11 +40,10 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "net10.0-windows": {
-          "framework": "net10.0-windows7.0",
+        "net10.0-windows7.0": {
           "targetAlias": "net10.0-windows",
           "imports": [
             "net461",
@@ -66,7 +64,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
