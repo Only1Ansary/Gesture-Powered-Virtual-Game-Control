@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\PC\\source\\repos\\FruitNinjaGame\\FruitNinjaGame.csproj",
+      "projectUniqueName": "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
       "projectName": "FruitNinjaGame",
-      "projectPath": "C:\\Users\\PC\\source\\repos\\FruitNinjaGame\\FruitNinjaGame.csproj",
+      "projectPath": "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
       "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\PC\\source\\repos\\FruitNinjaGame\\obj\\",
+      "outputPath": "E:\\CS\\Semester 8\\HCI\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -72,7 +72,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.202/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

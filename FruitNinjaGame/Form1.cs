@@ -38,6 +38,7 @@ namespace FruitNinjaGame
                         create_explosion(ExitIcon.X, ExitIcon.Y);
                         ExitIcon = null;
                         animate_exp();
+                        T.Stop();
                         this.Close();
                     }
                 }
@@ -114,6 +115,7 @@ namespace FruitNinjaGame
                         if(LivesCount == 0)
                         {
                             isOver = true;
+                            T.Stop();
                             Fruits.Clear();
                             Bombs.Clear();
                         }
@@ -194,11 +196,11 @@ namespace FruitNinjaGame
             pnn.Y = Y;
             pnn.Frame = 0;
             pnn.img = new List<Bitmap>();
-            pnn.img.Add(new Bitmap("ex1.png"));
-            pnn.img.Add(new Bitmap("ex2.png"));
-            pnn.img.Add(new Bitmap("ex3.png"));
-            pnn.img.Add(new Bitmap("ex4.png"));
-            pnn.img.Add(new Bitmap("ex5.png"));
+            pnn.img.Add(new Bitmap("assets/ex1.png"));
+            pnn.img.Add(new Bitmap("assets/ex2.png"));
+            pnn.img.Add(new Bitmap("assets/ex3.png"));
+            pnn.img.Add(new Bitmap("assets/ex4.png"));
+            pnn.img.Add(new Bitmap("assets/ex5.png"));
             Exp.Add(pnn);
         }
         void animate_exp()
@@ -219,139 +221,139 @@ namespace FruitNinjaGame
 
         void DrawScore()
         {
-            Bitmap num = new Bitmap("zero.png");
+            Bitmap num = new Bitmap("assets/zero.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("one.png");
+            num = new Bitmap("assets/one.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("two.png");
+            num = new Bitmap("assets/two.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("three.png");
+            num = new Bitmap("assets/three.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("four.png");
+            num = new Bitmap("assets/four.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("five.png");
+            num = new Bitmap("assets/five.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("six.png");
+            num = new Bitmap("assets/six.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("seven.png");
+            num = new Bitmap("assets/seven.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("eight.png");
+            num = new Bitmap("assets/eight.png");
             ScoreNum.First.Add(num);
-            num = new Bitmap("nine.png");
+            num = new Bitmap("assets/nine.png");
             ScoreNum.First.Add(num);
 
-            num = new Bitmap("zero.png");
+            num = new Bitmap("assets/zero.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("one.png");
+            num = new Bitmap("assets/one.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("two.png");
+            num = new Bitmap("assets/two.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("three.png");
+            num = new Bitmap("assets/three.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("four.png");
+            num = new Bitmap("assets/four.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("five.png");
+            num = new Bitmap("assets/five.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("six.png");
+            num = new Bitmap("assets/six.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("seven.png");
+            num = new Bitmap("assets/seven.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("eight.png");
+            num = new Bitmap("assets/eight.png");
             ScoreNum.Second.Add(num);
-            num = new Bitmap("nine.png");
+            num = new Bitmap("assets/nine.png");
             ScoreNum.Second.Add(num);
 
-            num = new Bitmap("zero.png");
+            num = new Bitmap("assets/zero.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("one.png");
+            num = new Bitmap("assets/one.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("two.png");
+            num = new Bitmap("assets/two.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("three.png");
+            num = new Bitmap("assets/three.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("four.png");
+            num = new Bitmap("assets/four.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("five.png");
+            num = new Bitmap("assets/five.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("six.png");
+            num = new Bitmap("assets/six.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("seven.png");
+            num = new Bitmap("assets/seven.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("eight.png");
+            num = new Bitmap("assets/eight.png");
             ScoreNum.Third.Add(num);
-            num = new Bitmap("nine.png");
+            num = new Bitmap("assets/nine.png");
             ScoreNum.Third.Add(num);
 
-            num = new Bitmap("zero.png");
+            num = new Bitmap("assets/zero.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("one.png");
+            num = new Bitmap("assets/one.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("two.png");
+            num = new Bitmap("assets/two.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("three.png");
+            num = new Bitmap("assets/three.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("four.png");
+            num = new Bitmap("assets/four.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("five.png");
+            num = new Bitmap("assets/five.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("six.png");
+            num = new Bitmap("assets/six.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("seven.png");
+            num = new Bitmap("assets/seven.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("eight.png");
+            num = new Bitmap("assets/eight.png");
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("nine.png");
+            num = new Bitmap("assets/nine.png");
             ScoreNum.Fourth.Add(num);
         }
 
         void DrawFruits()
         {
-            Bitmap img = new Bitmap("full_water.png");
+            Bitmap img = new Bitmap("assets/full_water.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_water.png");
+            img = new Bitmap("assets/half_water.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("full_banana.png");
+            img = new Bitmap("assets/full_banana.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_banana.png");
+            img = new Bitmap("assets/half_banana.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("full_green_apple.png");
+            img = new Bitmap("assets/full_green_apple.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_green_apple.png");
+            img = new Bitmap("assets/half_green_apple.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("full_red_apple.png");
+            img = new Bitmap("assets/full_red_apple.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_red_apple.png");
+            img = new Bitmap("assets/half_red_apple.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("full_lemon.png");
+            img = new Bitmap("assets/full_lemon.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_lemon.png");
+            img = new Bitmap("assets/half_lemon.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("full_orange.png");
+            img = new Bitmap("assets/full_orange.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_orange.png");
+            img = new Bitmap("assets/half_orange.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("full_coco.png");
+            img = new Bitmap("assets/full_coco.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_coco.png");
+            img = new Bitmap("assets/half_coco.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("full_pear.png");
+            img = new Bitmap("assets/full_pear.png");
             FruitImg.Add(img);
 
-            img = new Bitmap("half_pear.png");
+            img = new Bitmap("assets/half_pear.png");
             FruitImg.Add(img);
 
         }
@@ -376,7 +378,7 @@ namespace FruitNinjaGame
             pnn.Y = this.ClientSize.Height + 100;
             pnn.Vy = -R.Next(50, 60);
             pnn.Vx = R.Next(-8, 9);
-            Bitmap img = new Bitmap("bomb.png");
+            Bitmap img = new Bitmap("assets/bomb.png");
             pnn.img.Add(img);
 
             Bombs.Add(pnn);
@@ -387,13 +389,13 @@ namespace FruitNinjaGame
             isGame = true;
             DrawFruits();
             Fruit pnn = new Fruit();
-            Bitmap img = new Bitmap("no_life.png");
+            Bitmap img = new Bitmap("assets/no_life.png");
             pnn.img.Add(img);
-            img = new Bitmap("life2.png");
+            img = new Bitmap("assets/life2.png");
             pnn.img.Add(img);
-            img = new Bitmap("life1.png");
+            img = new Bitmap("assets/life1.png");
             pnn.img.Add(img);
-            img = new Bitmap("full_life.png");
+            img = new Bitmap("assets/full_life.png");
             pnn.img.Add(img);
             pnn.X = this.ClientSize.Width - 250;
             pnn.Y = 10;
@@ -402,7 +404,7 @@ namespace FruitNinjaGame
             pnn = new Fruit();
             pnn.X = 10;
             pnn.Y = 10;
-            img = new Bitmap("score.png");
+            img = new Bitmap("assets/score.png");
             pnn.img.Add(img);
             ScoreIcon = pnn;
 
@@ -411,21 +413,21 @@ namespace FruitNinjaGame
 
         void StartMenu()
         {
-            back = new Bitmap("WoodBG.jpg");
-            GameName = new Bitmap("Name.png");
-            StartRing = new Bitmap("start_ring.png");
-            ExitRing = new Bitmap("exit_ring.png");
+            back = new Bitmap("assets/WoodBG.jpg");
+            GameName = new Bitmap("assets/Name.png");
+            StartRing = new Bitmap("assets/start_ring.png");
+            ExitRing = new Bitmap("assets/exit_ring.png");
 
             Fruit pnn = new Fruit();
             pnn.X = this.ClientSize.Width / 2 - 405;
             pnn.Y = this.ClientSize.Height / 2 - 20;
-            Bitmap StartIcon = new Bitmap("full_water.png");
+            Bitmap StartIcon = new Bitmap("assets/full_water.png");
             pnn.img.Add(StartIcon);
-            StartIcon = new Bitmap("half_water.png");
+            StartIcon = new Bitmap("assets/half_water.png");
             pnn.img.Add(StartIcon);
             this.StartIcon = pnn;
 
-            Bitmap ExiIcon = new Bitmap("bomb.png");
+            Bitmap ExiIcon = new Bitmap("assets/bomb.png");
 
             Fruit pn = new Fruit();
             pn.X = this.ClientSize.Width / 2 + 290;
@@ -454,8 +456,9 @@ namespace FruitNinjaGame
             g.DrawImage(back, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
             if(isOver)
             {
-                GameOver = new Bitmap("GameOver.png");
+                GameOver = new Bitmap("assets/GameOver.png");
                 g.DrawImage(GameOver, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
+
                     
             }
 
@@ -606,7 +609,7 @@ namespace FruitNinjaGame
         {
             off = new Bitmap(this.ClientSize.Width, this.ClientSize.Height);
             StartMenu();
-            Bitmap img = new Bitmap("blade.png");
+            Bitmap img = new Bitmap("assets/blade.png");
             Blade.img.Add(img);
         }
 
@@ -615,6 +618,7 @@ namespace FruitNinjaGame
             switch (e.KeyCode)
             {
                 case Keys.Escape:
+                    T.Stop();
                     this.Close();
                     break;
             }
