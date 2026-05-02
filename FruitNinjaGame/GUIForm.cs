@@ -87,7 +87,8 @@ namespace FruitNinjaGame
                 using var doc = JsonDocument.Parse(File.ReadAllText(p, Encoding.UTF8));
                 foreach (var prop in doc.RootElement.EnumerateObject())
                 {
-                    result[prop.Name] = prop.Value;
+                    // Clone so values survive after JsonDocument is disposed.
+                    result[prop.Name] = prop.Value.Clone();
                 }
             }
             catch { }
@@ -154,7 +155,9 @@ namespace FruitNinjaGame
 
         private static string ReadString(string key, string fallback)
         {
-            if (_cfg.TryGetValue(key, out var el) && el.ValueKind == JsonValueKind.String)
+            if (_cfg != null &&
+                _cfg.TryGetValue(key, out var el) &&
+                el.ValueKind == JsonValueKind.String)
             {
                 return el.GetString() ?? fallback;
             }
@@ -163,13 +166,13 @@ namespace FruitNinjaGame
 
         private static int ReadInt(string key, int fallback)
         {
-            if (_cfg.TryGetValue(key, out var el) && el.TryGetInt32(out int i)) return i;
+            if (_cfg != null && _cfg.TryGetValue(key, out var el) && el.TryGetInt32(out int i)) return i;
             return fallback;
         }
 
         private static bool ReadBool(string key, bool fallback)
         {
-            if (_cfg.TryGetValue(key, out var el))
+            if (_cfg != null && _cfg.TryGetValue(key, out var el))
             {
                 if (el.ValueKind == JsonValueKind.True) return true;
                 if (el.ValueKind == JsonValueKind.False) return false;
@@ -179,7 +182,7 @@ namespace FruitNinjaGame
 
         private static float ReadFloat(string key, float fallback)
         {
-            if (_cfg.TryGetValue(key, out var el))
+            if (_cfg != null && _cfg.TryGetValue(key, out var el))
             {
                 if (el.TryGetDouble(out double d)) return (float)d;
                 if (el.ValueKind == JsonValueKind.String &&
@@ -1128,11 +1131,13 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
             // Circular menu marker — allowed even while the game is running (same as Python).
             if (fid == AppConfig.MenuTuioMarker) { _menuOverlay?.ShowMenu(); return; }
             if (_gameRunning) return;
-            // Admin marker — only from main menu (no current user), not while already in admin.
-            if (fid == AppConfig.AdminTuioMarker && _currentUser == null && !_adminMode)
+            // Admin marker — allow from anywhere outside gameplay; force a fresh BT check.
+            if (fid == AppConfig.AdminTuioMarker && !_adminMode)
             {
+                _adminGate?.Refresh();
                 if (_adminGate != null && _adminGate.IsConnected)
                 {
+                    _currentUser = null;
                     _adminNeutralY = null;
                     _adminSmoothedY = 0f;
                     _adminTriggered = false;
