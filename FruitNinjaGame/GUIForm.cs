@@ -43,9 +43,10 @@ namespace FruitNinjaGame
 
     public static class AppConfig
     {
+        // Order matters: BaseDir is read by LoadConfig(), so it must be initialised first.
+        public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly Dictionary<string, JsonElement> _cfg = LoadConfig();
 
-        public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
         public static readonly string AssetsDir = ResolveAssetsDir();
         public static readonly string ReactvisionExe = ResolveReactvisionExe();
         public static readonly string TuioHost = ReadString("tuio_host", "0.0.0.0");
@@ -81,18 +82,38 @@ namespace FruitNinjaGame
         private static Dictionary<string, JsonElement> LoadConfig()
         {
             var result = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase);
+            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bt_gate.log");
             try
             {
                 string p = FindFileUpTree(BaseDir, "config.json");
+                File.AppendAllText(logPath,
+                    $"[{DateTime.Now:HH:mm:ss}] LoadConfig: BaseDir=\"{BaseDir}\" resolved=\"{p}\"{Environment.NewLine}");
                 if (string.IsNullOrEmpty(p)) return result;
                 using var doc = JsonDocument.Parse(File.ReadAllText(p, Encoding.UTF8));
                 foreach (var prop in doc.RootElement.EnumerateObject())
                 {
-                    // Clone so values survive after JsonDocument is disposed.
                     result[prop.Name] = prop.Value.Clone();
                 }
+                if (result.TryGetValue("admin_bluetooth_name", out var nameEl))
+                {
+                    File.AppendAllText(logPath,
+                        $"[{DateTime.Now:HH:mm:ss}] LoadConfig: admin_bluetooth_name kind={nameEl.ValueKind} raw=\"{nameEl.GetRawText()}\"{Environment.NewLine}");
+                }
+                else
+                {
+                    File.AppendAllText(logPath,
+                        $"[{DateTime.Now:HH:mm:ss}] LoadConfig: admin_bluetooth_name key NOT present. Keys: {string.Join(",", result.Keys)}{Environment.NewLine}");
+                }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                try
+                {
+                    File.AppendAllText(logPath,
+                        $"[{DateTime.Now:HH:mm:ss}] LoadConfig EXCEPTION: {ex.GetType().Name}: {ex.Message}{Environment.NewLine}");
+                }
+                catch { }
+            }
             return result;
         }
 
@@ -408,6 +429,8 @@ namespace FruitNinjaGame
         private readonly bool _force;
         private readonly bool _autoConnected;
         private readonly System.Windows.Forms.Timer _timer;
+        public static readonly string LogPath =
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bt_gate.log");
 
         public bool IsConnected { get; private set; }
 
@@ -425,6 +448,7 @@ namespace FruitNinjaGame
                 Interval = Math.Max(1, pollSeconds) * 1000
             };
             _timer.Tick += (s, e) => Refresh();
+            WriteLog($"ctor: raw_name=\"{name}\" raw_name_len={(name ?? "").Length} norm_name=\"{_name}\" norm_name_len={_name.Length} force={_force} autoConnected={_autoConnected} mac_cfg=\"{_macIgnored}\"");
         }
 
         public void Start()
@@ -442,42 +466,61 @@ namespace FruitNinjaGame
             {
                 IsConnected = true;
                 MatchedBluetoothName = "(force unlock)";
+                WriteLog($"force_connected=true → IsConnected=TRUE");
                 return;
             }
 
             var devices = QueryEligibleBluetoothPeripherals();
+            string pnpList = devices.Count == 0
+                ? "(none)"
+                : string.Join(" | ", devices.ConvertAll(d => $"\"{d.FriendlyName}\""));
+            WriteLog($"pnp devices: {pnpList}");
+
             if (_autoConnected)
             {
                 IsConnected = devices.Count > 0;
                 if (IsConnected) MatchedBluetoothName = devices[0].FriendlyName;
+                WriteLog($"auto_connected=true → IsConnected={IsConnected} match=\"{MatchedBluetoothName}\"");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(_name))
             {
                 IsConnected = false;
+                WriteLog("admin_bluetooth_name blank and auto_connected=false → IsConnected=FALSE");
                 return;
             }
 
             foreach (var d in devices)
             {
-                if (NormalizeBluetoothNameKey(d.FriendlyName).Contains(_name, StringComparison.Ordinal))
+                string norm = NormalizeBluetoothNameKey(d.FriendlyName);
+                bool hit = norm.Contains(_name, StringComparison.Ordinal);
+                WriteLog($"pnp check \"{d.FriendlyName}\" norm=\"{norm}\" want=\"{_name}\" hit={hit}");
+                if (hit)
                 {
                     IsConnected = true;
                     MatchedBluetoothName = d.FriendlyName;
+                    WriteLog($"pnp MATCH → IsConnected=TRUE");
                     return;
                 }
             }
 
-            // Paired phone names live in the BTPORT registry even when PnP children are not all "OK".
-            if (TryFindPairedDeviceNameInRegistry(_name, out string regName))
-            {
-                IsConnected = true;
-                MatchedBluetoothName = regName;
-                return;
-            }
+            // NOTE: we intentionally do NOT fall back to the paired-devices registry here.
+            // The registry only records pairing, not live connection, so a paired-but-
+            // disconnected phone would perma-unlock the admin screen.
 
             IsConnected = false;
+            WriteLog($"no match for want=\"{_name}\" (paired-only devices don't count) → IsConnected=FALSE");
+        }
+
+        private static void WriteLog(string line)
+        {
+            try
+            {
+                File.AppendAllText(LogPath,
+                    $"[{DateTime.Now:HH:mm:ss}] {line}{Environment.NewLine}");
+            }
+            catch { }
         }
 
         /// <summary>Lowercase + normalize apostrophes (ASCII vs U+2019) for matching.</summary>
@@ -494,19 +537,42 @@ namespace FruitNinjaGame
             public string FriendlyName { get; }
         }
 
+        /// <summary>
+        /// Returns Bluetooth devices that are ACTIVELY CONNECTED (not merely paired).
+        /// Windows keeps the parent <c>BTHENUM\DEV_&lt;MAC&gt;</c>/ <c>BTHLE\DEV_&lt;MAC&gt;</c>
+        /// entry <c>Present=True</c> for any paired device (because of
+        /// <c>AlwaysShowDeviceAsConnected</c>), so we cannot rely on it.
+        /// Instead we require at least one service-child (A2DP, HFP, AVRCP, …) whose
+        /// <c>InstanceId</c> contains the parent's MAC and which is itself <c>Present=True</c>.
+        /// Those children disappear the moment the phone disconnects.
+        /// </summary>
         private static List<BtPnpRow> QueryEligibleBluetoothPeripherals()
         {
             const string script = @"
-$devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Object {
-  $_.Status -notin @('Error','Degraded') -and
-  (
-    $_.InstanceId -match 'BTHENUM\\DEV_[0-9A-F]{12}' -or
-    $_.InstanceId -match 'BTHLE\\DEV_[0-9A-F]{12,}'
-  ) -and
-  $_.FriendlyName -notlike '*Enumerator*' -and
-  $_.FriendlyName -notlike '*Wireless Bluetooth*'
-} | Select-Object -ExpandProperty FriendlyName
-@($devs) | ConvertTo-Json -Compress
+$parents = Get-PnpDevice -Class Bluetooth -PresentOnly -ErrorAction SilentlyContinue | Where-Object {
+    $_.Status -notin @('Error','Degraded') -and
+    (
+        $_.InstanceId -match '^BTHENUM\\DEV_([0-9A-F]{12})' -or
+        $_.InstanceId -match '^BTHLE\\DEV_([0-9A-F]{12,})'
+    ) -and
+    $_.FriendlyName -notlike '*Enumerator*' -and
+    $_.FriendlyName -notlike '*Wireless Bluetooth*'
+}
+$allPresent = Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue
+$out = @()
+foreach ($p in $parents) {
+    $mac = $null
+    if ($p.InstanceId -match '^BTHENUM\\DEV_([0-9A-F]{12})')  { $mac = $Matches[1] }
+    elseif ($p.InstanceId -match '^BTHLE\\DEV_([0-9A-F]{12,})') { $mac = $Matches[1] }
+    if (-not $mac) { continue }
+    $children = $allPresent | Where-Object {
+        $_.InstanceId -ne $p.InstanceId -and $_.InstanceId -match $mac
+    }
+    if ($children.Count -gt 0) {
+        $out += $p.FriendlyName
+    }
+}
+@($out) | ConvertTo-Json -Compress
 ";
             string json = (RunPowerShellEncoded(script) ?? "").Trim();
             return ParseFriendlyNameJsonArray(json);
@@ -1187,8 +1253,7 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
             if (InvokeRequired) { Invoke(new Action(() => OnMarkerDetected(fid))); return; }
             // Circular menu marker — allowed even while the game is running (same as Python).
             if (fid == AppConfig.MenuTuioMarker) { _menuOverlay?.ShowMenu(); return; }
-            if (_gameRunning) return;
-            // Admin marker — allow from anywhere outside gameplay; force a fresh BT check.
+            // Admin marker — even while Fruit Ninja is open; refresh BT and open admin if allowed.
             if (fid == AppConfig.AdminTuioMarker && !_adminMode)
             {
                 _adminGate?.Refresh();
@@ -1203,13 +1268,14 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
                 else
                     MessageBox.Show(
                         "Bluetooth device not detected — admin locked.\n\n" +
-                        "Set admin_bluetooth_name in config.json to your device’s friendly name.\n" +
-                        "(admin_bluetooth_mac is kept in config but not used for unlock.)",
+                        $"Looking for: {AppConfig.AdminBluetoothName}\n" +
+                        $"Gate log: {BluetoothAdminGate.LogPath}",
                         "Admin",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                 return;
             }
+            if (_gameRunning) return;
             if (_adminMode) return;
             if (_currentUser == null && _users.ContainsKey(fid))
             { _currentUser = fid; ShowUserPage(fid); }
@@ -1227,13 +1293,13 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
                 _menuOverlay?.ResetMenuMarkerTracking();
                 return;
             }
-            if (_gameRunning) return;
             if (fid == AppConfig.AdminTuioMarker && _adminMode)
             {
                 _adminMode = false;
                 ShowMainMenu();
                 return;
             }
+            if (_gameRunning) return;
             if (_currentUser == fid) SetTuioLight(false);
         }
 
@@ -1242,7 +1308,6 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
             if (!IsHandleCreated) return;
             if (InvokeRequired) { Invoke(new Action(() => OnMarkerRotated(direction, fid))); return; }
             if (_menuOverlay != null && _menuOverlay.IsActive) return;
-            if (_gameRunning) return;
             if (_adminMode && fid == AppConfig.AdminTuioMarker)
             {
                 if (_adminTriggered)
@@ -1257,6 +1322,7 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
                     AdminRemoveSelected();
                 return;
             }
+            if (_gameRunning) return;
             if (_currentUser != fid || _rotationTriggered) return;
             _rotationTriggered = true;
             if (direction == "left") { _currentUser = null; ShowMainMenu(); }
@@ -1478,14 +1544,44 @@ $devs = Get-PnpDevice -Class Bluetooth -ErrorAction SilentlyContinue | Where-Obj
             _blinkLabel.Left = (sw - _blinkLabel.PreferredWidth) / 2;
             canvas.Controls.Add(_blinkLabel);
 
+            var btHud = new Label
+            {
+                Font = new Font("Consolas", sh * 0.014f, FontStyle.Bold),
+                AutoSize = true,
+                BackColor = Color.Transparent,
+                Top = (int)(sh * 0.02),
+                Left = (int)(sw * 0.02),
+                Text = "BT: …",
+                ForeColor = Color.Gainsboro,
+            };
+            canvas.Controls.Add(btHud);
+
+            void UpdateBtHud()
+            {
+                if (btHud.IsDisposed) return;
+                bool ok = _adminGate != null && _adminGate.IsConnected;
+                string nm = _adminGate?.MatchedBluetoothName;
+                btHud.ForeColor = ok ? Color.LimeGreen : Color.OrangeRed;
+                btHud.Text = ok
+                    ? $"BT admin ready — {nm}"
+                    : $"BT admin locked — looking for \"{AppConfig.AdminBluetoothName}\"";
+            }
+            UpdateBtHud();
+
             _blinkState = true;
             _blinkTimer = new System.Windows.Forms.Timer { Interval = 650 };
+            int tick = 0;
             _blinkTimer.Tick += (s, e) =>
             {
                 if (_screen != root || _blinkLabel == null || _blinkLabel.IsDisposed)
                 { _blinkTimer.Stop(); return; }
                 _blinkState = !_blinkState;
                 _blinkLabel.ForeColor = _blinkState ? Color.Lime : Color.FromArgb(0, 68, 0);
+                if ((++tick & 3) == 0)
+                {
+                    _adminGate?.Refresh();
+                    UpdateBtHud();
+                }
             };
             _blinkTimer.Start();
 
