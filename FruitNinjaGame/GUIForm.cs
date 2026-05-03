@@ -15,6 +15,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using static CircularMenu.Form1;
@@ -421,6 +422,72 @@ namespace FruitNinjaGame
         }
     }
 
+    /// <summary>
+    /// P/Invoke wrappers for the Windows Bluetooth enumeration API. We use
+    /// <c>BLUETOOTH_DEVICE_INFO.fConnected</c> to distinguish an *actively
+    /// connected* peripheral from one that is merely paired. PnP enumeration
+    /// cannot express that distinction reliably because of Windows'
+    /// <c>AlwaysShowDeviceAsConnected</c> policy on paired phones.
+    /// </summary>
+    internal static class NativeBluetooth
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SYSTEMTIME
+        {
+            public short wYear;
+            public short wMonth;
+            public short wDayOfWeek;
+            public short wDay;
+            public short wHour;
+            public short wMinute;
+            public short wSecond;
+            public short wMilliseconds;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BLUETOOTH_DEVICE_SEARCH_PARAMS
+        {
+            public int dwSize;
+            [MarshalAs(UnmanagedType.Bool)] public bool fReturnAuthenticated;
+            [MarshalAs(UnmanagedType.Bool)] public bool fReturnRemembered;
+            [MarshalAs(UnmanagedType.Bool)] public bool fReturnUnknown;
+            [MarshalAs(UnmanagedType.Bool)] public bool fReturnConnected;
+            [MarshalAs(UnmanagedType.Bool)] public bool fIssueInquiry;
+            public byte cTimeoutMultiplier;
+            public IntPtr hRadio;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct BLUETOOTH_DEVICE_INFO
+        {
+            public int dwSize;
+            public ulong Address;
+            public uint ulClassofDevice;
+            [MarshalAs(UnmanagedType.Bool)] public bool fConnected;
+            [MarshalAs(UnmanagedType.Bool)] public bool fRemembered;
+            [MarshalAs(UnmanagedType.Bool)] public bool fAuthenticated;
+            public SYSTEMTIME stLastSeen;
+            public SYSTEMTIME stLastUsed;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 248)]
+            public string szName;
+        }
+
+        [DllImport("irprops.cpl", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern IntPtr BluetoothFindFirstDevice(
+            ref BLUETOOTH_DEVICE_SEARCH_PARAMS pbtsp,
+            ref BLUETOOTH_DEVICE_INFO pbtdi);
+
+        [DllImport("irprops.cpl", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool BluetoothFindNextDevice(
+            IntPtr hFind,
+            ref BLUETOOTH_DEVICE_INFO pbtdi);
+
+        [DllImport("irprops.cpl", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool BluetoothFindDeviceClose(IntPtr hFind);
+    }
+
     public sealed class BluetoothAdminGate : IDisposable
     {
         /// <summary>Kept for config compatibility; admin unlock does not use MAC matching.</summary>
@@ -471,10 +538,10 @@ namespace FruitNinjaGame
             }
 
             var devices = QueryEligibleBluetoothPeripherals();
-            string pnpList = devices.Count == 0
+            string connList = devices.Count == 0
                 ? "(none)"
                 : string.Join(" | ", devices.ConvertAll(d => $"\"{d.FriendlyName}\""));
-            WriteLog($"pnp devices: {pnpList}");
+            WriteLog($"connected bt devices (native API): {connList}");
 
             if (_autoConnected)
             {
@@ -495,22 +562,21 @@ namespace FruitNinjaGame
             {
                 string norm = NormalizeBluetoothNameKey(d.FriendlyName);
                 bool hit = norm.Contains(_name, StringComparison.Ordinal);
-                WriteLog($"pnp check \"{d.FriendlyName}\" norm=\"{norm}\" want=\"{_name}\" hit={hit}");
+                WriteLog($"check \"{d.FriendlyName}\" norm=\"{norm}\" want=\"{_name}\" hit={hit}");
                 if (hit)
                 {
                     IsConnected = true;
                     MatchedBluetoothName = d.FriendlyName;
-                    WriteLog($"pnp MATCH → IsConnected=TRUE");
+                    WriteLog($"MATCH (actively connected) → IsConnected=TRUE");
                     return;
                 }
             }
 
-            // NOTE: we intentionally do NOT fall back to the paired-devices registry here.
-            // The registry only records pairing, not live connection, so a paired-but-
-            // disconnected phone would perma-unlock the admin screen.
-
+            // Only devices reported by the OS as actively connected count.
+            // A phone that is merely paired but not currently connected will
+            // NOT unlock the admin screen.
             IsConnected = false;
-            WriteLog($"no match for want=\"{_name}\" (paired-only devices don't count) → IsConnected=FALSE");
+            WriteLog($"no actively-connected match for want=\"{_name}\" → IsConnected=FALSE");
         }
 
         private static void WriteLog(string line)
@@ -538,44 +604,60 @@ namespace FruitNinjaGame
         }
 
         /// <summary>
-        /// Returns Bluetooth devices that are ACTIVELY CONNECTED (not merely paired).
-        /// Windows keeps the parent <c>BTHENUM\DEV_&lt;MAC&gt;</c>/ <c>BTHLE\DEV_&lt;MAC&gt;</c>
-        /// entry <c>Present=True</c> for any paired device (because of
-        /// <c>AlwaysShowDeviceAsConnected</c>), so we cannot rely on it.
-        /// Instead we require at least one service-child (A2DP, HFP, AVRCP, …) whose
-        /// <c>InstanceId</c> contains the parent's MAC and which is itself <c>Present=True</c>.
-        /// Those children disappear the moment the phone disconnects.
+        /// Enumerate Bluetooth devices that Windows reports as <b>actively connected</b>
+        /// via the native <c>BluetoothFindFirstDevice</c> / <c>BluetoothFindNextDevice</c>
+        /// API. The <c>fConnected</c> flag on <c>BLUETOOTH_DEVICE_INFO</c> is the real
+        /// connection state (the same signal the Windows Settings UI uses). PnP
+        /// enumeration alone cannot tell "paired" from "connected" because Windows keeps
+        /// the device node present via <c>AlwaysShowDeviceAsConnected</c>.
         /// </summary>
         private static List<BtPnpRow> QueryEligibleBluetoothPeripherals()
         {
-            const string script = @"
-$parents = Get-PnpDevice -Class Bluetooth -PresentOnly -ErrorAction SilentlyContinue | Where-Object {
-    $_.Status -notin @('Error','Degraded') -and
-    (
-        $_.InstanceId -match '^BTHENUM\\DEV_([0-9A-F]{12})' -or
-        $_.InstanceId -match '^BTHLE\\DEV_([0-9A-F]{12,})'
-    ) -and
-    $_.FriendlyName -notlike '*Enumerator*' -and
-    $_.FriendlyName -notlike '*Wireless Bluetooth*'
-}
-$allPresent = Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue
-$out = @()
-foreach ($p in $parents) {
-    $mac = $null
-    if ($p.InstanceId -match '^BTHENUM\\DEV_([0-9A-F]{12})')  { $mac = $Matches[1] }
-    elseif ($p.InstanceId -match '^BTHLE\\DEV_([0-9A-F]{12,})') { $mac = $Matches[1] }
-    if (-not $mac) { continue }
-    $children = $allPresent | Where-Object {
-        $_.InstanceId -ne $p.InstanceId -and $_.InstanceId -match $mac
-    }
-    if ($children.Count -gt 0) {
-        $out += $p.FriendlyName
-    }
-}
-@($out) | ConvertTo-Json -Compress
-";
-            string json = (RunPowerShellEncoded(script) ?? "").Trim();
-            return ParseFriendlyNameJsonArray(json);
+            var list = new List<BtPnpRow>();
+            try
+            {
+                var search = new NativeBluetooth.BLUETOOTH_DEVICE_SEARCH_PARAMS
+                {
+                    dwSize = Marshal.SizeOf<NativeBluetooth.BLUETOOTH_DEVICE_SEARCH_PARAMS>(),
+                    fReturnAuthenticated = true,
+                    fReturnRemembered = true,
+                    fReturnUnknown = false,
+                    fReturnConnected = true,
+                    fIssueInquiry = false,
+                    cTimeoutMultiplier = 0,
+                    hRadio = IntPtr.Zero,
+                };
+                var info = new NativeBluetooth.BLUETOOTH_DEVICE_INFO
+                {
+                    dwSize = Marshal.SizeOf<NativeBluetooth.BLUETOOTH_DEVICE_INFO>(),
+                };
+
+                IntPtr hFind = NativeBluetooth.BluetoothFindFirstDevice(ref search, ref info);
+                if (hFind == IntPtr.Zero) return list;
+                try
+                {
+                    do
+                    {
+                        if (info.fConnected && !string.IsNullOrWhiteSpace(info.szName))
+                            list.Add(new BtPnpRow(info.szName.Trim()));
+
+                        info = new NativeBluetooth.BLUETOOTH_DEVICE_INFO
+                        {
+                            dwSize = Marshal.SizeOf<NativeBluetooth.BLUETOOTH_DEVICE_INFO>(),
+                        };
+                    }
+                    while (NativeBluetooth.BluetoothFindNextDevice(hFind, ref info));
+                }
+                finally
+                {
+                    NativeBluetooth.BluetoothFindDeviceClose(hFind);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"native bt enum exception: {ex.GetType().Name}: {ex.Message}");
+            }
+            return list;
         }
 
         /// <summary>True if a device paired to this PC has a matching friendly name (Bluetooth registration DB).</summary>
