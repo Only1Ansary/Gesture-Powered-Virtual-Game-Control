@@ -216,11 +216,11 @@ namespace FruitNinjaGame
             pnn.Y = Y;
             pnn.Frame = 0;
             pnn.img = new List<Bitmap>();
-            pnn.img.Add(new Bitmap("assets/ex1.png"));
-            pnn.img.Add(new Bitmap("assets/ex2.png"));
-            pnn.img.Add(new Bitmap("assets/ex3.png"));
-            pnn.img.Add(new Bitmap("assets/ex4.png"));
-            pnn.img.Add(new Bitmap("assets/ex5.png"));
+            pnn.img.Add(new Bitmap(AppConfig.GetAssetPath("ex1.png")));
+            pnn.img.Add(new Bitmap(AppConfig.GetAssetPath("ex2.png")));
+            pnn.img.Add(new Bitmap(AppConfig.GetAssetPath("ex3.png")));
+            pnn.img.Add(new Bitmap(AppConfig.GetAssetPath("ex4.png")));
+            pnn.img.Add(new Bitmap(AppConfig.GetAssetPath("ex5.png")));
             Exp.Add(pnn);
         }
         void animate_exp()
@@ -241,139 +241,139 @@ namespace FruitNinjaGame
 
         void DrawScore()
         {
-            Bitmap num = new Bitmap("assets/zero.png");
+            Bitmap num = new Bitmap(AppConfig.GetAssetPath("zero.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/one.png");
+            num = new Bitmap(AppConfig.GetAssetPath("one.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/two.png");
+            num = new Bitmap(AppConfig.GetAssetPath("two.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/three.png");
+            num = new Bitmap(AppConfig.GetAssetPath("three.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/four.png");
+            num = new Bitmap(AppConfig.GetAssetPath("four.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/five.png");
+            num = new Bitmap(AppConfig.GetAssetPath("five.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/six.png");
+            num = new Bitmap(AppConfig.GetAssetPath("six.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/seven.png");
+            num = new Bitmap(AppConfig.GetAssetPath("seven.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/eight.png");
+            num = new Bitmap(AppConfig.GetAssetPath("eight.png"));
             ScoreNum.First.Add(num);
-            num = new Bitmap("assets/nine.png");
+            num = new Bitmap(AppConfig.GetAssetPath("nine.png"));
             ScoreNum.First.Add(num);
 
-            num = new Bitmap("assets/zero.png");
+            num = new Bitmap(AppConfig.GetAssetPath("zero.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/one.png");
+            num = new Bitmap(AppConfig.GetAssetPath("one.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/two.png");
+            num = new Bitmap(AppConfig.GetAssetPath("two.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/three.png");
+            num = new Bitmap(AppConfig.GetAssetPath("three.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/four.png");
+            num = new Bitmap(AppConfig.GetAssetPath("four.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/five.png");
+            num = new Bitmap(AppConfig.GetAssetPath("five.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/six.png");
+            num = new Bitmap(AppConfig.GetAssetPath("six.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/seven.png");
+            num = new Bitmap(AppConfig.GetAssetPath("seven.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/eight.png");
+            num = new Bitmap(AppConfig.GetAssetPath("eight.png"));
             ScoreNum.Second.Add(num);
-            num = new Bitmap("assets/nine.png");
+            num = new Bitmap(AppConfig.GetAssetPath("nine.png"));
             ScoreNum.Second.Add(num);
 
-            num = new Bitmap("assets/zero.png");
+            num = new Bitmap(AppConfig.GetAssetPath("zero.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/one.png");
+            num = new Bitmap(AppConfig.GetAssetPath("one.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/two.png");
+            num = new Bitmap(AppConfig.GetAssetPath("two.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/three.png");
+            num = new Bitmap(AppConfig.GetAssetPath("three.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/four.png");
+            num = new Bitmap(AppConfig.GetAssetPath("four.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/five.png");
+            num = new Bitmap(AppConfig.GetAssetPath("five.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/six.png");
+            num = new Bitmap(AppConfig.GetAssetPath("six.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/seven.png");
+            num = new Bitmap(AppConfig.GetAssetPath("seven.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/eight.png");
+            num = new Bitmap(AppConfig.GetAssetPath("eight.png"));
             ScoreNum.Third.Add(num);
-            num = new Bitmap("assets/nine.png");
+            num = new Bitmap(AppConfig.GetAssetPath("nine.png"));
             ScoreNum.Third.Add(num);
 
-            num = new Bitmap("assets/zero.png");
+            num = new Bitmap(AppConfig.GetAssetPath("zero.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/one.png");
+            num = new Bitmap(AppConfig.GetAssetPath("one.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/two.png");
+            num = new Bitmap(AppConfig.GetAssetPath("two.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/three.png");
+            num = new Bitmap(AppConfig.GetAssetPath("three.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/four.png");
+            num = new Bitmap(AppConfig.GetAssetPath("four.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/five.png");
+            num = new Bitmap(AppConfig.GetAssetPath("five.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/six.png");
+            num = new Bitmap(AppConfig.GetAssetPath("six.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/seven.png");
+            num = new Bitmap(AppConfig.GetAssetPath("seven.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/eight.png");
+            num = new Bitmap(AppConfig.GetAssetPath("eight.png"));
             ScoreNum.Fourth.Add(num);
-            num = new Bitmap("assets/nine.png");
+            num = new Bitmap(AppConfig.GetAssetPath("nine.png"));
             ScoreNum.Fourth.Add(num);
         }
 
         void DrawFruits()
         {
-            Bitmap img = new Bitmap("assets/full_water.png");
+            Bitmap img = new Bitmap(AppConfig.GetAssetPath("full_water.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_water.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_water.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/full_banana.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_banana.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_banana.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_banana.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/full_green_apple.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_green_apple.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_green_apple.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_green_apple.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/full_red_apple.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_red_apple.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_red_apple.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_red_apple.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/full_lemon.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_lemon.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_lemon.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_lemon.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/full_orange.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_orange.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_orange.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_orange.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/full_coco.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_coco.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_coco.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_coco.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/full_pear.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_pear.png"));
             FruitImg.Add(img);
 
-            img = new Bitmap("assets/half_pear.png");
+            img = new Bitmap(AppConfig.GetAssetPath("half_pear.png"));
             FruitImg.Add(img);
 
         }
@@ -398,7 +398,7 @@ namespace FruitNinjaGame
             pnn.Y = this.ClientSize.Height + 100;
             pnn.Vy = -R.Next(50, 60);
             pnn.Vx = R.Next(-8, 9);
-            Bitmap img = new Bitmap("assets/bomb.png");
+            Bitmap img = new Bitmap(AppConfig.GetAssetPath("bomb.png"));
             pnn.img.Add(img);
 
             Bombs.Add(pnn);
@@ -409,13 +409,13 @@ namespace FruitNinjaGame
             isGame = true;
             DrawFruits();
             Fruit pnn = new Fruit();
-            Bitmap img = new Bitmap("assets/no_life.png");
+            Bitmap img = new Bitmap(AppConfig.GetAssetPath("no_life.png"));
             pnn.img.Add(img);
-            img = new Bitmap("assets/life2.png");
+            img = new Bitmap(AppConfig.GetAssetPath("life2.png"));
             pnn.img.Add(img);
-            img = new Bitmap("assets/life1.png");
+            img = new Bitmap(AppConfig.GetAssetPath("life1.png"));
             pnn.img.Add(img);
-            img = new Bitmap("assets/full_life.png");
+            img = new Bitmap(AppConfig.GetAssetPath("full_life.png"));
             pnn.img.Add(img);
             pnn.X = this.ClientSize.Width - 250;
             pnn.Y = 10;
@@ -424,7 +424,7 @@ namespace FruitNinjaGame
             pnn = new Fruit();
             pnn.X = 10;
             pnn.Y = 10;
-            img = new Bitmap("assets/score.png");
+            img = new Bitmap(AppConfig.GetAssetPath("score.png"));
             pnn.img.Add(img);
             ScoreIcon = pnn;
 
@@ -433,21 +433,21 @@ namespace FruitNinjaGame
 
         void StartMenu()
         {
-            back = new Bitmap("assets/WoodBG.jpg");
-            GameName = new Bitmap("assets/Name.png");
-            StartRing = new Bitmap("assets/start_ring.png");
-            ExitRing = new Bitmap("assets/exit_ring.png");
+            back = new Bitmap(AppConfig.GetAssetPath("WoodBG.jpg"));
+            GameName = new Bitmap(AppConfig.GetAssetPath("Name.png"));
+            StartRing = new Bitmap(AppConfig.GetAssetPath("start_ring.png"));
+            ExitRing = new Bitmap(AppConfig.GetAssetPath("exit_ring.png"));
 
             Fruit pnn = new Fruit();
             pnn.X = this.ClientSize.Width / 2 - 405;
             pnn.Y = this.ClientSize.Height / 2 - 20;
-            Bitmap StartIcon = new Bitmap("assets/full_water.png");
+            Bitmap StartIcon = new Bitmap(AppConfig.GetAssetPath("full_water.png"));
             pnn.img.Add(StartIcon);
-            StartIcon = new Bitmap("assets/half_water.png");
+            StartIcon = new Bitmap(AppConfig.GetAssetPath("half_water.png"));
             pnn.img.Add(StartIcon);
             this.StartIcon = pnn;
 
-            Bitmap ExiIcon = new Bitmap("assets/bomb.png");
+            Bitmap ExiIcon = new Bitmap(AppConfig.GetAssetPath("bomb.png"));
 
             Fruit pn = new Fruit();
             pn.X = this.ClientSize.Width / 2 + 290;
@@ -476,7 +476,7 @@ namespace FruitNinjaGame
             g.DrawImage(back, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
             if(isOver)
             {
-                GameOver = new Bitmap("assets/GameOver.png");
+                GameOver = new Bitmap(AppConfig.GetAssetPath("GameOver.png"));
                 g.DrawImage(GameOver, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
 
                     
@@ -629,7 +629,7 @@ namespace FruitNinjaGame
         {
             off = new Bitmap(this.ClientSize.Width, this.ClientSize.Height);
             StartMenu();
-            Bitmap img = new Bitmap("assets/blade.png");
+            Bitmap img = new Bitmap(AppConfig.GetAssetPath("blade.png"));
             Blade.img.Add(img);
         }
 

@@ -1142,6 +1142,7 @@ namespace FruitNinjaGame
         private Process _reactivisionProcess = null;
         private bool _gameRunning = false;
         private Form1 _activeGameForm = null;
+        private Process? _handProcess;
 
         private readonly List<Bitmap> _screenBitmaps = new List<Bitmap>();
 
@@ -1239,6 +1240,7 @@ namespace FruitNinjaGame
             _gifPlayer?.Dispose();
             FreeScreenBitmaps();
             _menuOverlay?.Close();
+            StopHandController();
         }
 
         // ── bitmap lifetime ────────────────────────────────────────────────────
@@ -1326,6 +1328,77 @@ namespace FruitNinjaGame
             try { _reactivisionProcess.Kill(); _reactivisionProcess.WaitForExit(3000); }
             catch { }
             _reactivisionProcess = null;
+        }
+
+        private void StartHandController()
+        {
+            if (_handProcess != null && !_handProcess.HasExited)
+                return;
+
+            string scriptPath = ResolveHandControllerPath();
+            if (string.IsNullOrEmpty(scriptPath) || !File.Exists(scriptPath))
+            {
+                Console.WriteLine("hand_controller.py not found – hand tracking disabled.");
+                return;
+            }
+
+            // Use "python" or "python3" – adjust if necessary
+            string pythonExe = "python";
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+                pythonExe = "python3";
+
+            try
+            {
+                _handProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = pythonExe,
+                        Arguments = $"\"{scriptPath}\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    }
+                };
+                _handProcess.Start();
+                Console.WriteLine("Hand controller started.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start hand controller: {ex.Message}");
+            }
+        }
+
+        private void StopHandController()
+        {
+            if (_handProcess != null && !_handProcess.HasExited)
+            {
+                try
+                {
+                    _handProcess.Kill();
+                    _handProcess.WaitForExit(2000);
+                }
+                catch { }
+                _handProcess.Dispose();
+                _handProcess = null;
+                Console.WriteLine("Hand controller stopped.");
+            }
+        }
+
+        private string ResolveHandControllerPath()
+        {
+            // Try common locations: executable directory, repo root, assets directory
+            string[] candidates = {
+                            Path.Combine(AppConfig.BaseDir, "hand_controller.py"),
+                            Path.Combine(AppConfig.RepoRoot, "hand_controller.py"),
+                            Path.Combine(AppConfig.AssetsDir, "hand_controller.py")
+                                   };
+            foreach (var cand in candidates)
+            {
+                if (File.Exists(cand))
+                    return cand;
+            }
+            return "";
         }
 
         // ── TUIO callbacks ─────────────────────────────────────────────────────
@@ -2230,13 +2303,19 @@ namespace FruitNinjaGame
             errorMsg = "";
             try
             {
-                var gameForm = new Form1(); // FruitNinjaGame.Form1 — the actual game
+                var gameForm = new Form1(); // FruitNinjaGame.Form1
                 _activeGameForm = gameForm;
+
+                // Start the hand controller when game runs
+                StartHandController();
+
                 gameForm.FormClosed += (s, e) =>
                 {
                     _gameRunning = false;
                     if (ReferenceEquals(_activeGameForm, gameForm))
                         _activeGameForm = null;
+                    // Stop hand controller when game window closes
+                    StopHandController();
                 };
                 gameForm.Show();
                 return true;
@@ -2244,6 +2323,7 @@ namespace FruitNinjaGame
             catch (Exception ex)
             {
                 errorMsg = ex.Message;
+                StopHandController(); // Cleanup if game fails to start
                 return false;
             }
         }
