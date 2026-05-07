@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using NAudio.Wave;
 
 namespace FruitNinjaGame
 {
@@ -14,6 +15,25 @@ namespace FruitNinjaGame
         private Thread? listenerThread;
         private volatile bool listening = true;
         private readonly object levelLock = new object();
+        private readonly object toolLock = new object();
+        private readonly GameAudioPlayer audio = new GameAudioPlayer();
+        private bool isClosing = false;
+        private ToolMode currentTool = ToolMode.Sword;
+        private bool toolActive = false;
+        private string yoloStatus = "none";
+        private string yoloCandidate = "none";
+        private float yoloConfidence = 0f;
+        private float yoloCursorX = -1f;
+        private float yoloCursorY = -1f;
+        private int yoloPixelX = -1;
+        private int yoloPixelY = -1;
+        private int yoloUpdateCount = 0;
+
+        private enum ToolMode
+        {
+            Sword,
+            Stick
+        }
 
         public Form1()
         {
@@ -27,6 +47,18 @@ namespace FruitNinjaGame
             T.Start();
             this.KeyDown += Form1_KeyDown;
             this.MouseMove += Form1_MouseMove;
+            this.FormClosing += (_, _) =>
+            {
+                isClosing = true;
+                audio.StopMusic();
+            };
+            this.FormClosed += (_, _) =>
+            {
+                isClosing = true;
+                listening = false;
+                levelListener?.Stop();
+                audio.Dispose();
+            };
         }
 
         private void Form1_MouseMove(object? sender, MouseEventArgs e) => ProcessPointerMove(e.X, e.Y);
@@ -111,6 +143,8 @@ namespace FruitNinjaGame
                     {
                         Fruits[i].isCut = 1;
                         ScoreCount++;
+                        if (IsToolActive())
+                            audio.PlayFruitHit(GetCurrentTool() == ToolMode.Stick);
                     }
                 }
 
@@ -139,6 +173,8 @@ namespace FruitNinjaGame
 
                     if (hit)
                     {
+                        if (IsToolActive())
+                            audio.PlayExplosion();
                         create_explosion(Bombs[i].X, Bombs[i].Y);
                         animate_exp();
                         Bombs.RemoveAt(i);
@@ -146,6 +182,7 @@ namespace FruitNinjaGame
                         if (LivesCount == 0)
                         {
                             isOver = true;
+                            audio.StopMusic();
                             Fruits.Clear();
                             Bombs.Clear();
                         }
@@ -258,6 +295,115 @@ namespace FruitNinjaGame
             lock (_levelLock)
             {
                 _currentLevel = level;
+            }
+        }
+
+        public void SetToolState(string toolState)
+        {
+            if (isClosing || IsDisposed) return;
+            if (InvokeRequired)
+            {
+                try { BeginInvoke(new Action(() => SetToolState(toolState))); } catch { }
+                return;
+            }
+
+            string[] parts = (toolState ?? "").Trim().Split('|');
+            string normalized = parts.Length > 0 ? parts[0].Trim().ToLowerInvariant() : "none";
+            float confidence = 0f;
+            if (parts.Length > 1)
+                float.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out confidence);
+            string candidate = parts.Length > 2 ? parts[2].Trim().ToLowerInvariant() : normalized;
+            float normX = 0.5f;
+            float normY = 0.5f;
+            bool hasPointer =
+                parts.Length > 4 &&
+                float.TryParse(parts[3], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out normX) &&
+                float.TryParse(parts[4], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out normY);
+
+            bool nextToolActive = normalized == "sword" || normalized == "stick";
+            ToolMode nextTool = normalized == "stick" ? ToolMode.Stick : ToolMode.Sword;
+            lock (toolLock)
+            {
+                currentTool = nextTool;
+                toolActive = nextToolActive;
+                yoloStatus = normalized;
+                yoloCandidate = string.IsNullOrWhiteSpace(candidate) ? "none" : candidate;
+                yoloConfidence = confidence;
+            }
+
+            if (hasPointer)
+            {
+                FeedYoloPointer(normX, normY);
+            }
+
+            if (!nextToolActive || isOver)
+            {
+                audio.PauseMusic();
+            }
+            else if (isGame)
+            {
+                audio.PlayGameplayMusic();
+            }
+            else if (isMenu)
+            {
+                audio.PlayStartMusic();
+            }
+        }
+
+        private void FeedYoloPointer(float normalizedX, float normalizedY)
+        {
+            normalizedX = Math.Clamp(normalizedX, 0f, 1f);
+            normalizedY = Math.Clamp(normalizedY, 0f, 1f);
+
+            if (yoloCursorX < 0f || yoloCursorY < 0f)
+            {
+                yoloCursorX = normalizedX;
+                yoloCursorY = normalizedY;
+            }
+            else
+            {
+                const float alpha = 0.75f;
+                yoloCursorX = yoloCursorX + (normalizedX - yoloCursorX) * alpha;
+                yoloCursorY = yoloCursorY + (normalizedY - yoloCursorY) * alpha;
+            }
+
+            int px = (int)(yoloCursorX * Math.Max(1, ClientSize.Width - 1));
+            int py = (int)(yoloCursorY * Math.Max(1, ClientSize.Height - 1));
+            lock (toolLock)
+            {
+                yoloPixelX = px;
+                yoloPixelY = py;
+                yoloUpdateCount++;
+            }
+            ProcessPointerMove(px, py);
+        }
+
+        private ToolMode GetCurrentTool()
+        {
+            lock (toolLock)
+            {
+                return currentTool;
+            }
+        }
+
+        private int GetCurrentToolImageIndex()
+        {
+            return GetCurrentTool() == ToolMode.Stick && Blade.img.Count > 1 ? 1 : 0;
+        }
+
+        private bool IsToolActive()
+        {
+            lock (toolLock)
+            {
+                return toolActive;
+            }
+        }
+
+        private string GetYoloHudText()
+        {
+            lock (toolLock)
+            {
+                return $"YOLO: {yoloStatus}  candidate: {yoloCandidate}  confidence: {yoloConfidence:0.00}  xy: {yoloPixelX},{yoloPixelY}  updates: {yoloUpdateCount}";
             }
         }
 
@@ -668,10 +814,59 @@ namespace FruitNinjaGame
                 }
             }
 
-            g.DrawImage(Blade.img[0], Blade.X, Blade.Y, Blade.img[0].Width - 150, Blade.img[0].Height - 150);
+            DrawYoloHud(g);
+            DrawYoloPointerMarker(g);
+
+            int toolImageIndex = GetCurrentToolImageIndex();
+            g.DrawImage(Blade.img[toolImageIndex], Blade.X, Blade.Y, Blade.img[toolImageIndex].Width - 150, Blade.img[toolImageIndex].Height - 150);
 
 
 
+        }
+
+        private void DrawYoloHud(Graphics g)
+        {
+            string text = GetYoloHudText();
+            using (Font hudFont = new Font("Consolas", 15, FontStyle.Bold))
+            {
+                SizeF textSize = g.MeasureString(text, hudFont);
+                int x = 20;
+                int y = 95;
+                int padding = 14;
+
+                using (SolidBrush bgBrush = new SolidBrush(Color.FromArgb(185, 0, 0, 0)))
+                using (SolidBrush textBrush = new SolidBrush(IsToolActive() ? Color.LimeGreen : Color.OrangeRed))
+                {
+                    FillRoundedRectangle(g, bgBrush, x, y, (int)textSize.Width + padding * 2, (int)textSize.Height + padding, 12);
+                    g.DrawString(text, hudFont, textBrush, x + padding, y + padding / 2);
+                }
+            }
+        }
+
+        private void DrawYoloPointerMarker(Graphics g)
+        {
+            int px;
+            int py;
+            bool active;
+            lock (toolLock)
+            {
+                px = yoloPixelX;
+                py = yoloPixelY;
+                active = toolActive;
+            }
+
+            if (px < 0 || py < 0)
+                return;
+
+            Color markerColor = active ? Color.Cyan : Color.Gray;
+            using (Pen markerPen = new Pen(markerColor, 4))
+            using (SolidBrush markerBrush = new SolidBrush(Color.FromArgb(120, markerColor)))
+            {
+                g.FillEllipse(markerBrush, px - 14, py - 14, 28, 28);
+                g.DrawEllipse(markerPen, px - 18, py - 18, 36, 36);
+                g.DrawLine(markerPen, px - 28, py, px + 28, py);
+                g.DrawLine(markerPen, px, py - 28, px, py + 28);
+            }
         }
 
 
@@ -759,6 +954,8 @@ namespace FruitNinjaGame
             StartMenu();
             Bitmap img = new Bitmap(AppConfig.GetAssetPath("blade.png"));
             Blade.img.Add(img);
+            string stickPath = AppConfig.GetAssetPath("stick.png");
+            Blade.img.Add(File.Exists(stickPath) ? new Bitmap(stickPath) : img);
 
             // Start TCP listener on a background thread
             listenerThread = new Thread(ListenForLevelUpdates);
@@ -857,5 +1054,141 @@ namespace FruitNinjaGame
 
     }
 
+    internal sealed class GameAudioPlayer : IDisposable
+    {
+        private readonly object audioLock = new object();
+        private readonly Random random = new Random();
+        private WaveOutEvent? musicOutput;
+        private AudioFileReader? musicReader;
+        private string currentMusicPath = "";
+        private bool loopMusic;
+        private bool disposed;
 
+        public void PlayStartMusic()
+        {
+            PlayLoop(AppConfig.GetAssetPath("Start.mp3"));
+        }
+
+        public void PlayGameplayMusic()
+        {
+            PlayLoop(AppConfig.GetAssetPath("gameplay.mp3"));
+        }
+
+        public void StopMusic()
+        {
+            lock (audioLock)
+            {
+                StopMusicLocked();
+            }
+        }
+
+        public void PauseMusic()
+        {
+            lock (audioLock)
+            {
+                musicOutput?.Pause();
+            }
+        }
+
+        public void PlayFruitHit(bool useStickSound)
+        {
+            PlayEffect(AppConfig.GetAssetPath(useStickSound ? "hit.mp3" : "slash.mp3"));
+        }
+
+        public void PlayExplosion()
+        {
+            int effectNumber = random.Next(1, 4);
+            PlayEffect(AppConfig.GetAssetPath($"explosion {effectNumber}.mp3"));
+        }
+
+        private void PlayLoop(string path)
+        {
+            if (!File.Exists(path))
+                return;
+
+            lock (audioLock)
+            {
+                if (disposed)
+                    return;
+
+                if (string.Equals(currentMusicPath, path, StringComparison.OrdinalIgnoreCase) && musicOutput != null)
+                {
+                    if (musicOutput.PlaybackState != PlaybackState.Playing)
+                        musicOutput.Play();
+                    return;
+                }
+
+                StopMusicLocked();
+                currentMusicPath = path;
+                loopMusic = true;
+                musicReader = new AudioFileReader(path);
+                musicOutput = new WaveOutEvent();
+                musicOutput.Init(musicReader);
+                musicOutput.PlaybackStopped += (_, _) =>
+                {
+                    lock (audioLock)
+                    {
+                        if (!loopMusic || musicReader == null || musicOutput == null)
+                            return;
+
+                        musicReader.Position = 0;
+                        musicOutput.Play();
+                    }
+                };
+                musicOutput.Play();
+            }
+        }
+
+        private void PlayEffect(string path)
+        {
+            if (!File.Exists(path))
+                return;
+
+            lock (audioLock)
+            {
+                if (disposed)
+                    return;
+            }
+
+            try
+            {
+                var reader = new AudioFileReader(path);
+                var output = new WaveOutEvent();
+                output.Init(reader);
+                output.PlaybackStopped += (_, _) =>
+                {
+                    output.Dispose();
+                    reader.Dispose();
+                };
+                output.Play();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Sound effect error: {ex.Message}");
+            }
+        }
+
+        private void StopMusicLocked()
+        {
+            loopMusic = false;
+            currentMusicPath = "";
+            if (musicOutput != null)
+            {
+                musicOutput.Stop();
+                musicOutput.Dispose();
+                musicOutput = null;
+            }
+            musicReader?.Dispose();
+            musicReader = null;
+        }
+
+        public void Dispose()
+        {
+            lock (audioLock)
+            {
+                disposed = true;
+                StopMusicLocked();
+            }
+        }
+    }
 }

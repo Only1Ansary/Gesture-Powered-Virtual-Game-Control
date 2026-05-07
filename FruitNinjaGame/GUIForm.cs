@@ -1149,6 +1149,10 @@ namespace FruitNinjaGame
         private Thread? _listenerThread;
         private volatile bool _listening = true;
         private int _currentLevel = 100; // default
+        private Process _yoloProcess;
+        private TcpListener _toolListener;
+        private Thread _toolListenerThread;
+        private volatile bool _toolListening = true;
 
         private readonly List<Bitmap> _screenBitmaps = new List<Bitmap>();
 
@@ -1250,6 +1254,8 @@ namespace FruitNinjaGame
 
             StopEmotionServer();          // kill the Python process
             StopLevelListener();
+            StopYoloObjectTracker();
+            StopToolListener();
         }
 
         // ── bitmap lifetime ────────────────────────────────────────────────────
@@ -1408,6 +1414,139 @@ namespace FruitNinjaGame
                     return cand;
             }
             return "";
+        }
+
+        private void StartYoloObjectTracker()
+        {
+            if (_yoloProcess != null && !_yoloProcess.HasExited)
+                return;
+
+            string scriptPath = Path.Combine(AppConfig.RepoRoot, "yolo_object_tracker.py");
+            if (!File.Exists(scriptPath))
+            {
+                Console.WriteLine("yolo_object_tracker.py not found – tool tracking disabled.");
+                return;
+            }
+
+            try
+            {
+                _yoloProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "python",
+                        Arguments = $"\"{scriptPath}\"",
+                        WorkingDirectory = AppConfig.RepoRoot,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    }
+                };
+                _yoloProcess.StartInfo.EnvironmentVariables["PYTHONUNBUFFERED"] = "1";
+                _yoloProcess.OutputDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(e.Data))
+                        Console.WriteLine($"YOLO: {e.Data}");
+                };
+                _yoloProcess.ErrorDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(e.Data))
+                        Console.WriteLine($"YOLO: {e.Data}");
+                };
+                _yoloProcess.Start();
+                _yoloProcess.BeginOutputReadLine();
+                _yoloProcess.BeginErrorReadLine();
+                Console.WriteLine("YOLO object tracker started.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start YOLO object tracker: {ex.Message}");
+            }
+        }
+
+        private void StopYoloObjectTracker()
+        {
+            if (_yoloProcess != null && !_yoloProcess.HasExited)
+            {
+                try
+                {
+                    _yoloProcess.Kill();
+                    _yoloProcess.WaitForExit(2000);
+                }
+                catch { }
+                _yoloProcess.Dispose();
+                _yoloProcess = null;
+                Console.WriteLine("YOLO object tracker stopped.");
+            }
+        }
+
+        private void StartToolListener()
+        {
+            if (_toolListenerThread != null && _toolListenerThread.IsAlive)
+                return;
+
+            _toolListening = true;
+            _toolListenerThread = new Thread(ListenForToolUpdates);
+            _toolListenerThread.IsBackground = true;
+            _toolListenerThread.Start();
+        }
+
+        private void ListenForToolUpdates()
+        {
+            try
+            {
+                _toolListener = new TcpListener(IPAddress.Loopback, 12346);
+                _toolListener.Start();
+                while (_toolListening)
+                {
+                    if (_toolListener.Pending())
+                    {
+                        using var client = _toolListener.AcceptTcpClient();
+                        using var stream = client.GetStream();
+                        using var reader = new StreamReader(stream, Encoding.ASCII);
+                        while (_toolListening && client.Connected)
+                        {
+                            string data;
+                            try
+                            {
+                                data = reader.ReadLine();
+                            }
+                            catch (IOException)
+                            {
+                                break;
+                            }
+
+                            if (string.IsNullOrWhiteSpace(data))
+                                break;
+
+                            if (_activeGameForm != null && !_activeGameForm.IsDisposed)
+                                _activeGameForm.SetToolState(data);
+                        }
+                    }
+                    Thread.Sleep(50);
+                }
+            }
+            catch (SocketException ex) when (!_toolListening)
+            {
+                Console.WriteLine($"Tool listener stopped: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Tool listener error: {ex.Message}");
+            }
+            finally
+            {
+                _toolListener?.Stop();
+            }
+        }
+
+        private void StopToolListener()
+        {
+            _toolListening = false;
+            _toolListener?.Stop();
+            _toolListenerThread?.Join(500);
         }
 
         // ── TUIO callbacks ─────────────────────────────────────────────────────
@@ -2295,6 +2434,8 @@ namespace FruitNinjaGame
                 // Start the emotion server and listener when the game runs
                 StartEmotionServer();
                 StartLevelListener();   // this will update _currentLevel
+                StartToolListener();
+                StartYoloObjectTracker();
 
                 _gameRunning = true;
                 WindowState = FormWindowState.Minimized;
@@ -2433,6 +2574,8 @@ namespace FruitNinjaGame
                         _activeGameForm = null;
                     // Stop hand controller when game window closes
                     StopHandController();
+                    StopYoloObjectTracker();
+                    StopToolListener();
                 };
                 gameForm.Show();
                 return true;
@@ -2451,6 +2594,8 @@ namespace FruitNinjaGame
             ((System.Windows.Forms.Timer)sender).Stop();
             StopEmotionServer();
             StopLevelListener();
+            StopYoloObjectTracker();
+            StopToolListener();
             LaunchReactivision();
             WindowState = FormWindowState.Maximized;
         }
