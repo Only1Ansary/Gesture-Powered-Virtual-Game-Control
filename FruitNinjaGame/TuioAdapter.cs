@@ -237,13 +237,13 @@ namespace FruitNinjaGame
                     return;
                 }
 
-                float prev = _lastAngleByFid[fid];
-                float delta = NormalizeAngleDelta(angle - prev);
-                _lastAngleByFid[fid] = angle;
+                float lastEmitted = _lastAngleByFid[fid];
+                float totalDelta = NormalizeAngleDelta(angle - lastEmitted);
 
-                if (Math.Abs(delta) >= _rotationThresholdRad)
+                if (Math.Abs(totalDelta) >= _rotationThresholdRad)
                 {
-                    _onMarkerRotated(delta > 0f ? "right" : "left", fid);
+                    _onMarkerRotated(totalDelta > 0f ? "right" : "left", fid);
+                    _lastAngleByFid[fid] = angle;
                 }
             }
         }

@@ -1170,6 +1170,7 @@ namespace FruitNinjaGame
         private float? _adminNeutralY = null;
         private float _adminSmoothedY = 0f;
         private bool _adminTriggered = false;
+        private DateTime _adminShownTime = DateTime.MinValue;
 
         // ── ctor ───────────────────────────────────────────────────────────────
         public GUIForm()
@@ -1557,25 +1558,34 @@ namespace FruitNinjaGame
             // Circular menu marker — allowed even while the game is running (same as Python).
             if (fid == AppConfig.MenuTuioMarker) { _menuOverlay?.ShowMenu(); return; }
             // Admin marker — even while Fruit Ninja is open; refresh BT and open admin if allowed.
-            if (fid == AppConfig.AdminTuioMarker && !_adminMode)
+            if (fid == AppConfig.AdminTuioMarker)
             {
-                _adminGate?.Refresh();
-                if (_adminGate != null && _adminGate.IsConnected)
+                if (!_adminMode)
                 {
-                    _currentUser = null;
-                    _adminNeutralY = null;
-                    _adminSmoothedY = 0f;
-                    _adminTriggered = false;
-                    ShowAdminScreen();
+                    _adminGate?.Refresh();
+                    if (_adminGate != null && _adminGate.IsConnected)
+                    {
+                        _currentUser = null;
+                        _adminNeutralY = null;
+                        _adminSmoothedY = 0f;
+                        _adminTriggered = false;
+                        ShowAdminScreen();
+                    }
+                    else
+                        MessageBox.Show(
+                            "Bluetooth device not detected — admin locked.\n\n" +
+                            $"Looking for: {AppConfig.AdminBluetoothName}\n" +
+                            $"Gate log: {BluetoothAdminGate.LogPath}",
+                            "Admin",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
                 }
                 else
-                    MessageBox.Show(
-                        "Bluetooth device not detected — admin locked.\n\n" +
-                        $"Looking for: {AppConfig.AdminBluetoothName}\n" +
-                        $"Gate log: {BluetoothAdminGate.LogPath}",
-                        "Admin",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Warning);
+                {
+                    // Already in admin mode — reset cooldown so user can adjust hand
+                    _adminShownTime = DateTime.Now;
+                    _adminTriggered = false;
+                }
                 return;
             }
             if (_gameRunning) return;
@@ -1596,10 +1606,9 @@ namespace FruitNinjaGame
                 _menuOverlay?.ResetMenuMarkerTracking();
                 return;
             }
+            // Admin marker removal — keep admin mode active (user request)
             if (fid == AppConfig.AdminTuioMarker && _adminMode)
             {
-                _adminMode = false;
-                ShowMainMenu();
                 return;
             }
             if (_gameRunning) return;
@@ -1613,6 +1622,8 @@ namespace FruitNinjaGame
             if (_menuOverlay != null && _menuOverlay.IsActive) return;
             if (_adminMode && fid == AppConfig.AdminTuioMarker)
             {
+                if ((DateTime.Now - _adminShownTime).TotalMilliseconds < 1000)
+                    return;
                 if (_adminTriggered)
                     return;
                 _adminTriggered = true;
@@ -1738,12 +1749,14 @@ namespace FruitNinjaGame
             _screen = root;
             root.Resize += (s, e) => { if (_screen == root) root.Bounds = ClientRectangle; };
 
-            int cardW = (int)(sw * 0.130);
-            int cardH = (int)(sh * 0.200);
-            int gap = (int)(sw * 0.020);
-            int totalW = _users.Count * cardW + (_users.Count - 1) * gap;
-            int startX = sw / 2 - totalW / 2;
-            int cardTop = (int)(sh * 0.570);
+            // Scale cards down if there are many users
+            float scale = 1.0f;
+            if (_users.Count > 6) scale = Math.Max(0.75f, 6.0f / _users.Count);
+
+            int cardW = (int)(sw * 0.130 * scale);
+            int cardH = (int)(sh * 0.200 * scale);
+            int gap = (int)(sw * 0.020 * scale);
+            int cardTop = (int)(sh * (_users.Count > 6 ? 0.440 : 0.570));
             int avSz = (int)(cardH * 0.48);
 
             var avatars = new Dictionary<int, Bitmap>();
@@ -1752,7 +1765,7 @@ namespace FruitNinjaGame
 
             int capSw = sw, capSh = sh;
             int capCardW = cardW, capCardH = cardH, capGap = gap;
-            int capStartX = startX, capCardTop = cardTop, capAvSz = avSz;
+            int capCardTop = cardTop, capAvSz = avSz;
 
             var canvas = new PaintCanvas { Bounds = root.ClientRectangle };
             root.Controls.Add(canvas);
@@ -1777,43 +1790,60 @@ namespace FruitNinjaGame
                 using var tw = new SolidBrush(Color.White);
                 string title = "GESTURE-POWERED  VIRTUAL  GAME  CONTROL";
                 var tsz = g.MeasureString(title, tf);
-                g.DrawString(title, tf, tw, (capSw - tsz.Width) / 2f, capSh * 0.17f);
+                float titleY = capSh * (capCardTop < capSh * 0.5f ? 0.08f : 0.17f);
+                g.DrawString(title, tf, tw, (capSw - tsz.Width) / 2f, titleY);
 
                 int lx = (int)(capSw * 0.225);
                 using var sp = new Pen(Color.FromArgb(80, 80, 80), 2);
-                g.DrawLine(sp, lx, (int)(capSh * 0.26f), capSw - lx, (int)(capSh * 0.26f));
+                float lineY = titleY + tsz.Height + (int)(capSh * 0.02f);
+                g.DrawLine(sp, lx, lineY, capSw - lx, lineY);
 
                 using var wf = new Font("Bahnschrift", capSh * 0.042f, FontStyle.Bold);
                 using var wb = new SolidBrush(ColorTranslator.FromHtml("#00b4d8"));
                 string wlc = "Welcome, User!";
                 var wsz = g.MeasureString(wlc, wf);
-                g.DrawString(wlc, wf, wb, (capSw - wsz.Width) / 2f, capSh * 0.34f);
+                float wlcY = lineY + (int)(capSh * 0.04f);
+                g.DrawString(wlc, wf, wb, (capSw - wsz.Width) / 2f, wlcY);
 
                 using var suf = new Font("Bahnschrift", capSh * 0.020f);
                 using var sub = new SolidBrush(Color.FromArgb(170, 170, 170));
                 string subTxt = "Please sign in by holding a TUIO marker in front of the camera.";
                 var ssz = g.MeasureString(subTxt, suf);
-                g.DrawString(subTxt, suf, sub, (capSw - ssz.Width) / 2f, capSh * 0.43f);
+                float subY = wlcY + wsz.Height + 2;
+                g.DrawString(subTxt, suf, sub, (capSw - ssz.Width) / 2f, subY);
 
                 using var hf = new Font("Consolas", capSh * 0.013f, FontStyle.Bold);
                 using var hb = new SolidBrush(Color.FromArgb(85, 85, 85));
                 string sec = "REGISTERED USERS";
                 var secsz = g.MeasureString(sec, hf);
-                g.DrawString(sec, hf, hb, (capSw - secsz.Width) / 2f, capSh * 0.530f);
+                float secY = capCardTop - secsz.Height - (int)(capSh * 0.02f);
+                g.DrawString(sec, hf, hb, (capSw - secsz.Width) / 2f, secY);
+
+                int maxInRow = (int)(capSw * 0.95 / (capCardW + capGap));
+                if (maxInRow < 1) maxInRow = 1;
 
                 int ci = 0;
                 foreach (var kv in _users)
                 {
                     int uid = kv.Key;
                     var u = kv.Value;
-                    int cx2 = capStartX + ci++ * (capCardW + capGap);
+
+                    int row = ci / maxInRow;
+                    int col = ci % maxInRow;
+                    int inThisRow = Math.Min(_users.Count - row * maxInRow, maxInRow);
+                    int rowW = inThisRow * capCardW + (inThisRow - 1) * capGap;
+                    int rowStartX = capSw / 2 - rowW / 2;
+
+                    int cx2 = rowStartX + col * (capCardW + capGap);
+                    int cy2 = capCardTop + row * (capCardH + (int)(capSh * 0.04));
+                    
                     var av = avatars[uid];
 
                     using var cbg = new SolidBrush(u.HeaderBg);
-                    g.FillRectangle(cbg, cx2, capCardTop, capCardW, capCardH);
+                    g.FillRectangle(cbg, cx2, cy2, capCardW, capCardH);
 
                     int avX = cx2 + (capCardW - capAvSz) / 2;
-                    int avY = capCardTop + (int)(capCardH * 0.06);
+                    int avY = cy2 + (int)(capCardH * 0.06);
                     g.DrawImage(av, avX, avY, capAvSz, capAvSz);
 
                     using var mf2 = new Font("Consolas", capSh * 0.011f, FontStyle.Bold);
@@ -1831,7 +1861,9 @@ namespace FruitNinjaGame
                                  mkY + mksz.Height + 2);
 
                     using var str = new SolidBrush(u.Accent);
-                    g.FillRectangle(str, cx2, capCardTop + capCardH - 5, capCardW, 5);
+                    g.FillRectangle(str, cx2, cy2 + capCardH - 5, capCardW, 5);
+                    
+                    ci++;
                 }
             };
 
@@ -2137,6 +2169,7 @@ namespace FruitNinjaGame
         // ═══════════════════════════════════════════════════════════════════════
         private void ShowAdminScreen()
         {
+            _adminShownTime = DateTime.Now;
             _adminMode = true;
             _adminSelected = 0;
             _adminNeutralY = null;
@@ -2198,7 +2231,6 @@ namespace FruitNinjaGame
                          "Push marker RIGHT to add a user",
                          "Rotate marker RIGHT to remove selected",
                          "Rotate marker LEFT to go back",
-                         "Remove admin marker to return to main menu",
                      })
             {
                 var ln = new Label

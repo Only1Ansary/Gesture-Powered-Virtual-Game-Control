@@ -34,7 +34,9 @@ namespace FruitNinjaGame
         private static readonly string[] NameParts =
         {
             "Nova", "River", "Sky", "Echo", "Morgan", "Quinn", "Phoenix", "Sage",
-            "Rowan", "Indigo", "Ash", "Jules", "Reese", "Blair", "Eden",
+            "Rowan", "Indigo", "Ash", "Jules", "Reese", "Blair", "Eden", "Atlas",
+            "Lyra", "Cyrus", "Luna", "Orion", "Zephyr", "Dawn", "Storm", "Frost",
+            "Ember", "Sol", "Dusk", "Cloud", "Skylar", "Azure", "Slate", "Terra"
         };
 
         public static Dictionary<int, UserProfile> LoadUsers()
@@ -88,7 +90,7 @@ namespace FruitNinjaGame
 
         public static int NextFreeMarkerId(Dictionary<int, UserProfile> users)
         {
-            int n = 0;
+            int n = 40;
             while (users.ContainsKey(n))
                 n++;
             return n;
