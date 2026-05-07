@@ -1,9 +1,20 @@
+using System.Drawing.Drawing2D;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+
 namespace FruitNinjaGame
 {
     public partial class Form1 : Form
     {
         System.Windows.Forms.Timer T = new System.Windows.Forms.Timer();
         Bitmap off;
+        private TcpListener? levelListener;
+        private Thread? listenerThread;
+        private volatile bool listening = true;
+        private readonly object levelLock = new object();
+
         public Form1()
         {
             InitializeComponent();
@@ -135,7 +146,6 @@ namespace FruitNinjaGame
                         if (LivesCount == 0)
                         {
                             isOver = true;
-                            T.Stop();
                             Fruits.Clear();
                             Bombs.Clear();
                         }
@@ -238,6 +248,19 @@ namespace FruitNinjaGame
                 }
             }
         }
+
+
+        private readonly object _levelLock = new object();
+        private int _currentLevel = 100;
+
+        public void SetDifficultyLevel(int level)
+        {
+            lock (_levelLock)
+            {
+                _currentLevel = level;
+            }
+        }
+
 
         void DrawScore()
         {
@@ -607,8 +630,63 @@ namespace FruitNinjaGame
                 g.DrawImage(Exp[i].img[Exp[i].Frame], Exp[i].X, Exp[i].Y);
             }
 
+            // ── Difficulty mode label (top centre) ─────────────────────────────────
+            if (isGame && !isOver)
+            {
+                string mode = GetDifficultyMode();
+                string displayText = $"Mode: {mode}";
+                using (Font modeFont = new Font("Segoe UI", 18, FontStyle.Bold))
+                {
+                    SizeF textSize = g.MeasureString(displayText, modeFont);
+                    int boxPadding = 20;
+                    int boxWidth = (int)textSize.Width + boxPadding * 2;
+                    int boxHeight = (int)textSize.Height + 12;
+                    int x = (this.ClientSize.Width - boxWidth) / 2;
+                    int y = 20;  // distance from top
+
+                    // Draw semi‑transparent background
+                    using (SolidBrush bgBrush = new SolidBrush(Color.FromArgb(180, 0, 0, 0)))
+                    using (Pen borderPen = new Pen(Color.FromArgb(255, 255, 200, 100), 2))
+                    {
+                        FillRoundedRectangle(g,bgBrush, x, y, boxWidth, boxHeight, 15);
+                        //DrawRoundedRectangle(g,borderPen, x, y, boxWidth, boxHeight, 15);
+                    }
+
+                    // Choose text colour based on mode
+                    Color textColor = mode switch
+                    {
+                        "Easy" => Color.LightGreen,
+                        "Hard" => Color.OrangeRed,
+                        _ => Color.LightBlue
+                    };
+                    using (SolidBrush textBrush = new SolidBrush(textColor))
+                    {
+                        float textX = x + (boxWidth - textSize.Width) / 2;
+                        float textY = y + (boxHeight - textSize.Height) / 2;
+                        g.DrawString(displayText, modeFont, textBrush, textX, textY);
+                    }
+                }
+            }
+
             g.DrawImage(Blade.img[0], Blade.X, Blade.Y, Blade.img[0].Width - 150, Blade.img[0].Height - 150);
 
+
+
+        }
+
+
+        private void FillRoundedRectangle(Graphics g, Brush brush, int x, int y, int w, int h, int radius)
+        {
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.AddArc(x, y, radius * 2, radius * 2, 180, 90);
+                path.AddArc(x + w - radius * 2, y, radius * 2, radius * 2, 270, 90);
+                path.AddArc(x + w - radius * 2, y + h - radius * 2, radius * 2, radius * 2, 0, 90);
+                path.AddArc(x, y + h - radius * 2, radius * 2, radius * 2, 90, 90);
+                path.CloseFigure();
+                g.FillPath(brush, path);
+                g.DrawPath(Pens.Transparent, path); // or a Pen if you want border
+            }
         }
 
         void DrawDubb(Graphics g)
@@ -625,12 +703,67 @@ namespace FruitNinjaGame
             DrawDubb(e.Graphics);
         }
 
+        private string GetDifficultyMode()
+        {
+            // Level <= 10  → hard (happy)
+            // Level >= 200 → easy (angry/sad)
+            // else         → normal
+            if (Level <= 10) return "Hard";
+            if (Level >= 200) return "Easy";
+            return "Normal";
+        }
+
+        private void ListenForLevelUpdates()
+        {
+            try
+            {
+                levelListener = new TcpListener(IPAddress.Loopback, 12345);
+                levelListener.Start();
+                while (listening)
+                {
+                    if (levelListener.Pending())
+                    {
+                        using (TcpClient client = levelListener.AcceptTcpClient())
+                        using (NetworkStream stream = client.GetStream())
+                        {
+                            StreamReader reader = new StreamReader(stream, Encoding.ASCII);
+                            string? data = reader.ReadLine();
+                            if (!string.IsNullOrEmpty(data) && int.TryParse(data, out int newLevel))
+                            {
+                                // Update the Level variable thread‑safely
+                                lock (levelLock)
+                                {
+                                    Level = newLevel;
+                                }
+                                // Optional: log to console or a label
+                                Console.WriteLine($"Level updated to {Level}");
+                            }
+                        }
+                    }
+                    Thread.Sleep(50);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Listener error: {ex.Message}");
+            }
+            finally
+            {
+                levelListener?.Stop();
+            }
+        }
+
         private void Form1_Load(object? sender, EventArgs e)
         {
             off = new Bitmap(this.ClientSize.Width, this.ClientSize.Height);
             StartMenu();
             Bitmap img = new Bitmap(AppConfig.GetAssetPath("blade.png"));
             Blade.img.Add(img);
+
+            // Start TCP listener on a background thread
+            listenerThread = new Thread(ListenForLevelUpdates);
+            listenerThread.IsBackground = true;
+            listenerThread.Start();
         }
 
         private void Form1_KeyDown(object? sender, KeyEventArgs e)
@@ -649,6 +782,11 @@ namespace FruitNinjaGame
         int Level = 100;
 
         Random R = new Random();
+
+        private int GetCurrentLevel()
+        {
+            lock (_levelLock) return _currentLevel;
+        }
 
         private void T_Tick(object? sender, EventArgs e)
         {
@@ -673,17 +811,23 @@ namespace FruitNinjaGame
 
             if (isGame && !isOver)
             {
+                // Lock before using Level
+                int currentLevel;
+                lock (levelLock)
+                {
+                    currentLevel = Level;
+                }
+
                 if (ct % speed == 0)
                 {
                     int evenIndex = R.Next(8) * 2;
                     CreateFruit(evenIndex, R.Next(50, this.ClientSize.Width - 100));
                 }
 
-                if(ct % Level == 0)
+                if (ct % Level == 0)
                 {
                     CreateBomb(R.Next(50, this.ClientSize.Width - 100));
                 }
-
                 ct++;
 
                 float gravity = 2.2f;

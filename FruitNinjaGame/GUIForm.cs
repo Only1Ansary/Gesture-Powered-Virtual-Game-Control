@@ -1144,6 +1144,12 @@ namespace FruitNinjaGame
         private Form1 _activeGameForm = null;
         private Process? _handProcess;
 
+        private Process? _emotionProcess;
+        private TcpListener? _levelListener;
+        private Thread? _listenerThread;
+        private volatile bool _listening = true;
+        private int _currentLevel = 100; // default
+
         private readonly List<Bitmap> _screenBitmaps = new List<Bitmap>();
 
         private System.Windows.Forms.Timer _blinkTimer = null;
@@ -1241,6 +1247,9 @@ namespace FruitNinjaGame
             FreeScreenBitmaps();
             _menuOverlay?.Close();
             StopHandController();
+
+            StopEmotionServer();          // kill the Python process
+            StopLevelListener();
         }
 
         // ── bitmap lifetime ────────────────────────────────────────────────────
@@ -2276,7 +2285,6 @@ namespace FruitNinjaGame
         private void DoLaunchGame()
         {
             string name = _currentUser.HasValue ? _users[_currentUser.Value].Name : "";
-            // Keep reacTIVision/TUIO for every user so in-game pointer tracks the same marker as the mouse.
             _useTuioControl = _currentUser.HasValue && _users.ContainsKey(_currentUser.Value);
 
             if (!_useTuioControl) { StopReactivision(); Thread.Sleep(2000); }
@@ -2284,6 +2292,10 @@ namespace FruitNinjaGame
             bool success = LaunchGame(name, out string errMsg);
             if (success)
             {
+                // Start the emotion server and listener when the game runs
+                StartEmotionServer();
+                StartLevelListener();   // this will update _currentLevel
+
                 _gameRunning = true;
                 WindowState = FormWindowState.Minimized;
                 _rotationTriggered = false;
@@ -2296,6 +2308,111 @@ namespace FruitNinjaGame
                 _rotationTriggered = false;
                 ShowError(errMsg);
             }
+        }
+
+        private void StartEmotionServer()
+        {
+            if (_emotionProcess != null && !_emotionProcess.HasExited)
+                return;
+
+            string scriptPath = Path.Combine(AppConfig.RepoRoot, "emotion_server.py");
+            if (!File.Exists(scriptPath))
+            {
+                Console.WriteLine("emotion_server.py not found – difficulty will remain default.");
+                return;
+            }
+
+            try
+            {
+                _emotionProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "python",  // or "python3" on Linux
+                        Arguments = $"\"{scriptPath}\"",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    }
+                };
+                _emotionProcess.Start();
+                Console.WriteLine("Emotion server started.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start emotion server: {ex.Message}");
+            }
+        }
+
+        private void StopEmotionServer()
+        {
+            if (_emotionProcess != null && !_emotionProcess.HasExited)
+            {
+                try
+                {
+                    _emotionProcess.Kill();
+                    _emotionProcess.WaitForExit(2000);
+                }
+                catch { }
+                _emotionProcess.Dispose();
+                _emotionProcess = null;
+                Console.WriteLine("Emotion server stopped.");
+            }
+        }
+
+        private void StartLevelListener()
+        {
+            if (_listenerThread != null && _listenerThread.IsAlive)
+                return;
+
+            _listening = true;
+            _listenerThread = new Thread(ListenForLevelUpdates);
+            _listenerThread.IsBackground = true;
+            _listenerThread.Start();
+        }
+
+        private void ListenForLevelUpdates()
+        {
+            try
+            {
+                _levelListener = new TcpListener(IPAddress.Loopback, 12345);
+                _levelListener.Start();
+                while (_listening)
+                {
+                    if (_levelListener.Pending())
+                    {
+                        using var client = _levelListener.AcceptTcpClient();
+                        using var stream = client.GetStream();
+                        using var reader = new StreamReader(stream, Encoding.ASCII);
+                        string? data = reader.ReadLine();
+                        if (!string.IsNullOrEmpty(data) && int.TryParse(data, out int newLevel))
+                        {
+                            _currentLevel = newLevel;
+                            // Forward the level to the active game form (if still alive)
+                            if (_activeGameForm != null && !_activeGameForm.IsDisposed)
+                            {
+                                _activeGameForm.SetDifficultyLevel(_currentLevel);
+                            }
+                        }
+                    }
+                    Thread.Sleep(50);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Level listener error: {ex.Message}");
+            }
+            finally
+            {
+                _levelListener?.Stop();
+            }
+        }
+
+        private void StopLevelListener()
+        {
+            _listening = false;
+            _listenerThread?.Join(500);
+            _levelListener?.Stop();
         }
 
         private bool LaunchGame(string characterName, out string errorMsg)
@@ -2332,6 +2449,8 @@ namespace FruitNinjaGame
         {
             if (_gameRunning) return;
             ((System.Windows.Forms.Timer)sender).Stop();
+            StopEmotionServer();
+            StopLevelListener();
             LaunchReactivision();
             WindowState = FormWindowState.Maximized;
         }

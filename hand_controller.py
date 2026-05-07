@@ -2,12 +2,11 @@ import cv2
 import mediapipe as mp
 import pyautogui
 import numpy as np
-import time
 
 # ── Configuration ─────────────────────────────────────────
 SMOOTHING    = 1
-CAMERA_INDEX = 0
-
+CAMERA_INDEX = 2
+    
 pyautogui.FAILSAFE = False
 
 mp_hands   = mp.solutions.hands
