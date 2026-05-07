@@ -30,7 +30,7 @@ logging.basicConfig(
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = 12346
 
-CAMERA_INDEX = int(os.getenv("YOLO_CAMERA_INDEX", "0"))
+CAMERA_INDEX = int(os.getenv("YOLO_CAMERA_INDEX", "3"))
 DEFAULT_MODEL_NAME = "yolov8l-worldv2.pt"
 MODEL_PATH = os.getenv("YOLO_MODEL_PATH", DEFAULT_MODEL_NAME)
 CONFIDENCE_THRESHOLD = float(os.getenv("YOLO_CONFIDENCE", "0.015"))
