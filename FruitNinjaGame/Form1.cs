@@ -912,7 +912,7 @@ namespace FruitNinjaGame
         {
             try
             {
-                levelListener = new TcpListener(IPAddress.Loopback, 12345);
+                levelListener = new TcpListener(IPAddress.Loopback, AppConfig.TcpLevelPort);
                 levelListener.Start();
                 while (listening)
                 {

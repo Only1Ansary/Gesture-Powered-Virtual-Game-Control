@@ -2,18 +2,12 @@
 setlocal
 cd /d "%~dp0"
 
-echo Launching C# FruitNinjaGame...
+echo Launching C# FruitNinjaGame GUI...
 echo.
-
-set "REACTIVISION=%~dp0reacTIVision-1.5.1-win64\reacTIVision.exe"
-if exist "%REACTIVISION%" (
-  echo Starting reacTIVision...
-  start "" "%REACTIVISION%"
-  echo.
-) else (
-  echo NOTE: reacTIVision not at "%REACTIVISION%" — GUI will try config.json / repo path.
-  echo.
-)
+echo reacTIVision: GUI kills any previous session, then writes camera.xml (reactvision_camera_index / reactvision_camera_name_contains).
+echo reacTIVision saves camera.xml on exit — do not Sync before Kill or shutdown will overwrite your laptop cam choice.
+echo Camera list: reacTIVision-1.5.1-win64\reacTIVision.exe -l
+echo.
 
 where dotnet >nul 2>nul
 if errorlevel 1 (
@@ -41,9 +35,9 @@ dotnet run --project "FruitNinjaGame\FruitNinjaGame.csproj"
 set ERR=%ERRORLEVEL%
 echo.
 if not "%ERR%"=="0" (
-  echo FruitNinjaGame exited with code %ERR%.
+  echo C# FruitNinjaGame GUI exited with code %ERR%.
 ) else (
-  echo FruitNinjaGame exited normally.
+  echo C# FruitNinjaGame GUI exited normally.
 )
 pause
 exit /b %ERR%

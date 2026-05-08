@@ -27,10 +27,17 @@ logging.basicConfig(
     ],
 )
 
-SERVER_IP = "127.0.0.1"
-SERVER_PORT = 12346
+try:
+    from config import TCP_TOOL_PORT as _DEFAULT_TCP_TOOL
+    from config import YOLO_CAMERA_INDEX as _DEFAULT_YOLO_CAM
+except ImportError:
+    _DEFAULT_YOLO_CAM = 3
+    _DEFAULT_TCP_TOOL = 12346
 
-CAMERA_INDEX = int(os.getenv("YOLO_CAMERA_INDEX", "3"))
+SERVER_IP = "127.0.0.1"
+SERVER_PORT = int(os.getenv("GAME_TCP_TOOL_PORT", str(_DEFAULT_TCP_TOOL)))
+
+CAMERA_INDEX = int(os.getenv("YOLO_CAMERA_INDEX", str(_DEFAULT_YOLO_CAM)))
 DEFAULT_MODEL_NAME = "yolov8l-worldv2.pt"
 MODEL_PATH = os.getenv("YOLO_MODEL_PATH", DEFAULT_MODEL_NAME)
 CONFIDENCE_THRESHOLD = float(os.getenv("YOLO_CONFIDENCE", "0.015"))

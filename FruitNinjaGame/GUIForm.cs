@@ -9,13 +9,12 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Linq;
-using System.Threading;
-using System.Diagnostics;
 using System.Text.Json;
-using System.Text;
+using System.Text.RegularExpressions;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using static CircularMenu.Form1;
@@ -52,6 +51,14 @@ namespace FruitNinjaGame
         public static readonly string ReactvisionExe = ResolveReactvisionExe();
         public static readonly string TuioHost = ReadString("tuio_host", "0.0.0.0");
         public static readonly int TuioPort = ReadInt("tuio_port", 3333);
+        /// <summary>Loopback TCP: emotion_server → game level stream.</summary>
+        public static readonly int TcpLevelPort = ReadInt("tcp_level_port", 12345);
+        /// <summary>Loopback TCP: yolo_object_tracker → game tool stream.</summary>
+        public static readonly int TcpToolPort = ReadInt("tcp_tool_port", 12346);
+        /// <summary>
+        /// Reserved for a future gaze TCP channel. Gaze heatmaps today use <c>gaze_session_cli</c> stdout only.
+        /// </summary>
+        public static readonly int TcpGazePort = ReadInt("tcp_gaze_port", 12347);
         /// <summary>Minimum absolute angle change (radians) on /tuio/2Dobj before a rotation event fires.</summary>
         public static readonly float TuioRotationThresholdRad = ReadFloat("rotation_threshold", 0.45f);
         public static readonly int MenuTuioMarker = ReadInt("menu_tuio_marker", 10);
@@ -71,6 +78,28 @@ namespace FruitNinjaGame
         public static readonly float MenuMotionThresh = ReadFloat("menu_motion_threshold", 0.04f);
         public static readonly float MenuSmoothAlpha = ReadFloat("menu_smooth_alpha", 0.4f);
         public static readonly float MenuCursorGain = ReadFloat("menu_cursor_gain", 520f);
+        public static readonly bool GazeEnabled = ReadBool("gaze_enabled", false);
+        /// <summary>DirectShow device id for reacTIVision (see <c>reacTIVision.exe -l</c>); not the same as OpenCV.</summary>
+        public static readonly int ReactvisionCameraIndex = ReadInt("reactvision_camera_index", 0);
+        /// <summary>Typically Iriun (or second cam) — eye gaze.</summary>
+        public static readonly int GazeCameraIndex = ReadInt("gaze_camera_index", 1);
+        /// <summary>Typically another Iriun / phone stream.</summary>
+        public static readonly int EmotionCameraIndex = ReadInt("emotion_camera_index", 2);
+        /// <summary>Typically another Iriun / phone stream.</summary>
+        public static readonly int YoloCameraIndex = ReadInt("yolo_camera_index", 3);
+        /// <summary>Typically another Iriun / phone stream.</summary>
+        public static readonly int HandTrackerCameraIndex = ReadInt("hand_tracker_camera_index", 4);
+        /// <summary>
+        /// If non-empty: run <c>reacTIVision.exe -l</c> and pick the first DirectShow device whose name contains this
+        /// substring (case-insensitive). DirectShow device order is <b>not</b> the same as OpenCV indices.
+        /// </summary>
+        public static readonly string ReactvisionCameraNameContains = ReadString("reactvision_camera_name_contains", "");
+        public static readonly string GazeDataDir = Path.Combine(RepoRoot, ReadString("gaze_data_dir", "gaze_data"));
+        public static readonly string GazeSessionScript = Path.Combine(RepoRoot, "gaze_session_cli.py");
+        /// <summary>OpenCV pupil overlay window while the gaze sidecar runs (see gaze_preview_window in config.json).</summary>
+        public static readonly bool GazePreviewWindow = ReadBool("gaze_preview_window", false);
+        /// <summary>Webcam feeds are often mirrored; gaze_session_cli flips frames before tracking when true (see gaze_mirror_horizontal).</summary>
+        public static readonly bool GazeMirrorHorizontal = ReadBool("gaze_mirror_horizontal", false);
 
         private static string ResolveRepoRoot()
         {
@@ -215,6 +244,124 @@ namespace FruitNinjaGame
             }
             return fallback;
         }
+
+        /// <summary>
+        /// reacTIVision uses DirectShow <c>videoInput</c> order (see <c>reacTIVision.exe -l</c>), not OpenCV order.
+        /// </summary>
+        public static int ResolveReactivisionDirectShowDeviceId()
+        {
+            int fallback = Math.Max(0, ReactvisionCameraIndex);
+            string needle = (ReactvisionCameraNameContains ?? "").Trim();
+            if (needle.Length == 0 || string.IsNullOrEmpty(ReactvisionExe))
+                return fallback;
+            try
+            {
+                string exe = ReactvisionExe;
+                string? dir = Path.GetDirectoryName(exe);
+                var psi = new ProcessStartInfo(exe)
+                {
+                    Arguments = "-l",
+                    WorkingDirectory = string.IsNullOrEmpty(dir) ? Environment.CurrentDirectory : dir,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                };
+                using var p = Process.Start(psi);
+                if (p == null)
+                    return fallback;
+                string stdout = "";
+                string stderr = "";
+                var readOut = Task.Run(() => { stdout = p.StandardOutput.ReadToEnd(); });
+                var readErr = Task.Run(() => { stderr = p.StandardError.ReadToEnd(); });
+                if (!p.WaitForExit(45000))
+                {
+                    try { p.Kill(); } catch { }
+                    return fallback;
+                }
+                Task.WaitAll(readOut, readErr);
+
+                string all = stdout + Environment.NewLine + stderr;
+                var rx = new Regex(@"^\s*(\d+):\s*(.+)$", RegexOptions.Multiline);
+                foreach (Match m in rx.Matches(all))
+                {
+                    if (!m.Success || m.Groups.Count < 3)
+                        continue;
+                    string name = m.Groups[2].Value.Trim();
+                    if (name.IndexOf("iriun", StringComparison.OrdinalIgnoreCase) >= 0)
+                        continue;
+                    if (name.IndexOf(needle, StringComparison.OrdinalIgnoreCase) < 0)
+                        continue;
+                    if (int.TryParse(m.Groups[1].Value, out int id))
+                    {
+                        Console.WriteLine(
+                            $"reacTIVision: DirectShow id {id} for \"{name}\" (matched \"{needle}\"); " +
+                            $"fallback index from config was {fallback}.");
+                        return id;
+                    }
+                }
+
+                Console.WriteLine(
+                    $"reacTIVision: no device name contains \"{needle}\" (see reacTIVision.exe -l). " +
+                    $"Using reactvision_camera_index fallback {fallback}.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"reacTIVision DirectShow resolve failed: {ex.Message}; using id {fallback}.");
+            }
+
+            return fallback;
+        }
+
+        /// <summary>OpenCV pipelines only; reacTIVision uses a separate DirectShow id space.</summary>
+        public static void WarnIfDuplicateOpenCvCameraIndices()
+        {
+            (string key, int idx)[] pairs =
+            {
+                ("gaze_camera_index", GazeCameraIndex),
+                ("emotion_camera_index", EmotionCameraIndex),
+                ("yolo_camera_index", YoloCameraIndex),
+                ("hand_tracker_camera_index", HandTrackerCameraIndex),
+            };
+            foreach (var g in pairs.GroupBy(p => p.idx).Where(x => x.Count() > 1))
+            {
+                string keys = string.Join(", ", g.Select(p => p.key));
+                Console.WriteLine(
+                    $"WARNING: config.json reuses OpenCV camera index {g.Key} for: {keys}. " +
+                    "Assign a unique index per feature.");
+            }
+        }
+
+        /// <summary>
+        /// Emotion and YOLO must use distinct TCP ports; <see cref="TcpGazePort"/> is reserved so a future gaze
+        /// stream does not steal level/tool slots.
+        /// </summary>
+        public static void WarnIfDuplicateTcpSidecarPorts()
+        {
+            var seen = new Dictionary<int, List<string>>();
+            void Add(int port, string name)
+            {
+                if (!seen.TryGetValue(port, out var list))
+                {
+                    list = new List<string>();
+                    seen[port] = list;
+                }
+                list.Add(name);
+            }
+            Add(TcpLevelPort, "tcp_level_port");
+            Add(TcpToolPort, "tcp_tool_port");
+            Add(TcpGazePort, "tcp_gaze_port");
+            foreach (var kv in seen)
+            {
+                if (kv.Value.Count > 1)
+                {
+                    Console.WriteLine(
+                        $"WARNING: TCP port {kv.Key} is shared by: {string.Join(", ", kv.Value)} — " +
+                        "assign a unique loopback port per sidecar channel.");
+                }
+            }
+        }
+
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1143,6 +1290,16 @@ namespace FruitNinjaGame
         private bool _gameRunning = false;
         private Form1 _activeGameForm = null;
         private Process? _handProcess;
+        private Process? _gazeProcess;
+        private int? _gazeUserId;
+        private Panel _gazeHealthDot;
+        private Label _gazeHealthLbl;
+        private ToolTip _gazeHealthTip;
+        private System.Windows.Forms.Timer _gazeHealthTimer;
+        private bool _gazeHealthCameraOk;
+        private DateTime _gazeHealthLastSampleUtc;
+        private bool _gazeHealthFatal;
+        private DateTime _gazeHealthSessionStartUtc;
 
         private Process? _emotionProcess;
         private TcpListener? _levelListener;
@@ -1180,9 +1337,8 @@ namespace FruitNinjaGame
             _users = UserStore.LoadUsers();
 
             Text = "Gesture-Powered Virtual Game Control";
-            FormBorderStyle = FormBorderStyle.None;
-            WindowState = FormWindowState.Maximized;
             BackColor = Color.Black;
+            ApplyBorderlessFullscreen();
             DoubleBuffered = true;
             KeyPreview = true;
 
@@ -1198,6 +1354,10 @@ namespace FruitNinjaGame
         // ── load ───────────────────────────────────────────────────────────────
         private void OnFormLoad(object sender, EventArgs e)
         {
+            ApplyBorderlessFullscreen();
+            AppConfig.WarnIfDuplicateOpenCvCameraIndices();
+            AppConfig.WarnIfDuplicateTcpSidecarPorts();
+
             // CircularMenuOverlay is a transparent topmost Form.
             // We pass 'this' as parent only so the overlay stays alive with GUIForm;
             // it manages its own window — no Bounds sync needed.
@@ -1251,6 +1411,7 @@ namespace FruitNinjaGame
             _gifPlayer?.Dispose();
             FreeScreenBitmaps();
             _menuOverlay?.Close();
+            StopGazeSession();
             StopHandController();
 
             StopEmotionServer();          // kill the Python process
@@ -1268,6 +1429,84 @@ namespace FruitNinjaGame
         }
 
         // ── reacTIVision ───────────────────────────────────────────────────────
+        private static void SyncReactivisionCameraXml()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(AppConfig.ReactvisionExe)) return;
+                string dir = Path.GetDirectoryName(AppConfig.ReactvisionExe);
+                if (string.IsNullOrEmpty(dir)) return;
+                string camPath = Path.Combine(dir, "camera.xml");
+                int idx = AppConfig.ResolveReactivisionDirectShowDeviceId();
+                string body =
+                    "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\r\n" +
+                    "<portvideo>\r\n" +
+                    $"    <camera id=\"{idx}\">\r\n" +
+                    "        <capture width=\"640\" height=\"480\" fps=\"max\" compress=\"true\" />\r\n" +
+                    "        <settings brightness=\"min\" contrast=\"min\" gain=\"min\" shutter=\"default\" exposure=\"min\" sharpness=\"min\" gamma=\"min\" focus=\"min\" />\r\n" +
+                    "        <frame width=\"max\" height=\"max\" xoff=\"0\" yoff=\"0\" />\r\n" +
+                    "    </camera>\r\n" +
+                    "</portvideo>\r\n";
+                File.WriteAllText(camPath, body, Encoding.UTF8);
+                Console.WriteLine($"reacTIVision camera.xml -> device id {idx} ({camPath})");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Could not write reacTIVision camera.xml: {ex.Message}");
+            }
+        }
+
+        private void KillBundledReactivisionIfRunning()
+        {
+            try
+            {
+                string exe = AppConfig.ReactvisionExe;
+                if (string.IsNullOrEmpty(exe)) return;
+                string full = Path.GetFullPath(exe);
+                // Several passes: child handles or slow shutdown can delay exit.
+                for (int attempt = 0; attempt < 8; attempt++)
+                {
+                    bool killedAny = false;
+                    foreach (var p in Process.GetProcessesByName("reacTIVision"))
+                    {
+                        try
+                        {
+                            if (p.MainModule?.FileName != null &&
+                                string.Equals(Path.GetFullPath(p.MainModule.FileName), full,
+                                    StringComparison.OrdinalIgnoreCase))
+                            {
+                                try
+                                {
+                                    p.Kill(entireProcessTree: true);
+                                }
+                                catch
+                                {
+                                    p.Kill();
+                                }
+
+                                killedAny = true;
+                                try
+                                {
+                                    p.WaitForExit(4500);
+                                }
+                                catch { }
+                            }
+                        }
+                        catch { }
+                        finally
+                        {
+                            try { p.Dispose(); } catch { }
+                        }
+                    }
+
+                    if (!killedAny)
+                        break;
+                    Thread.Sleep(350);
+                }
+            }
+            catch { }
+        }
+
         private void LaunchReactivision()
         {
             if (_reactivisionProcess != null && _reactivisionProcess.HasExited)
@@ -1276,6 +1515,13 @@ namespace FruitNinjaGame
             if (_reactivisionProcess != null) return;
             try
             {
+                // reacTIVision writes camera.xml when it exits. If we Sync then Kill, shutdown
+                // overwrites our file with the old camera (e.g. Iriun). Kill first, then Sync.
+                KillBundledReactivisionIfRunning();
+                Thread.Sleep(500);
+                SyncReactivisionCameraXml();
+                Thread.Sleep(200);
+
                 Process[] already = Process.GetProcessesByName("reacTIVision");
                 try
                 {
@@ -1283,7 +1529,12 @@ namespace FruitNinjaGame
                     {
                         try
                         {
-                            if (!p.HasExited) return;
+                            if (!p.HasExited)
+                            {
+                                Console.WriteLine(
+                                    "WARNING: reacTIVision is still running (another instance?). Close it so the GUI can start a fresh session with the correct camera.");
+                                return;
+                            }
                         }
                         catch { }
                     }
@@ -1376,6 +1627,8 @@ namespace FruitNinjaGame
                         WindowStyle = ProcessWindowStyle.Hidden
                     }
                 };
+                _handProcess.StartInfo.EnvironmentVariables["HAND_TRACKER_CAMERA_INDEX"] =
+                    AppConfig.HandTrackerCameraIndex.ToString();
                 _handProcess.Start();
                 Console.WriteLine("Hand controller started.");
             }
@@ -1446,6 +1699,8 @@ namespace FruitNinjaGame
                     }
                 };
                 _yoloProcess.StartInfo.EnvironmentVariables["PYTHONUNBUFFERED"] = "1";
+                _yoloProcess.StartInfo.EnvironmentVariables["YOLO_CAMERA_INDEX"] =
+                    AppConfig.YoloCameraIndex.ToString();
                 _yoloProcess.OutputDataReceived += (_, e) =>
                 {
                     if (!string.IsNullOrWhiteSpace(e.Data))
@@ -1498,7 +1753,7 @@ namespace FruitNinjaGame
         {
             try
             {
-                _toolListener = new TcpListener(IPAddress.Loopback, 12346);
+                _toolListener = new TcpListener(IPAddress.Loopback, AppConfig.TcpToolPort);
                 _toolListener.Start();
                 while (_toolListening)
                 {
@@ -1548,6 +1803,226 @@ namespace FruitNinjaGame
             _toolListening = false;
             _toolListener?.Stop();
             _toolListenerThread?.Join(500);
+        }
+
+        private void StartGazeSession(int userId)
+        {
+            if (!AppConfig.GazeEnabled)
+                return;
+            if (_gazeProcess != null && !_gazeProcess.HasExited && _gazeUserId == userId)
+                return;
+
+            StopGazeSession();
+
+            string scriptPath = AppConfig.GazeSessionScript;
+            if (!File.Exists(scriptPath))
+            {
+                Console.WriteLine("gaze_session_cli.py not found - gaze heatmaps disabled.");
+                if (IsHandleCreated && !IsDisposed)
+                    BeginInvoke(new Action(() =>
+                    {
+                        _gazeHealthFatal = true;
+                        RefreshGazeHealthVisual();
+                    }));
+                return;
+            }
+
+            _gazeHealthFatal = false;
+            _gazeHealthCameraOk = false;
+            _gazeHealthLastSampleUtc = DateTime.MinValue;
+            _gazeHealthSessionStartUtc = DateTime.UtcNow;
+
+            try
+            {
+                _gazeProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "python",
+                        Arguments =
+                            $"\"{scriptPath}\" --user-id {userId} --screen-width {Math.Max(1, SW)} --screen-height {Math.Max(1, SH)} --camera-index {AppConfig.GazeCameraIndex}"
+                            + (AppConfig.GazePreviewWindow ? " --preview" : ""),
+                        WorkingDirectory = AppConfig.RepoRoot,
+                        UseShellExecute = false,
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        StandardOutputEncoding = Encoding.UTF8,
+                        StandardErrorEncoding = Encoding.UTF8,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                    }
+                };
+                _gazeProcess.StartInfo.EnvironmentVariables["PYTHONUNBUFFERED"] = "1";
+                _gazeProcess.StartInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
+                _gazeProcess.OutputDataReceived += (_, e) =>
+                {
+                    if (string.IsNullOrWhiteSpace(e.Data)) return;
+                    Console.WriteLine($"Gaze: {e.Data}");
+                    try
+                    {
+                        if (IsHandleCreated && !IsDisposed)
+                            BeginInvoke(new Action(() => ProcessGazeStatusLine(e.Data)));
+                    }
+                    catch { }
+                };
+                _gazeProcess.ErrorDataReceived += (_, e) =>
+                {
+                    if (string.IsNullOrWhiteSpace(e.Data)) return;
+                    Console.WriteLine($"Gaze: {e.Data}");
+                    try
+                    {
+                        if (IsHandleCreated && !IsDisposed)
+                            BeginInvoke(new Action(() => ProcessGazeStatusLine(e.Data)));
+                    }
+                    catch { }
+                };
+                _gazeProcess.Start();
+                _gazeProcess.BeginOutputReadLine();
+                _gazeProcess.BeginErrorReadLine();
+                _gazeUserId = userId;
+                EnsureGazeHealthTimer();
+                RefreshGazeHealthVisual();
+                Console.WriteLine($"Gaze session started for user {userId}.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start gaze session: {ex.Message}");
+                try { _gazeProcess?.Dispose(); } catch { }
+                _gazeProcess = null;
+                _gazeUserId = null;
+                try
+                {
+                    if (IsHandleCreated && !IsDisposed)
+                        BeginInvoke(new Action(() =>
+                        {
+                            _gazeHealthFatal = true;
+                            RefreshGazeHealthVisual();
+                        }));
+                }
+                catch { }
+            }
+        }
+
+        private void EnsureGazeHealthTimer()
+        {
+            if (_gazeHealthTimer == null)
+            {
+                _gazeHealthTimer = new System.Windows.Forms.Timer { Interval = 450 };
+                _gazeHealthTimer.Tick += (_, _) => RefreshGazeHealthVisual();
+            }
+            _gazeHealthTimer.Start();
+        }
+
+        private void StopGazeHealthTimer()
+        {
+            _gazeHealthTimer?.Stop();
+        }
+
+        private void ProcessGazeStatusLine(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line)) return;
+            line = line.Trim();
+            var u = line.ToUpperInvariant();
+            if (u.Contains("GAZE_STATUS CAMERA_OK"))
+                _gazeHealthCameraOk = true;
+            if (u.StartsWith("GAZE_STATUS SAMPLES", StringComparison.OrdinalIgnoreCase) ||
+                u.Contains("GAZE_STATUS PUPILS"))
+                _gazeHealthLastSampleUtc = DateTime.UtcNow;
+            if (u.Contains("GAZE_STATUS FAIL"))
+                _gazeHealthFatal = true;
+            if (u.Contains("COULD NOT BE OPENED") || u.Contains("COULD NOT IMPORT"))
+                _gazeHealthFatal = true;
+            RefreshGazeHealthVisual();
+        }
+
+        private void RefreshGazeHealthVisual()
+        {
+            if (_gazeHealthDot == null || _gazeHealthDot.IsDisposed)
+                return;
+
+            Color dot;
+            string tip;
+            if (_gazeHealthFatal)
+            {
+                dot = Color.FromArgb(220, 55, 55);
+                tip = "Gaze error — check camera index, Python, and GazeTracking install.";
+            }
+            else if (_gazeProcess == null || _gazeProcess.HasExited)
+            {
+                dot = Color.FromArgb(100, 100, 105);
+                tip = "Gaze session not running.";
+            }
+            else if (_gazeHealthLastSampleUtc != DateTime.MinValue &&
+                     (DateTime.UtcNow - _gazeHealthLastSampleUtc).TotalSeconds < 4.5)
+            {
+                dot = Color.FromArgb(45, 205, 95);
+                tip = "Gaze OK — eyes tracked.";
+            }
+            else if (_gazeHealthCameraOk)
+            {
+                dot = Color.FromArgb(245, 155, 35);
+                tip = "Camera OK — face the gaze webcam (not only the screen) until the dot turns green.";
+            }
+            else if ((DateTime.UtcNow - _gazeHealthSessionStartUtc).TotalSeconds > 5.0)
+            {
+                dot = Color.FromArgb(245, 155, 35);
+                tip = "Still waiting for the gaze camera…";
+            }
+            else
+            {
+                dot = Color.FromArgb(220, 195, 55);
+                tip = "Starting gaze capture…";
+            }
+
+            _gazeHealthDot.BackColor = dot;
+            if (_gazeHealthLbl != null && !_gazeHealthLbl.IsDisposed)
+                _gazeHealthLbl.ForeColor = Color.FromArgb(200, 200, 210);
+            if (_gazeHealthTip != null)
+            {
+                _gazeHealthTip.SetToolTip(_gazeHealthDot, tip);
+                _gazeHealthTip.SetToolTip(_gazeHealthLbl, tip);
+            }
+        }
+
+        private void StopGazeSession()
+        {
+            StopGazeHealthTimer();
+            if (_gazeProcess == null)
+                return;
+
+            try
+            {
+                if (!_gazeProcess.HasExited)
+                {
+                    try
+                    {
+                        _gazeProcess.StandardInput.WriteLine("stop");
+                        _gazeProcess.StandardInput.Flush();
+                    }
+                    catch { }
+
+                    if (!_gazeProcess.WaitForExit(7000))
+                    {
+                        try { _gazeProcess.Kill(); } catch { }
+                        try { _gazeProcess.WaitForExit(2000); } catch { }
+                    }
+                }
+            }
+            catch { }
+            finally
+            {
+                try { _gazeProcess.Dispose(); } catch { }
+                _gazeProcess = null;
+                _gazeUserId = null;
+                Console.WriteLine("Gaze session stopped.");
+                try
+                {
+                    if (_gazeHealthDot != null && !_gazeHealthDot.IsDisposed && IsHandleCreated && !IsDisposed)
+                        BeginInvoke(new Action(RefreshGazeHealthVisual));
+                }
+                catch { }
+            }
         }
 
         // ── TUIO callbacks ─────────────────────────────────────────────────────
@@ -1651,8 +2126,8 @@ namespace FruitNinjaGame
                 case Keys.Escape:
                 case Keys.Q: Close(); break;
                 case Keys.F11:
-                    WindowState = WindowState == FormWindowState.Maximized
-                        ? FormWindowState.Normal : FormWindowState.Maximized; break;
+                    ToggleFullscreenWindowed();
+                    break;
                 case Keys.D0: SimulateTuio(0); break;
                 case Keys.D1: SimulateTuio(1); break;
                 case Keys.D2: SimulateTuio(2); break;
@@ -1697,8 +2172,11 @@ namespace FruitNinjaGame
         // ── screen helpers ─────────────────────────────────────────────────────
         private void ClearScreen()
         {
+            StopGazeSession();
             _rotationTriggered = false;
             _tuioLight = null;
+            _gazeHealthDot = null;
+            _gazeHealthLbl = null;
             _adminListFlow = null;
             _adminNeutralY = null;
             _adminSmoothedY = 0f;
@@ -1733,6 +2211,113 @@ namespace FruitNinjaGame
 
         private int SW => ClientSize.Width;
         private int SH => ClientSize.Height;
+
+        /// <summary>
+        /// Borderless cover of the current screen (taskbar included). Prefer over Maximized alone —
+        /// some DPI / borderless combinations leave the wrong client size on first show.
+        /// </summary>
+        private void ApplyBorderlessFullscreen()
+        {
+            FormBorderStyle = FormBorderStyle.None;
+            Screen scr = IsHandleCreated ? Screen.FromControl(this) : Screen.PrimaryScreen;
+            StartPosition = FormStartPosition.Manual;
+            WindowState = FormWindowState.Normal;
+            Bounds = scr.Bounds;
+        }
+
+        private bool IsBorderlessFullscreen()
+        {
+            Screen scr = Screen.FromControl(this);
+            Rectangle b = scr.Bounds;
+            return Bounds.X == b.X && Bounds.Y == b.Y
+                && Bounds.Width == b.Width && Bounds.Height == b.Height
+                && FormBorderStyle == FormBorderStyle.None;
+        }
+
+        private void ToggleFullscreenWindowed()
+        {
+            Screen scr = Screen.FromControl(this);
+            if (IsBorderlessFullscreen())
+            {
+                int w = Math.Min(1280, Math.Max(640, scr.WorkingArea.Width - 80));
+                int h = Math.Min(720, Math.Max(480, scr.WorkingArea.Height - 80));
+                FormBorderStyle = FormBorderStyle.Sizable;
+                WindowState = FormWindowState.Normal;
+                Size = new Size(w, h);
+                Location = new Point(
+                    scr.WorkingArea.Left + (scr.WorkingArea.Width - w) / 2,
+                    scr.WorkingArea.Top + (scr.WorkingArea.Height - h) / 2);
+            }
+            else
+                ApplyBorderlessFullscreen();
+        }
+
+        private Dictionary<string, PointF> LoadGazeAnchors(int userId)
+        {
+            var anchors = new Dictionary<string, PointF>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["back"] = new PointF(0.30f, 0.80f),
+                ["launch"] = new PointF(0.56f, 0.80f),
+                ["game_icon"] = new PointF(0.84f, 0.80f),
+            };
+
+            try
+            {
+                string path = Path.Combine(AppConfig.GazeDataDir, $"user_{userId}", "layout.json");
+                if (!File.Exists(path))
+                    return anchors;
+
+                using var doc = JsonDocument.Parse(File.ReadAllText(path, Encoding.UTF8));
+                if (!doc.RootElement.TryGetProperty("adaptive", out var adaptive) ||
+                    adaptive.ValueKind != JsonValueKind.True)
+                    return anchors;
+                if (!doc.RootElement.TryGetProperty("anchors", out var jsonAnchors))
+                    return anchors;
+
+                ReadGazeAnchor(jsonAnchors, anchors, "back");
+                ReadGazeAnchor(jsonAnchors, anchors, "launch");
+                ReadGazeAnchor(jsonAnchors, anchors, "game_icon");
+
+                bool mirrorCalibrated = doc.RootElement.TryGetProperty("mirror_horizontal_calibration", out var mhc)
+                    && mhc.ValueKind == JsonValueKind.True;
+                if (AppConfig.GazeMirrorHorizontal && !mirrorCalibrated)
+                {
+                    foreach (var key in new[] { "back", "launch", "game_icon" })
+                    {
+                        var pt = anchors[key];
+                        anchors[key] = new PointF(1f - pt.X, pt.Y);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Could not load gaze layout for user {userId}: {ex.Message}");
+            }
+
+            return anchors;
+        }
+
+        private static void ReadGazeAnchor(JsonElement jsonAnchors, Dictionary<string, PointF> anchors, string key)
+        {
+            try
+            {
+                if (!jsonAnchors.TryGetProperty(key, out var raw)) return;
+                if (!raw.TryGetProperty("x", out var xEl) || !xEl.TryGetSingle(out float x)) return;
+                float y = anchors[key].Y;
+                if (raw.TryGetProperty("y", out var yEl) && yEl.TryGetSingle(out float parsedY))
+                    y = parsedY;
+                anchors[key] = new PointF(Math.Clamp(x, 0.05f, 0.95f), Math.Clamp(y, 0.05f, 0.95f));
+            }
+            catch { }
+        }
+
+        private static Rectangle RectFromAnchor(float relX, int containerWidth, int containerHeight, int width, int height)
+        {
+            int x = (int)(relX * containerWidth) - width / 2;
+            x = Math.Max(8, Math.Min(Math.Max(8, containerWidth - width - 8), x));
+            int y = (containerHeight - height) / 2;
+            return new Rectangle(x, y, width, height);
+        }
 
         // ═══════════════════════════════════════════════════════════════════════
         //  MAIN MENU
@@ -1942,6 +2527,7 @@ namespace FruitNinjaGame
             ClearScreen();
             var u = _users[userId];
             int sw = SW, sh = SH;
+            var gazeAnchors = LoadGazeAnchors(userId);
 
             var root = new Panel { Bounds = ClientRectangle, BackColor = u.Bg };
             Controls.Add(root);
@@ -1986,8 +2572,51 @@ namespace FruitNinjaGame
                 BackColor = Color.Transparent,
                 AutoSize = true,
             };
-            int groupW = dotSz + 8 + tuioLbl.PreferredWidth;
-            int groupX = sw - (int)(sw * 0.030) - groupW;
+            int tuioW = dotSz + 8 + tuioLbl.PreferredWidth;
+            int rightMargin = (int)(sw * 0.030);
+            int tuioGroupX = sw - rightMargin - tuioW;
+
+            const int gazeTuioGap = 20;
+            if (AppConfig.GazeEnabled)
+            {
+                int gazeDotSz = Math.Max(10, (int)(hdrH * 0.30));
+                _gazeHealthDot = new Panel
+                {
+                    Size = new Size(gazeDotSz, gazeDotSz),
+                    BackColor = Color.FromArgb(220, 195, 55),
+                };
+                _gazeHealthDot.Paint += (s, e) =>
+                {
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    using var b = new SolidBrush(_gazeHealthDot.BackColor);
+                    e.Graphics.FillEllipse(b, 0, 0, _gazeHealthDot.Width - 1, _gazeHealthDot.Height - 1);
+                    using var p = new Pen(Color.FromArgb(40, 40, 40), 2);
+                    e.Graphics.DrawEllipse(p, 1, 1, _gazeHealthDot.Width - 3, _gazeHealthDot.Height - 3);
+                };
+                _gazeHealthDot.BackColorChanged += (_, _) => _gazeHealthDot.Invalidate();
+
+                _gazeHealthLbl = new Label
+                {
+                    Text = "GAZE",
+                    Font = new Font("Consolas", sh * 0.012f, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(200, 200, 210),
+                    BackColor = Color.Transparent,
+                    AutoSize = true,
+                };
+                int gazeW = gazeDotSz + 6 + _gazeHealthLbl.PreferredWidth;
+                int gazeGroupX = tuioGroupX - gazeTuioGap - gazeW;
+                _gazeHealthDot.Location = new Point(gazeGroupX, (hdrH - gazeDotSz) / 2);
+                _gazeHealthLbl.Location = new Point(gazeGroupX + gazeDotSz + 6, (hdrH - _gazeHealthLbl.PreferredHeight) / 2);
+                header.Controls.Add(_gazeHealthDot);
+                header.Controls.Add(_gazeHealthLbl);
+
+                _gazeHealthTip ??= new ToolTip();
+                _gazeHealthTip.SetToolTip(_gazeHealthDot, "Gaze status");
+                _gazeHealthTip.SetToolTip(_gazeHealthLbl, "Gaze status");
+            }
+
+            int groupW = tuioW;
+            int groupX = tuioGroupX;
             dot.Location = new Point(groupX, (hdrH - dotSz) / 2);
             tuioLbl.Location = new Point(groupX + dotSz + 8, (hdrH - tuioLbl.PreferredHeight) / 2);
             header.Controls.Add(dot);
@@ -2000,16 +2629,16 @@ namespace FruitNinjaGame
             root.Controls.Add(gameBar);
 
             int btnPadY = (int)(barH * 0.14);
-            int btnPadX = (int)(sw * 0.010);
-            int hintW = (int)(sw * 0.30);
+            int hintW = (int)(sw * 0.24);
+            int hintH = barH - btnPadY * 2;
 
             gameBar.Controls.Add(BuildHintBox(
-                new Rectangle(btnPadX, btnPadY, hintW, barH - btnPadY * 2),
+                RectFromAnchor(gazeAnchors["back"].X, sw, barH, hintW, hintH),
                 u.Bg, u.Accent,
                 "◄  ROTATE LEFT", Color.White, "Back to Main Menu", Color.FromArgb(170, 170, 170), sh));
 
             gameBar.Controls.Add(BuildHintBox(
-                new Rectangle(btnPadX * 2 + hintW, btnPadY, hintW, barH - btnPadY * 2),
+                RectFromAnchor(gazeAnchors["launch"].X, sw, barH, hintW, hintH),
                 u.Glow, u.Accent,
                 "ROTATE RIGHT  ►", u.HeaderBg, "Launch Ninja Fruit", u.Bg, sh));
 
@@ -2017,10 +2646,7 @@ namespace FruitNinjaGame
             var iconWrapper = new Panel
             {
                 BackColor = u.HeaderBg,
-                Bounds = new Rectangle(
-                    sw - (int)(sw * 0.032) - iconSz - 10,
-                    (barH - iconSz - 28) / 2,
-                    iconSz + 10, iconSz + 28),
+                Bounds = RectFromAnchor(gazeAnchors["game_icon"].X, sw, barH, iconSz + 10, iconSz + 28),
             };
             iconWrapper.Controls.Add(new Label
             {
@@ -2121,6 +2747,8 @@ namespace FruitNinjaGame
                     if (!canvas.IsDisposed) canvas.Invalidate();
                 });
             }));
+
+            StartGazeSession(userId);
         }
 
         // ── hint box ───────────────────────────────────────────────────────────
@@ -2457,6 +3085,7 @@ namespace FruitNinjaGame
         {
             string name = _currentUser.HasValue ? _users[_currentUser.Value].Name : "";
             _useTuioControl = _currentUser.HasValue && _users.ContainsKey(_currentUser.Value);
+            StopGazeSession();
 
             if (!_useTuioControl) { StopReactivision(); Thread.Sleep(2000); }
 
@@ -2470,7 +3099,9 @@ namespace FruitNinjaGame
                 StartYoloObjectTracker();
 
                 _gameRunning = true;
-                WindowState = FormWindowState.Minimized;
+                // Keep this form borderless fullscreen (do not minimize). The game form is shown
+                // on top via BringToFront/Activate in LaunchGame.
+                ApplyBorderlessFullscreen();
                 _rotationTriggered = false;
                 var t = new System.Windows.Forms.Timer { Interval = 1000 };
                 t.Tick += CheckGameExit;
@@ -2508,6 +3139,8 @@ namespace FruitNinjaGame
                         WindowStyle = ProcessWindowStyle.Hidden
                     }
                 };
+                _emotionProcess.StartInfo.EnvironmentVariables["EMOTION_CAMERA_INDEX"] =
+                    AppConfig.EmotionCameraIndex.ToString();
                 _emotionProcess.Start();
                 Console.WriteLine("Emotion server started.");
             }
@@ -2548,7 +3181,7 @@ namespace FruitNinjaGame
         {
             try
             {
-                _levelListener = new TcpListener(IPAddress.Loopback, 12345);
+                _levelListener = new TcpListener(IPAddress.Loopback, AppConfig.TcpLevelPort);
                 _levelListener.Start();
                 while (_listening)
                 {
@@ -2610,6 +3243,12 @@ namespace FruitNinjaGame
                     StopToolListener();
                 };
                 gameForm.Show();
+                try
+                {
+                    gameForm.BringToFront();
+                    gameForm.Activate();
+                }
+                catch { }
                 return true;
             }
             catch (Exception ex)
@@ -2629,7 +3268,30 @@ namespace FruitNinjaGame
             StopYoloObjectTracker();
             StopToolListener();
             LaunchReactivision();
-            WindowState = FormWindowState.Maximized;
+            if (WindowState == FormWindowState.Minimized)
+                WindowState = FormWindowState.Normal;
+            Show();
+            ApplyBorderlessFullscreen();
+            try
+            {
+                Activate();
+                BringToFront();
+            }
+            catch { }
+
+            // Profile UI was left up while the game ran; gaze was stopped for launch — reopen sidecar.
+            var restart = new System.Windows.Forms.Timer { Interval = 500 };
+            restart.Tick += (_, _) =>
+            {
+                restart.Stop();
+                restart.Dispose();
+                if (IsDisposed) return;
+                if (_gameRunning || _adminMode) return;
+                if (!AppConfig.GazeEnabled) return;
+                if (!_currentUser.HasValue || !_users.ContainsKey(_currentUser.Value)) return;
+                StartGazeSession(_currentUser.Value);
+            };
+            restart.Start();
         }
 
         private void ShowError(string message)

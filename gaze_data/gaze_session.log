@@ -1,0 +1,394 @@
+
+=== gaze_session start 2026-05-08 21:18:04 user=3 camera=0 dshow_first=True ===
+2026-05-08 21:18:04  [Gaze] Started session for user 3.
+2026-05-08 21:18:04  [GazeCLI] Recording user 3 on camera 0.
+2026-05-08 21:18:04  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 21:18:07  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-08 21:18:07  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_3'}
+2026-05-08 21:18:07  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 21:24:54 user=1 camera=0 (Windows: CAP_DSHOW+1280x720, same as YOLO) ===
+2026-05-08 21:24:54  [Gaze] Started session for user 1.
+2026-05-08 21:24:54  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 21:24:54  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 21:25:57  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-08 21:25:57  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 21:25:57  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 21:39:36 user=1 camera=0 (Windows: CAP_DSHOW+1280x720, same as YOLO) ===
+2026-05-08 21:39:36  [Gaze] Started session for user 1.
+2026-05-08 21:39:36  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 21:39:36  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 21:39:51  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-08 21:39:51  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 21:39:51  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 21:39:56 user=1 camera=0 (Windows: CAP_DSHOW+1280x720, same as YOLO) ===
+2026-05-08 21:39:56  [Gaze] Started session for user 1.
+2026-05-08 21:39:56  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 21:39:56  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 21:40:26  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-08 21:40:26  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 21:40:26  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 21:43:16 user=1 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 21:43:16  [Gaze] Started session for user 1.
+2026-05-08 21:43:16  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 21:43:16  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 21:43:36  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 21:43:36  GAZE_STATUS CAMERA_OK
+2026-05-08 21:43:36  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-08 21:43:36  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 21:43:36  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 21:56:15 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 21:56:15  [Gaze] Started session for user 3.
+2026-05-08 21:56:15  [GazeCLI] Recording user 3 on camera 0.
+2026-05-08 21:56:15  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 21:57:19  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 21:57:19  GAZE_STATUS CAMERA_OK
+2026-05-08 21:57:19  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-08 21:57:19  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_3'}
+2026-05-08 21:57:19  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 21:59:21 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 21:59:21  [Gaze] Started session for user 3.
+2026-05-08 21:59:21  [GazeCLI] Recording user 3 on camera 0.
+2026-05-08 21:59:21  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 21:59:44  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 21:59:44  GAZE_STATUS CAMERA_OK
+2026-05-08 21:59:44  [Gaze] Live OpenCV preview window on — compare with main GUI.
+2026-05-08 21:59:44  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-08 21:59:44  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_3'}
+2026-05-08 21:59:44  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 22:01:40 user=1 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:01:40  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 22:01:40  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:01:40  [Gaze] Started session for user 1.
+2026-05-08 22:02:03  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:02:03  GAZE_STATUS CAMERA_OK
+2026-05-08 22:02:03  [Gaze] Live OpenCV preview window on — compare with main GUI.
+2026-05-08 22:02:03  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-08 22:02:03  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 22:02:03  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 22:05:30 user=0 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:05:30  [GazeCLI] Recording user 0 on camera 0.
+2026-05-08 22:05:30  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:05:30  [Gaze] Started session for user 0.
+2026-05-08 22:06:07  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:06:07  GAZE_STATUS CAMERA_OK
+2026-05-08 22:06:07  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:06:07  [Gaze] Stopped session for user 0 (0 samples).
+2026-05-08 22:06:07  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-08 22:06:07  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 22:11:27 user=0 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:11:27  [GazeCLI] Recording user 0 on camera 0.
+2026-05-08 22:11:27  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:11:27  [Gaze] Started session for user 0.
+2026-05-08 22:12:14  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:12:14  GAZE_STATUS CAMERA_OK
+2026-05-08 22:12:14  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:12:15  [Gaze] Stopped session for user 0 (0 samples).
+2026-05-08 22:12:15  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-08 22:12:15  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 22:15:20 user=0 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:15:20  [GazeCLI] Recording user 0 on camera 0.
+2026-05-08 22:15:20  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:15:20  [Gaze] Started session for user 0.
+2026-05-08 22:15:47  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:15:47  GAZE_STATUS CAMERA_OK
+2026-05-08 22:15:47  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:15:48  [Gaze] Stopped session for user 0 (0 samples).
+2026-05-08 22:15:48  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-08 22:15:48  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-08 22:19:14 user=0 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:19:14  [GazeCLI] Recording user 0 on camera 0.
+2026-05-08 22:19:14  [GazeCLI] Debug log file: d:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:19:14  [Gaze] Started session for user 0.
+2026-05-08 22:19:16  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:19:16  GAZE_STATUS CAMERA_OK
+2026-05-08 22:19:16  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:19:16  GAZE_STATUS PUPILS
+2026-05-08 22:19:16  GAZE_STATUS SAMPLES 1
+2026-05-08 22:19:17  GAZE_STATUS PUPILS
+2026-05-08 22:19:17  GAZE_STATUS SAMPLES 5
+2026-05-08 22:19:17  GAZE_STATUS PUPILS
+2026-05-08 22:19:18  GAZE_STATUS PUPILS
+2026-05-08 22:19:18  GAZE_STATUS SAMPLES 10
+2026-05-08 22:19:18  GAZE_STATUS PUPILS
+2026-05-08 22:19:18  GAZE_STATUS SAMPLES 15
+2026-05-08 22:19:19  GAZE_STATUS PUPILS
+2026-05-08 22:19:19  GAZE_STATUS PUPILS
+2026-05-08 22:19:19  GAZE_STATUS SAMPLES 20
+2026-05-08 22:19:19  GAZE_STATUS PUPILS
+2026-05-08 22:19:20  GAZE_STATUS PUPILS
+2026-05-08 22:19:20  GAZE_STATUS SAMPLES 25
+2026-05-08 22:19:20  GAZE_STATUS PUPILS
+2026-05-08 22:19:21  GAZE_STATUS SAMPLES 30
+2026-05-08 22:19:21  GAZE_STATUS PUPILS
+2026-05-08 22:19:21  GAZE_STATUS PUPILS
+2026-05-08 22:19:21  GAZE_STATUS SAMPLES 35
+2026-05-08 22:19:21  GAZE_STATUS PUPILS
+2026-05-08 22:19:22  GAZE_STATUS PUPILS
+2026-05-08 22:19:22  GAZE_STATUS SAMPLES 40
+2026-05-08 22:19:22  GAZE_STATUS PUPILS
+2026-05-08 22:19:23  GAZE_STATUS SAMPLES 45
+2026-05-08 22:19:23  GAZE_STATUS PUPILS
+2026-05-08 22:19:23  GAZE_STATUS PUPILS
+2026-05-08 22:19:23  GAZE_STATUS SAMPLES 50
+2026-05-08 22:19:24  GAZE_STATUS PUPILS
+2026-05-08 22:19:24  GAZE_STATUS PUPILS
+2026-05-08 22:19:24  GAZE_STATUS SAMPLES 55
+2026-05-08 22:19:25  GAZE_STATUS PUPILS
+2026-05-08 22:19:26  GAZE_STATUS PUPILS
+2026-05-08 22:19:26  GAZE_STATUS SAMPLES 60
+2026-05-08 22:19:26  GAZE_STATUS PUPILS
+2026-05-08 22:19:27  GAZE_STATUS PUPILS
+2026-05-08 22:19:27  GAZE_STATUS SAMPLES 65
+2026-05-08 22:19:27  GAZE_STATUS PUPILS
+2026-05-08 22:19:28  GAZE_STATUS SAMPLES 70
+2026-05-08 22:19:28  GAZE_STATUS PUPILS
+2026-05-08 22:19:28  GAZE_STATUS PUPILS
+2026-05-08 22:19:28  GAZE_STATUS SAMPLES 75
+2026-05-08 22:19:29  GAZE_STATUS PUPILS
+2026-05-08 22:19:29  GAZE_STATUS PUPILS
+2026-05-08 22:19:29  GAZE_STATUS SAMPLES 80
+2026-05-08 22:19:29  GAZE_STATUS PUPILS
+2026-05-08 22:19:30  GAZE_STATUS PUPILS
+2026-05-08 22:19:30  GAZE_STATUS SAMPLES 85
+2026-05-08 22:19:30  GAZE_STATUS PUPILS
+2026-05-08 22:19:31  GAZE_STATUS PUPILS
+2026-05-08 22:19:31  GAZE_STATUS SAMPLES 90
+2026-05-08 22:19:31  GAZE_STATUS PUPILS
+2026-05-08 22:19:31  GAZE_STATUS PUPILS
+2026-05-08 22:19:32  GAZE_STATUS SAMPLES 95
+2026-05-08 22:19:32  GAZE_STATUS PUPILS
+2026-05-08 22:19:32  GAZE_STATUS PUPILS
+2026-05-08 22:19:32  GAZE_STATUS SAMPLES 100
+2026-05-08 22:19:33  GAZE_STATUS PUPILS
+2026-05-08 22:19:33  GAZE_STATUS SAMPLES 105
+2026-05-08 22:19:33  GAZE_STATUS PUPILS
+2026-05-08 22:19:33  GAZE_STATUS PUPILS
+2026-05-08 22:19:34  GAZE_STATUS SAMPLES 110
+2026-05-08 22:19:34  GAZE_STATUS PUPILS
+2026-05-08 22:19:34  GAZE_STATUS PUPILS
+2026-05-08 22:19:34  GAZE_STATUS SAMPLES 115
+2026-05-08 22:19:35  GAZE_STATUS PUPILS
+2026-05-08 22:19:35  GAZE_STATUS PUPILS
+2026-05-08 22:19:35  GAZE_STATUS SAMPLES 120
+2026-05-08 22:19:35  GAZE_STATUS PUPILS
+2026-05-08 22:19:36  GAZE_STATUS SAMPLES 125
+2026-05-08 22:19:36  GAZE_STATUS PUPILS
+2026-05-08 22:19:36  GAZE_STATUS PUPILS
+2026-05-08 22:19:36  GAZE_STATUS SAMPLES 130
+2026-05-08 22:19:37  GAZE_STATUS PUPILS
+2026-05-08 22:19:38  GAZE_STATUS PUPILS
+2026-05-08 22:19:39  GAZE_STATUS PUPILS
+2026-05-08 22:19:39  GAZE_STATUS SAMPLES 135
+2026-05-08 22:19:42  [Gaze] Stopped session for user 0 (136 samples).
+2026-05-08 22:19:44  [GazeCLI] Saved: {'sample_count': 136, 'heatmap_created': True, 'layout_created': True, 'user_dir': 'd:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-08 22:19:44  === gaze_session end (136 samples) ===
+
+=== gaze_session start 2026-05-08 22:19:47 user=0 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:19:47  [GazeCLI] Recording user 0 on camera 0.
+2026-05-08 22:19:47  [GazeCLI] Debug log file: d:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:19:47  [Gaze] Started session for user 0.
+2026-05-08 22:19:49  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:19:49  GAZE_STATUS CAMERA_OK
+2026-05-08 22:19:49  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:19:49  GAZE_STATUS PUPILS
+2026-05-08 22:19:49  GAZE_STATUS SAMPLES 1
+2026-05-08 22:19:50  GAZE_STATUS PUPILS
+2026-05-08 22:19:50  GAZE_STATUS PUPILS
+2026-05-08 22:19:50  GAZE_STATUS SAMPLES 5
+2026-05-08 22:19:51  GAZE_STATUS PUPILS
+2026-05-08 22:19:51  GAZE_STATUS PUPILS
+2026-05-08 22:19:51  GAZE_STATUS PUPILS
+2026-05-08 22:19:51  GAZE_STATUS SAMPLES 10
+2026-05-08 22:19:52  GAZE_STATUS PUPILS
+2026-05-08 22:19:53  GAZE_STATUS PUPILS
+2026-05-08 22:19:53  GAZE_STATUS SAMPLES 15
+2026-05-08 22:19:53  GAZE_STATUS PUPILS
+2026-05-08 22:19:54  GAZE_STATUS PUPILS
+2026-05-08 22:19:55  GAZE_STATUS PUPILS
+2026-05-08 22:19:55  GAZE_STATUS SAMPLES 20
+2026-05-08 22:19:56  GAZE_STATUS PUPILS
+2026-05-08 22:19:56  GAZE_STATUS SAMPLES 25
+2026-05-08 22:19:56  GAZE_STATUS PUPILS
+2026-05-08 22:19:57  GAZE_STATUS PUPILS
+2026-05-08 22:19:57  [Gaze] Stopped session for user 0 (29 samples).
+2026-05-08 22:19:59  [GazeCLI] Saved: {'sample_count': 29, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'd:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-08 22:19:59  === gaze_session end (29 samples) ===
+
+=== gaze_session start 2026-05-08 22:24:08 user=1 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:24:08  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 22:24:08  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:24:08  [Gaze] Started session for user 1.
+2026-05-08 22:24:10  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:24:10  GAZE_STATUS CAMERA_OK
+2026-05-08 22:24:10  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:24:10  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-08 22:24:10  GAZE_STATUS PUPILS
+2026-05-08 22:24:10  GAZE_STATUS SAMPLES 1
+2026-05-08 22:24:11  GAZE_STATUS PUPILS
+2026-05-08 22:24:11  GAZE_STATUS PUPILS
+2026-05-08 22:24:11  GAZE_STATUS SAMPLES 5
+2026-05-08 22:24:12  GAZE_STATUS PUPILS
+2026-05-08 22:24:12  GAZE_STATUS PUPILS
+2026-05-08 22:24:12  GAZE_STATUS SAMPLES 10
+2026-05-08 22:24:13  GAZE_STATUS PUPILS
+2026-05-08 22:24:13  GAZE_STATUS PUPILS
+2026-05-08 22:24:13  GAZE_STATUS SAMPLES 15
+2026-05-08 22:24:13  GAZE_STATUS PUPILS
+2026-05-08 22:24:14  GAZE_STATUS PUPILS
+2026-05-08 22:24:14  GAZE_STATUS PUPILS
+2026-05-08 22:24:15  GAZE_STATUS PUPILS
+2026-05-08 22:24:15  GAZE_STATUS SAMPLES 20
+2026-05-08 22:24:16  GAZE_STATUS PUPILS
+2026-05-08 22:24:16  GAZE_STATUS PUPILS
+2026-05-08 22:24:17  GAZE_STATUS SAMPLES 25
+2026-05-08 22:24:17  GAZE_STATUS PUPILS
+2026-05-08 22:24:19  GAZE_STATUS PUPILS
+2026-05-08 22:24:19  GAZE_STATUS SAMPLES 30
+2026-05-08 22:24:19  GAZE_STATUS PUPILS
+2026-05-08 22:24:20  GAZE_STATUS PUPILS
+2026-05-08 22:24:20  GAZE_STATUS PUPILS
+2026-05-08 22:24:20  GAZE_STATUS SAMPLES 35
+2026-05-08 22:24:21  GAZE_STATUS PUPILS
+2026-05-08 22:24:21  GAZE_STATUS PUPILS
+2026-05-08 22:24:22  GAZE_STATUS PUPILS
+2026-05-08 22:24:22  GAZE_STATUS SAMPLES 40
+2026-05-08 22:24:23  GAZE_STATUS PUPILS
+2026-05-08 22:24:25  GAZE_STATUS PUPILS
+2026-05-08 22:24:26  GAZE_STATUS PUPILS
+2026-05-08 22:24:26  GAZE_STATUS SAMPLES 45
+2026-05-08 22:24:26  GAZE_STATUS PUPILS
+2026-05-08 22:24:27  GAZE_STATUS SAMPLES 50
+2026-05-08 22:24:27  GAZE_STATUS PUPILS
+2026-05-08 22:24:27  GAZE_STATUS PUPILS
+2026-05-08 22:24:27  GAZE_STATUS SAMPLES 55
+2026-05-08 22:24:27  GAZE_STATUS PUPILS
+2026-05-08 22:24:28  GAZE_STATUS PUPILS
+2026-05-08 22:24:28  GAZE_STATUS SAMPLES 60
+2026-05-08 22:24:28  GAZE_STATUS PUPILS
+2026-05-08 22:24:29  GAZE_STATUS SAMPLES 65
+2026-05-08 22:24:29  GAZE_STATUS PUPILS
+2026-05-08 22:24:29  GAZE_STATUS PUPILS
+2026-05-08 22:24:29  GAZE_STATUS SAMPLES 70
+2026-05-08 22:24:30  GAZE_STATUS PUPILS
+2026-05-08 22:24:30  GAZE_STATUS PUPILS
+2026-05-08 22:24:30  GAZE_STATUS SAMPLES 75
+2026-05-08 22:24:31  GAZE_STATUS PUPILS
+2026-05-08 22:24:31  GAZE_STATUS PUPILS
+2026-05-08 22:24:31  GAZE_STATUS SAMPLES 80
+2026-05-08 22:24:32  GAZE_STATUS PUPILS
+2026-05-08 22:24:33  GAZE_STATUS PUPILS
+2026-05-08 22:24:33  GAZE_STATUS PUPILS
+2026-05-08 22:24:33  GAZE_STATUS SAMPLES 85
+2026-05-08 22:24:34  GAZE_STATUS PUPILS
+2026-05-08 22:24:35  GAZE_STATUS PUPILS
+2026-05-08 22:24:36  GAZE_STATUS PUPILS
+2026-05-08 22:24:36  GAZE_STATUS SAMPLES 90
+2026-05-08 22:24:36  GAZE_STATUS PUPILS
+2026-05-08 22:24:37  GAZE_STATUS PUPILS
+2026-05-08 22:24:37  GAZE_STATUS PUPILS
+2026-05-08 22:24:38  GAZE_STATUS PUPILS
+2026-05-08 22:24:38  GAZE_STATUS SAMPLES 95
+2026-05-08 22:24:39  GAZE_STATUS PUPILS
+2026-05-08 22:24:40  GAZE_STATUS PUPILS
+2026-05-08 22:24:40  GAZE_STATUS SAMPLES 100
+2026-05-08 22:24:40  GAZE_STATUS PUPILS
+2026-05-08 22:24:40  [Gaze] Stopped session for user 1 (102 samples).
+2026-05-08 22:24:42  [GazeCLI] Saved: {'sample_count': 102, 'heatmap_created': True, 'layout_created': True, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 22:24:42  === gaze_session end (102 samples) ===
+
+=== gaze_session start 2026-05-08 22:24:45 user=1 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:24:45  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 22:24:45  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:24:45  [Gaze] Started session for user 1.
+2026-05-08 22:24:47  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:24:47  GAZE_STATUS CAMERA_OK
+2026-05-08 22:24:47  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:24:47  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-08 22:24:47  GAZE_STATUS PUPILS
+2026-05-08 22:24:47  GAZE_STATUS SAMPLES 1
+2026-05-08 22:24:48  GAZE_STATUS PUPILS
+2026-05-08 22:24:48  GAZE_STATUS SAMPLES 5
+2026-05-08 22:24:48  GAZE_STATUS PUPILS
+2026-05-08 22:24:49  GAZE_STATUS PUPILS
+2026-05-08 22:24:49  GAZE_STATUS SAMPLES 10
+2026-05-08 22:24:49  GAZE_STATUS PUPILS
+2026-05-08 22:24:49  GAZE_STATUS SAMPLES 15
+2026-05-08 22:24:50  GAZE_STATUS PUPILS
+2026-05-08 22:24:50  GAZE_STATUS PUPILS
+2026-05-08 22:24:50  GAZE_STATUS SAMPLES 20
+2026-05-08 22:24:50  GAZE_STATUS PUPILS
+2026-05-08 22:24:51  GAZE_STATUS PUPILS
+2026-05-08 22:24:51  GAZE_STATUS SAMPLES 25
+2026-05-08 22:24:51  GAZE_STATUS PUPILS
+2026-05-08 22:24:52  GAZE_STATUS SAMPLES 30
+2026-05-08 22:24:52  GAZE_STATUS PUPILS
+2026-05-08 22:24:52  GAZE_STATUS PUPILS
+2026-05-08 22:24:52  GAZE_STATUS SAMPLES 35
+2026-05-08 22:24:53  GAZE_STATUS PUPILS
+2026-05-08 22:24:53  GAZE_STATUS PUPILS
+2026-05-08 22:24:53  GAZE_STATUS SAMPLES 40
+2026-05-08 22:24:53  GAZE_STATUS PUPILS
+2026-05-08 22:24:54  GAZE_STATUS PUPILS
+2026-05-08 22:24:54  GAZE_STATUS SAMPLES 45
+2026-05-08 22:24:54  GAZE_STATUS PUPILS
+2026-05-08 22:24:54  GAZE_STATUS SAMPLES 50
+2026-05-08 22:24:55  GAZE_STATUS PUPILS
+2026-05-08 22:24:55  GAZE_STATUS PUPILS
+2026-05-08 22:24:55  GAZE_STATUS SAMPLES 55
+2026-05-08 22:24:55  GAZE_STATUS PUPILS
+2026-05-08 22:24:56  GAZE_STATUS PUPILS
+2026-05-08 22:24:56  GAZE_STATUS SAMPLES 60
+2026-05-08 22:24:56  GAZE_STATUS PUPILS
+2026-05-08 22:24:57  GAZE_STATUS SAMPLES 65
+2026-05-08 22:24:57  GAZE_STATUS PUPILS
+2026-05-08 22:24:57  GAZE_STATUS PUPILS
+2026-05-08 22:24:57  GAZE_STATUS SAMPLES 70
+2026-05-08 22:24:58  GAZE_STATUS PUPILS
+2026-05-08 22:24:58  GAZE_STATUS PUPILS
+2026-05-08 22:24:58  GAZE_STATUS SAMPLES 75
+2026-05-08 22:24:59  GAZE_STATUS PUPILS
+2026-05-08 22:24:59  GAZE_STATUS SAMPLES 80
+2026-05-08 22:24:59  GAZE_STATUS PUPILS
+2026-05-08 22:24:59  GAZE_STATUS PUPILS
+2026-05-08 22:25:00  [Gaze] Stopped session for user 1 (84 samples).
+2026-05-08 22:25:02  [GazeCLI] Saved: {'sample_count': 84, 'heatmap_created': True, 'layout_created': True, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 22:25:02  === gaze_session end (84 samples) ===
+
+=== gaze_session start 2026-05-08 22:25:05 user=1 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-08 22:25:05  [GazeCLI] Recording user 1 on camera 0.
+2026-05-08 22:25:05  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-08 22:25:05  [Gaze] Started session for user 1.
+2026-05-08 22:25:07  [Gaze] Opened camera index 0 (CAP_DSHOW) at 640×480, frames OK.
+2026-05-08 22:25:07  GAZE_STATUS CAMERA_OK
+2026-05-08 22:25:07  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-08 22:25:07  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-08 22:25:07  GAZE_STATUS PUPILS
+2026-05-08 22:25:07  GAZE_STATUS SAMPLES 1
+2026-05-08 22:25:07  GAZE_STATUS PUPILS
+2026-05-08 22:25:07  GAZE_STATUS SAMPLES 5
+2026-05-08 22:25:08  GAZE_STATUS PUPILS
+2026-05-08 22:25:08  GAZE_STATUS PUPILS
+2026-05-08 22:25:08  GAZE_STATUS SAMPLES 10
+2026-05-08 22:25:09  GAZE_STATUS PUPILS
+2026-05-08 22:25:09  GAZE_STATUS SAMPLES 15
+2026-05-08 22:25:09  GAZE_STATUS PUPILS
+2026-05-08 22:25:09  GAZE_STATUS PUPILS
+2026-05-08 22:25:10  GAZE_STATUS SAMPLES 20
+2026-05-08 22:25:10  GAZE_STATUS PUPILS
+2026-05-08 22:25:12  GAZE_STATUS PUPILS
+2026-05-08 22:25:13  GAZE_STATUS PUPILS
+2026-05-08 22:25:13  GAZE_STATUS SAMPLES 25
+2026-05-08 22:25:15  [Gaze] Stopped session for user 1 (25 samples).
+2026-05-08 22:25:16  [GazeCLI] Saved: {'sample_count': 25, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-08 22:25:16  === gaze_session end (25 samples) ===

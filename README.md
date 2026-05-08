@@ -6,7 +6,9 @@ HCI Project -- TUIO / reacTIVision integration
 
 ## Overview
 
-A fullscreen Python GUI that authenticates users via **TUIO fiducial markers** detected by **reacTIVision**. Placing a marker in front of the camera opens that user's page (theme + animated background). Rotating the marker **left** returns to the main menu; **right** launches the configured game.
+The **main application GUI** is the C# WinForms app in **`FruitNinjaGame/`** (launch with **`run.bat`** or `dotnet run` on the `.csproj`). It authenticates users via **TUIO fiducial markers** detected by **reacTIVision**. Placing a marker in front of the camera opens that user's page. Rotating the marker **left** returns to the main menu; **right** launches the configured game.
+
+Python modules in the repo support **TUIO**, **game launch**, optional **gaze recording** (`gaze_session_cli.py`, started by the C# UI), and other side services — not a Tkinter front-end (the old `app_entry.py` prototype has been removed).
 
 An **admin** screen (user add/remove) unlocks only when a **specific Bluetooth device** is present **and** a dedicated **admin TUIO marker** is held on the main menu.
 
@@ -16,12 +18,13 @@ A **circular radial menu** opens while a dedicated **menu TUIO marker** (default
 
 ## Features
 
-- **Fullscreen Tkinter UI** -- GIF backgrounds, per-user themes, screen transitions.
+- **C# WinForms UI** -- main menu, per-user profile flow, TUIO integration, game launch.
 - **reacTIVision** -- auto-launched in the background (path in `config.json`).
 - **TUIO OSC** -- `python-osc` on a background thread.
 - **Rotation navigation** -- left = menu, right = launch game.
 - **Admin mode** -- Bluetooth gate + TUIO marker `9` (configurable) to manage users (stored in `admin_users.json`).
 - **Circular TUIO menu** -- marker `10` (configurable) for volume + window actions; see `tuio_circular_menu.py` and `menu_*` keys in `config.json`.
+- **Eye-gaze heatmaps** -- optional dedicated-camera gaze tracking records per-user sessions, writes `gaze_data/user_<id>/heatmap.png`, and adapts profile action placement on the next visit.
 - **`config.json`** -- game path, TUIO, admin Bluetooth, menu tuning, etc.
 
 ---
@@ -46,8 +49,12 @@ pip install -r requirements.txt
 | `comtypes` | 1.4 | Required by pycaw |
 | `opencv-python` | 4.8 | Webcam capture for hand-tracking (gesture controller) |
 | `mediapipe` | 0.10 | Hand-pose detection (gesture controller) |
+| `dlib-bin` | 20.0.1 | Windows prebuilt dlib runtime for eye-gaze tracking |
+| `pandas`, `seaborn`, `matplotlib` | current | Per-user heatmap generation |
 
 > **`opencv-python` and `mediapipe`** are only used by `gesture_controller.py` (hand-tracking). If you are not using hand tracking you can skip them -- the app runs fine without them.
+
+> **Eye gaze on Windows:** after `pip install -r requirements.txt`, install the gaze package with `python -m pip install --no-deps git+https://github.com/antoinelame/GazeTracking.git`. This avoids compiling `dlib` from source because `dlib-bin` already provides the runtime module.
 
 > **`pywin32`, `pycaw`, `comtypes`** are Windows-only. On Linux/macOS the code no-ops safely, but the circular menu volume and window actions will not function.
 
@@ -85,8 +92,11 @@ pip install -r requirements.txt
 #    "reactvision_exe": "path/to/reacTIVision.exe"
 #    "game_exe":        "path/to/YourGame.exe"
 
-# 4. Run
-python app_entry.py
+# 4. Run the main GUI (Windows)
+run.bat
+
+# Or from the repo root:
+# dotnet run --project FruitNinjaGame\FruitNinjaGame.csproj
 ```
 
 **TUIO marker IDs to configure in reacTIVision:**
@@ -177,6 +187,20 @@ User changes from the admin UI are saved to **`admin_users.json`** in the projec
 | `game_exe` | Path to the game to launch |
 | `tuio_host` / `tuio_port` | OSC listen address / port (default **3333**) |
 | `rotation_threshold` | Angular velocity (rad/s) for rotation events |
+| `reactvision_camera_index` | **DirectShow / videoInput** device id for **reacTIVision** (same numbering as `reacTIVision.exe -l`). **Not** the same as OpenCV’s camera index for Python. Written into `camera.xml` when the GUI launches reacTIVision. |
+| `reactvision_camera_name_contains` | Optional: substring matched against names from `reacTIVision.exe -l` (e.g. `ASUS FHD` for a built-in webcam). When set, the GUI runs `-l`, picks the first matching device id, and **overrides** the numeric index for `camera.xml`. Leave `""` to use only `reactvision_camera_index`. **Matching skips any device whose name contains `Iriun`.** |
+
+**reacTIVision persists `camera.xml` when it exits.** The GUI therefore **stops** any previous bundled reacTIVision session **before** writing `camera.xml`, then starts a new process — otherwise shutdown would overwrite your ASUS choice with the Iriun stream that was open.
+| `gaze_camera_index` | **OpenCV** index for eye gaze (`gaze_session_cli.py`). If this numeric value equals `reactvision_camera_index`, the GUI may stop/restart reacTIVision while gaze records — prefer distinct physical cameras. |
+| `emotion_camera_index` | **OpenCV** index for `emotion_server.py` — unique among gaze / emotion / YOLO / hand |
+| `yolo_camera_index` | **OpenCV** index for `yolo_object_tracker.py` — unique among those four |
+| `hand_tracker_camera_index` | **OpenCV** index for `hand_controller.py` — unique among those four |
+
+**Why TUIO used Iriun with `reactvision_camera_index: 0`:** On Windows, DirectShow often lists **Iriun** as device **0** and the real laptop cam later (e.g. **2** for “ASUS FHD webcam”). OpenCV may order devices differently. Use `reacTIVision.exe -l` for reacTIVision, and set `reactvision_camera_name_contains` or the correct DirectShow id.
+
+Defaults in code are **0 / 1 / 2 / 3 / 4** (reacTIVision / gaze / emotion / YOLO / hand) for fallbacks only — tune per machine.
+
+The GUI logs `WARNING: config.json reuses OpenCV camera index…` if gaze, emotion, YOLO, or hand share an OpenCV index.
 
 ### Circular menu (`config.json`)
 
@@ -192,14 +216,30 @@ User changes from the admin UI are saved to **`admin_users.json`** in the projec
 
 **Game exit** from the menu only works when the game was launched as a **direct `.exe`** via `launch_game` (not `.lnk` shortcuts -- those are not tracked).
 
+### Eye gaze heatmaps (`config.json`)
+
+| Key | Description |
+|-----|-------------|
+| `gaze_enabled` | Enable/disable eye-gaze recording and adaptive profile layouts |
+| `gaze_camera_index` | **OpenCV** device index for gaze (often **0** for the first **Iriun** entry in DirectShow; compare indices with `reacTIVision.exe -l`) |
+| `gaze_opencv_dshow_first` | If **true**, try **DirectShow** (`CAP_DSHOW`) before MSMF when opening the gaze camera — use for **Iriun / phone** streams so the index matches typical DirectShow order; **false** keeps MSMF-first (better for many laptop webcams) |
+| `gaze_sample_interval_ms` | Delay between gaze samples |
+| `gaze_min_samples` | Minimum samples before writing an adaptive `layout.json` |
+| `gaze_smooth_alpha` | Low-pass smoothing for gaze points, higher = smoother |
+| `gaze_data_dir` | Folder for `user_<id>/last_session.csv`, `last_session.json`, `heatmap.png`, and `layout.json` |
+| `gaze_heatmap_grid_columns` / `gaze_heatmap_grid_rows` | Grid used to find most-looked hot zones |
+| `gaze_layout_margin_ratio` | Keeps adaptive anchors away from screen edges |
+| `gaze_layout_min_distance` | Minimum normalized distance between primary action anchors |
+
 ---
 
 ## Architecture
 
 | File | Description |
 |------|-------------|
-| `app_entry.py` | Tkinter app -- screens, TUIO callbacks, admin UI, menu wiring |
-| `tuio_circular_menu.py` | Fullscreen radial overlay + TUIO motion to sectors |
+| `FruitNinjaGame/GUIForm.cs` | Main C# WinForms GUI; starts TUIO, user profile flow, game launch, and gaze sidecar |
+| `gaze_session_cli.py` | Python gaze recorder sidecar started/stopped by the C# GUI for each profile session |
+| `tuio_circular_menu.py` | Radial menu logic (shared concepts; C# hosts the main menu UI) |
 | `windows_controls.py` | Volume (pycaw), minimize-other-windows, focus GUI |
 | `tuio_listener.py` | TUIO OSC listener thread |
 | `character_map.py` | Default marker 0-3 to themes (assets, colours) |

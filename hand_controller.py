@@ -1,11 +1,18 @@
+import os
+
 import cv2
 import mediapipe as mp
 import pyautogui
 import numpy as np
 
+try:
+    from config import HAND_TRACKER_CAMERA_INDEX as _DEFAULT_HAND_CAM
+except ImportError:
+    _DEFAULT_HAND_CAM = 4
+
 # ── Configuration ─────────────────────────────────────────
 SMOOTHING    = 1
-CAMERA_INDEX = 2
+CAMERA_INDEX = int(os.getenv("HAND_TRACKER_CAMERA_INDEX", str(_DEFAULT_HAND_CAM)))
     
 pyautogui.FAILSAFE = False
 

@@ -1,15 +1,24 @@
 import cv2
+import os
 import socket
 import time
 import logging
 from deepface import DeepFace
 
+try:
+    from config import EMOTION_CAMERA_INDEX as _DEFAULT_EMOTION_CAM
+    from config import TCP_LEVEL_PORT as _DEFAULT_TCP_LEVEL
+except ImportError:
+    _DEFAULT_EMOTION_CAM = 2
+    _DEFAULT_TCP_LEVEL = 12345
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 SERVER_IP = "127.0.0.1"
-SERVER_PORT = 12345
+SERVER_PORT = int(os.getenv("GAME_TCP_LEVEL_PORT", str(_DEFAULT_TCP_LEVEL)))
 SEND_INTERVAL = 1.0
+CAMERA_INDEX = int(os.getenv("EMOTION_CAMERA_INDEX", str(_DEFAULT_EMOTION_CAM)))
 EMOTION_MAP = {"happy": 10, "angry": 200, "sad": 200, "neutral": 100}
 DEFAULT_LEVEL = 100
 
@@ -36,9 +45,9 @@ def get_emotion(frame):
         return "neutral"
 
 def main():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(CAMERA_INDEX)
     if not cap.isOpened():
-        logging.error("Cannot open webcam. Exiting.")
+        logging.error("Cannot open emotion camera index %s. Exiting.", CAMERA_INDEX)
         return
 
     sock = connect_socket()
