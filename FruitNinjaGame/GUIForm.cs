@@ -2421,7 +2421,7 @@ namespace FruitNinjaGame
 
                     int cx2 = rowStartX + col * (capCardW + capGap);
                     int cy2 = capCardTop + row * (capCardH + (int)(capSh * 0.04));
-                    
+
                     var av = avatars[uid];
 
                     using var cbg = new SolidBrush(u.HeaderBg);
@@ -2447,7 +2447,7 @@ namespace FruitNinjaGame
 
                     using var str = new SolidBrush(u.Accent);
                     g.FillRectangle(str, cx2, cy2 + capCardH - 5, capCardW, 5);
-                    
+
                     ci++;
                 }
             };
@@ -3089,7 +3089,7 @@ namespace FruitNinjaGame
 
             if (!_useTuioControl) { StopReactivision(); Thread.Sleep(2000); }
 
-            bool success = LaunchGame(name, out string errMsg);
+            bool success = LaunchGame(name, _currentUser ?? -1, out string errMsg);
             if (success)
             {
                 // Start the emotion server and listener when the game runs
@@ -3221,12 +3221,12 @@ namespace FruitNinjaGame
             _levelListener?.Stop();
         }
 
-        private bool LaunchGame(string characterName, out string errorMsg)
+        private bool LaunchGame(string characterName, int userId, out string errorMsg)
         {
             errorMsg = "";
             try
             {
-                var gameForm = new Form1(); // FruitNinjaGame.Form1
+                var gameForm = new Form1(userId); // FruitNinjaGame.Form1
                 _activeGameForm = gameForm;
 
                 // Start the hand controller when game runs

@@ -35,8 +35,20 @@ namespace FruitNinjaGame
             Stick
         }
 
-        public Form1()
+        // ── Per-user high score ───────────────────────────────────────────────
+        private int _userId = -1;          // -1 = no user / guest
+        private int HighScore = 0;
+        private Fruit HighScoreIcon = new Fruit();   // reuses the score.png asset
+        private Score HighScoreNum = new Score();
+
+        public Form1() : this(-1) { }
+
+        public Form1(int userId)
         {
+            _userId = userId;
+            // Load persisted high score for this user (0 if guest / not found)
+            HighScore = userId >= 0 ? UserStore.LoadHighScore(userId) : 0;
+
             InitializeComponent();
             this.FormBorderStyle = FormBorderStyle.None;
             Cursor.Hide();
@@ -217,6 +229,11 @@ namespace FruitNinjaGame
                             audio.StopMusic();
                             Fruits.Clear();
                             Bombs.Clear();
+                            // ── Persist high score on game over ───────────────
+                            if (_userId >= 0)
+                                HighScore = UserStore.SaveHighScore(_userId, ScoreCount);
+                            else if (ScoreCount > HighScore)
+                                HighScore = ScoreCount;
                             DrawGameOver();
                         }
                     }
@@ -591,7 +608,7 @@ namespace FruitNinjaGame
             pnn.Vy = -R.Next(50, 60);
             pnn.Vx = R.Next(-8, 9);
             pnn.img.Add(FruitImg[Type]);
-            pnn.img.Add(FruitImg[Type+1]);
+            pnn.img.Add(FruitImg[Type + 1]);
 
             Fruits.Add(pnn);
         }
@@ -633,7 +650,58 @@ namespace FruitNinjaGame
             pnn.img.Add(img);
             ScoreIcon = pnn;
 
+            // ── High-score icon (same asset, positioned below the live score) ──
+            Fruit hsPnn = new Fruit();
+            hsPnn.X = 10;
+            hsPnn.Y = 80;   // 70 px below ScoreIcon (icon h=70)
+            Bitmap hsImg = new Bitmap(AppConfig.GetAssetPath("score.png"));
+            hsPnn.img.Add(hsImg);
+            HighScoreIcon = hsPnn;
+
             DrawScore();
+            DrawHighScoreNum();
+        }
+
+        /// <summary>Loads digit bitmaps into <see cref="HighScoreNum"/> (same assets as the live score).</summary>
+        void DrawHighScoreNum()
+        {
+            string[] names = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+            foreach (string n in names) HighScoreNum.First.Add(new Bitmap(AppConfig.GetAssetPath($"{n}.png")));
+            foreach (string n in names) HighScoreNum.Second.Add(new Bitmap(AppConfig.GetAssetPath($"{n}.png")));
+            foreach (string n in names) HighScoreNum.Third.Add(new Bitmap(AppConfig.GetAssetPath($"{n}.png")));
+            foreach (string n in names) HighScoreNum.Fourth.Add(new Bitmap(AppConfig.GetAssetPath($"{n}.png")));
+        }
+
+        /// <summary>Draw a 1-4 digit number using the number-asset bitmaps at the requested position.</summary>
+        void DrawNumericValue(Graphics g, Score digits, int value, int x, int y, int w, int h)
+        {
+            int ones = value % 10;
+            int tens = (value / 10) % 10;
+            int hundreds = (value / 100) % 10;
+            int thousands = (value / 1000) % 10;
+
+            if (value < 10)
+            {
+                g.DrawImage(digits.First[ones], x, y, w, h);
+            }
+            else if (value < 100)
+            {
+                g.DrawImage(digits.First[tens], x, y, w, h);
+                g.DrawImage(digits.Second[ones], x + 40, y, w, h);
+            }
+            else if (value < 1000)
+            {
+                g.DrawImage(digits.First[hundreds], x, y, w, h);
+                g.DrawImage(digits.Second[tens], x + 40, y, w, h);
+                g.DrawImage(digits.Third[ones], x + 80, y, w, h);
+            }
+            else
+            {
+                g.DrawImage(digits.First[thousands], x, y, w, h);
+                g.DrawImage(digits.Second[hundreds], x + 40, y, w, h);
+                g.DrawImage(digits.Third[tens], x + 80, y, w, h);
+                g.DrawImage(digits.Fourth[ones], x + 120, y, w, h);
+            }
         }
 
         void StartMenu()
@@ -711,7 +779,7 @@ namespace FruitNinjaGame
             g.Clear(Color.White);
 
             g.DrawImage(back, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
-            if(isOver)
+            if (isOver)
             {
                 g.DrawImage(GameOver, 0, -100, this.ClientSize.Width, this.ClientSize.Height);
 
@@ -737,7 +805,7 @@ namespace FruitNinjaGame
                     // Restore original state
                     g.Restore(state);
                 }
-                
+
 
                 DrawRotatedImage(g, RetryRing,
                     this.ClientSize.Width / 2 - 500,
@@ -768,7 +836,7 @@ namespace FruitNinjaGame
                     300, 300,
                     exitAngle);
 
-                if(ExitIconState == 0)
+                if (ExitIconState == 0)
                 {
                     DrawRotatedImage(g, GameOverExitIcon.img[0],
                     GameOverExitIcon.X, GameOverExitIcon.Y,
@@ -829,7 +897,7 @@ namespace FruitNinjaGame
                     300, 300,
                     exitAngle);
 
-                if(ExitIconState == 0)
+                if (ExitIconState == 0)
                 {
                     DrawRotatedImage(g, ExitIcon.img[0],
                    ExitIcon.X, ExitIcon.Y,
@@ -837,7 +905,7 @@ namespace FruitNinjaGame
                     startAngle);
                 }
 
-                
+
             }
             else
             {
@@ -849,44 +917,20 @@ namespace FruitNinjaGame
                 int w = 40;
                 int h = 50;
 
-                int ones = ScoreCount % 10;
-                int tens = (ScoreCount / 10) % 10;
-                int hundreds = (ScoreCount / 100) % 10;
-                int thousands = (ScoreCount / 1000) % 10;
+                // ── Current score (existing behaviour, now via shared helper) ──
+                DrawNumericValue(g, ScoreNum, ScoreCount, x, y, w, h);
 
-                if (ScoreCount < 10)
-                {
-                    g.DrawImage(ScoreNum.First[ones], x, y, w, h);
-                }
-                else if (ScoreCount < 100)
-                {
-                    g.DrawImage(ScoreNum.First[tens], x, y, w, h);
+                // ── High score row (below the current score) ──────────────────
+                g.DrawImage(HighScoreIcon.img[0], HighScoreIcon.X, HighScoreIcon.Y, 70, 70);
 
-                    g.DrawImage(ScoreNum.Second[ones], x + 40, y, w, h);
-                }
-                else if (ScoreCount < 1000)
-                {
-                    g.DrawImage(ScoreNum.First[hundreds], x, y, w, h);
-
-                    g.DrawImage(ScoreNum.Second[tens], x + 40, y, w, h);
-
-                    g.DrawImage(ScoreNum.Third[ones], x + 80, y, w, h);
-                }
-                else
-                {
-                    g.DrawImage(ScoreNum.First[thousands], x, y, w, h);
-
-                    g.DrawImage(ScoreNum.Second[hundreds], x + 40, y, w, h);
-
-                    g.DrawImage(ScoreNum.Third[tens], x + 80, y, w, h);
-
-                    g.DrawImage(ScoreNum.Fourth[ones], x + 120, y, w, h);
-                }
+                int hsX = HighScoreIcon.X + 80;
+                int hsY = HighScoreIcon.Y + 10;
+                DrawNumericValue(g, HighScoreNum, HighScore, hsX, hsY, w, h);
             }
 
             if (isGame)
             {
-                for(int i = 0; i< Fruits.Count; i++)
+                for (int i = 0; i < Fruits.Count; i++)
                 {
                     g.DrawImage(Fruits[i].img[Fruits[i].isCut], Fruits[i].X, Fruits[i].Y);
                 }
@@ -920,7 +964,7 @@ namespace FruitNinjaGame
                     using (SolidBrush bgBrush = new SolidBrush(Color.FromArgb(180, 0, 0, 0)))
                     using (Pen borderPen = new Pen(Color.FromArgb(255, 255, 200, 100), 2))
                     {
-                        FillRoundedRectangle(g,bgBrush, x, y, boxWidth, boxHeight, 15);
+                        FillRoundedRectangle(g, bgBrush, x, y, boxWidth, boxHeight, 15);
                         //DrawRoundedRectangle(g,borderPen, x, y, boxWidth, boxHeight, 15);
                     }
 
@@ -1183,7 +1227,7 @@ namespace FruitNinjaGame
                     StartIcon.Y += 50;
                 }
 
-                
+
                 if (StartIcon.Y > this.ClientSize.Height)
                 {
                     isMenu = false;
