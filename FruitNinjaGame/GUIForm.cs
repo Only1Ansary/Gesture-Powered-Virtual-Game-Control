@@ -1,4 +1,4 @@
-#nullable disable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -63,6 +63,8 @@ namespace FruitNinjaGame
         public static readonly float TuioRotationThresholdRad = ReadFloat("rotation_threshold", 0.45f);
         public static readonly int MenuTuioMarker = ReadInt("menu_tuio_marker", 10);
         public static readonly int AdminTuioMarker = ReadInt("admin_tuio_marker", 9);
+        public static readonly int FaceEnrollMarker = ReadInt("face_enroll_marker", 55);
+        public static readonly int FaceLoginMarker = ReadInt("face_login_marker", 56);
         /// <summary>Stored in config for reference; admin gate matches by <see cref="AdminBluetoothName"/> only.</summary>
         public static readonly string AdminBluetoothMac = ReadString("admin_bluetooth_mac", "");
         public static readonly string AdminBluetoothName = ReadString("admin_bluetooth_name", "");
@@ -1329,6 +1331,10 @@ namespace FruitNinjaGame
         private bool _adminTriggered = false;
         private DateTime _adminShownTime = DateTime.MinValue;
 
+        private bool _faceIdMode = false;
+        private int _faceIdSelected = 0;
+        private DateTime _faceIdShownTime = DateTime.MinValue;
+
         // ── ctor ───────────────────────────────────────────────────────────────
         public GUIForm()
         {
@@ -1443,7 +1449,7 @@ namespace FruitNinjaGame
                     "<portvideo>\r\n" +
                     $"    <camera id=\"{idx}\">\r\n" +
                     "        <capture width=\"640\" height=\"480\" fps=\"max\" compress=\"true\" />\r\n" +
-                    "        <settings brightness=\"min\" contrast=\"min\" gain=\"min\" shutter=\"default\" exposure=\"min\" sharpness=\"min\" gamma=\"min\" focus=\"min\" />\r\n" +
+                    "        <settings brightness=\"default\" contrast=\"default\" gain=\"default\" shutter=\"default\" exposure=\"default\" sharpness=\"default\" gamma=\"default\" focus=\"default\" />\r\n" +
                     "        <frame width=\"max\" height=\"max\" xoff=\"0\" yoff=\"0\" />\r\n" +
                     "    </camera>\r\n" +
                     "</portvideo>\r\n";
@@ -2063,6 +2069,42 @@ namespace FruitNinjaGame
                 }
                 return;
             }
+
+            // Face ID Enrollment marker (55)
+            if (fid == AppConfig.FaceEnrollMarker)
+            {
+                if (!_faceIdMode)
+                {
+                    _adminGate?.Refresh();
+                    if (_adminGate != null && _adminGate.IsConnected)
+                    {
+                        _currentUser = null;
+                        _faceIdSelected = 0;
+                        _adminTriggered = false;
+                        ShowFaceEnrollmentScreen();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Bluetooth admin verification required for Face ID management.", "Face ID", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                else
+                {
+                    _faceIdShownTime = DateTime.Now;
+                    _adminTriggered = false;
+                }
+                return;
+            }
+
+            // Face ID Login marker (56)
+            if (fid == AppConfig.FaceLoginMarker)
+            {
+                if (!_gameRunning && !_adminMode && !_faceIdMode)
+                {
+                    Task.Run(() => RunFaceId("verify"));
+                }
+                return;
+            }
             if (_gameRunning) return;
             if (_adminMode) return;
             if (_currentUser == null && _users.ContainsKey(fid))
@@ -2111,6 +2153,28 @@ namespace FruitNinjaGame
                     AdminRemoveSelected();
                 return;
             }
+            if (_faceIdMode && fid == AppConfig.FaceEnrollMarker)
+            {
+                if ((DateTime.Now - _faceIdShownTime).TotalMilliseconds < 1000) return;
+                if (_adminTriggered) return;
+                _adminTriggered = true;
+
+                if (direction == "left")
+                {
+                    _faceIdMode = false;
+                    ShowMainMenu();
+                }
+                else
+                {
+                    var keys = _users.Keys.OrderBy(k => k).ToList();
+                    if (keys.Count > 0)
+                    {
+                        int targetUid = keys[Math.Min(_faceIdSelected, keys.Count - 1)];
+                        Task.Run(() => RunFaceId("enroll", targetUid));
+                    }
+                }
+                return;
+            }
             if (_gameRunning) return;
             if (_currentUser != fid || _rotationTriggered) return;
             _rotationTriggered = true;
@@ -2133,6 +2197,14 @@ namespace FruitNinjaGame
                 case Keys.D2: SimulateTuio(2); break;
                 case Keys.D3: SimulateTuio(3); break;
                 case Keys.M: SimulateMenuToggle(); break;
+                case Keys.F5: 
+                    if (_faceIdMode) {
+                        var keys = _users.Keys.OrderBy(k => k).ToList();
+                        if (keys.Count > 0) Task.Run(() => RunFaceId("enroll", keys[_faceIdSelected]));
+                    } else {
+                        Task.Run(() => RunFaceId("verify")); 
+                    }
+                    break;
                 case Keys.Left: SimulateRotation("left"); break;
                 case Keys.Right: SimulateRotation("right"); break;
             }
@@ -2177,10 +2249,10 @@ namespace FruitNinjaGame
             _tuioLight = null;
             _gazeHealthDot = null;
             _gazeHealthLbl = null;
-            _adminListFlow = null;
             _adminNeutralY = null;
             _adminSmoothedY = 0f;
             _adminTriggered = false;
+            _faceIdMode = false;
 
             _blinkTimer?.Stop();
             _blinkTimer?.Dispose();
@@ -2200,6 +2272,132 @@ namespace FruitNinjaGame
                 _screen = null;
             }
             GC.Collect();
+        }
+
+        private void ShowFaceEnrollmentScreen()
+        {
+            ClearScreen();
+            _faceIdShownTime = DateTime.Now;
+            _faceIdMode = true;
+            _faceIdSelected = 0;
+            _adminNeutralY = null;
+            _adminSmoothedY = 0f;
+            _adminTriggered = false;
+            int sw = SW, sh = SH;
+            var root = new Panel { Bounds = ClientRectangle, BackColor = Color.FromArgb(10, 10, 26) };
+            Controls.Add(root);
+            _screen = root;
+
+            var header = new Panel { Bounds = new Rectangle(0, 0, sw, (int)(sh * 0.10)), BackColor = Color.FromArgb(26, 26, 58) };
+            root.Controls.Add(header);
+
+            var title = new Label {
+                Text = "  FACE ID ENROLLMENT",
+                Font = new Font("Bahnschrift", sh * 0.03f, FontStyle.Bold),
+                ForeColor = Color.Cyan,
+                BackColor = Color.Transparent,
+                AutoSize = true,
+                Left = (int)(sw * 0.02),
+                Top = (int)(sh * 0.02)
+            };
+            header.Controls.Add(title);
+
+            int instrY = (int)(sh * 0.11);
+            foreach (string line in new[] {
+                "Move marker UP / DOWN to scroll users",
+                "Rotate marker RIGHT to enroll Face ID",
+                "Rotate marker LEFT to go back"
+            })
+            {
+                var ln = new Label {
+                    Text = line,
+                    Font = new Font("Consolas", sh * 0.015f),
+                    ForeColor = Color.FromArgb(102, 102, 153),
+                    BackColor = Color.Transparent,
+                    AutoSize = true,
+                    Left = (int)(sw * 0.05),
+                    Top = instrY
+                };
+                root.Controls.Add(ln);
+                instrY += ln.Height + 4;
+            }
+
+            var body = new FlowLayoutPanel {
+                Bounds = new Rectangle((int)(sw * 0.05), instrY + 10, (int)(sw * 0.9), sh - instrY - 30),
+                FlowDirection = FlowDirection.TopDown,
+                AutoScroll = true,
+                BackColor = Color.Transparent
+            };
+            root.Controls.Add(body);
+            _adminListFlow = body;
+
+            RebuildFaceIdList();
+        }
+
+        private void RebuildFaceIdList()
+        {
+            if (_adminListFlow == null || _adminListFlow.IsDisposed) return;
+            _adminListFlow.Controls.Clear();
+            var keys = _users.Keys.OrderBy(k => k).ToList();
+            for (int i = 0; i < keys.Count; i++)
+            {
+                int uid = keys[i];
+                var u = _users[uid];
+                bool sel = (i == _faceIdSelected);
+                var p = new Panel { Size = new Size(_adminListFlow.Width - 40, (int)(SH * 0.08)), BackColor = sel ? Color.FromArgb(50, 50, 100) : Color.FromArgb(20, 20, 40), Margin = new Padding(0, 5, 0, 5) };
+                var lbl = new Label { Text = $"USER #{uid}: {u.Name}", ForeColor = sel ? Color.Cyan : Color.Gray, Font = new Font("Consolas", SH * 0.02f, FontStyle.Bold), AutoSize = true, Left = 20, Top = (p.Height - 30) / 2 };
+                p.Controls.Add(lbl);
+                _adminListFlow.Controls.Add(p);
+            }
+        }
+
+        private void RunFaceId(string mode, int targetUserId = -1)
+        {
+            if (InvokeRequired) { BeginInvoke(new Action(() => RunFaceId(mode, targetUserId))); return; }
+
+            StopReactivision();
+            StopHandController();
+            StopGazeSession();
+            StopYoloObjectTracker();
+            Thread.Sleep(1500); // Wait for camera
+
+            string scriptPath = Path.Combine(AppConfig.RepoRoot, "face_manager.py");
+            string args = mode == "enroll" ? $"--enroll {targetUserId}" : "--verify";
+
+            try
+            {
+                var psi = new ProcessStartInfo("python", $"\"{scriptPath}\" {args}")
+                {
+                    WorkingDirectory = AppConfig.RepoRoot,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = false,
+                };
+                var p = Process.Start(psi);
+                string output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+
+                if (mode == "verify" && output.Contains("RESULT_ID:"))
+                {
+                    string idStr = output.Split("RESULT_ID:")[1].Trim().Split('\n')[0].Trim();
+                    if (int.TryParse(idStr, out int uid) && _users.ContainsKey(uid))
+                    {
+                        BeginInvoke(new Action(() => {
+                            _currentUser = uid;
+                            ShowUserPage(uid);
+                        }));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Face ID Error: {ex.Message}");
+            }
+            finally
+            {
+                LaunchReactivision();
+                StartHandController();
+            }
         }
 
         private void SetTuioLight(bool active)
@@ -2797,14 +2995,13 @@ namespace FruitNinjaGame
         // ═══════════════════════════════════════════════════════════════════════
         private void ShowAdminScreen()
         {
+            ClearScreen();
             _adminShownTime = DateTime.Now;
             _adminMode = true;
             _adminSelected = 0;
             _adminNeutralY = null;
             _adminSmoothedY = 0f;
             _adminTriggered = false;
-
-            ClearScreen();
             int sw = SW, sh = SH;
             int marginX = (int)(sw * 0.06);
 
@@ -3003,6 +3200,37 @@ namespace FruitNinjaGame
 
             if (_adminMode && fid == AppConfig.AdminTuioMarker)
                 AdminMarkerMoved(x, y);
+            if (_faceIdMode && fid == AppConfig.FaceEnrollMarker)
+                FaceIdMarkerMoved(x, y);
+        }
+
+        private void FaceIdMarkerMoved(float x, float y)
+        {
+            if (!_faceIdMode || _adminListFlow == null) return;
+            float th = AppConfig.MenuMotionThresh;
+            float alpha = AppConfig.MenuSmoothAlpha;
+
+            if (_adminNeutralY == null) { _adminNeutralY = y; _adminSmoothedY = y; return; }
+            _adminSmoothedY = alpha * _adminSmoothedY + (1f - alpha) * y;
+            float dy = _adminSmoothedY - _adminNeutralY.Value;
+
+            if (dy < -th * 1.5f && !_adminTriggered)
+            {
+                _adminNeutralY = _adminSmoothedY;
+                int c = _users.Count;
+                _faceIdSelected = c > 0 ? Math.Max(0, _faceIdSelected - 1) : 0;
+                RebuildFaceIdList();
+            }
+            else if (dy > th * 1.5f && !_adminTriggered)
+            {
+                _adminNeutralY = _adminSmoothedY;
+                int c = _users.Count;
+                _faceIdSelected = c > 0 ? Math.Min(c - 1, _faceIdSelected + 1) : 0;
+                RebuildFaceIdList();
+            }
+
+            // Reset trigger when marker is near the vertical center or after some movement
+            if (Math.Abs(dy) < th * 0.5f) _adminTriggered = false;
         }
 
         private void AdminMarkerMoved(float x, float y)
@@ -3073,6 +3301,17 @@ namespace FruitNinjaGame
             _users.Remove(uid);
             UserStore.SaveUsers(_users);
             _adminSelected = Math.Max(0, idx - 1);
+            
+            // Delete face data too
+            Task.Run(() => {
+                try {
+                    var psi = new ProcessStartInfo("python", $"face_manager.py --delete {uid}") {
+                        WorkingDirectory = AppConfig.RepoRoot, CreateNoWindow = true, UseShellExecute = false
+                    };
+                    Process.Start(psi)?.WaitForExit();
+                } catch { }
+            });
+
             RebuildAdminList();
             _adminTriggered = false;
         }

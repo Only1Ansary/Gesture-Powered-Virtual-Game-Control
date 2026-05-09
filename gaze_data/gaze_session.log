@@ -942,3 +942,23 @@
 2026-05-09 23:44:48  [Gaze] Stopped session for user 1 (0 samples).
 2026-05-09 23:44:48  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_1'}
 2026-05-09 23:44:48  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-10 02:01:46 user=55 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-10 02:01:46  [GazeCLI] Recording user 55 on camera 0.
+2026-05-10 02:01:46  [GazeCLI] Debug log file: C:\Users\LENOVO\Desktop\HCI Project\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-10 02:01:46  [Gaze] Started session for user 55.
+2026-05-10 02:01:46  GAZE_STATUS FAIL capture
+2026-05-10 02:01:46  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-10 02:01:57  [Gaze] Stopped session for user 55 (0 samples).
+2026-05-10 02:01:57  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\LENOVO\\Desktop\\HCI Project\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_55'}
+2026-05-10 02:01:57  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-10 02:09:22 user=55 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-10 02:09:22  [GazeCLI] Recording user 55 on camera 0.
+2026-05-10 02:09:22  [GazeCLI] Debug log file: C:\Users\LENOVO\Desktop\HCI Project\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-10 02:09:22  [Gaze] Started session for user 55.
+2026-05-10 02:09:22  GAZE_STATUS FAIL capture
+2026-05-10 02:09:22  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-10 02:10:07  [Gaze] Stopped session for user 55 (0 samples).
+2026-05-10 02:10:07  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\LENOVO\\Desktop\\HCI Project\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_55'}
+2026-05-10 02:10:07  === gaze_session end (0 samples) ===
