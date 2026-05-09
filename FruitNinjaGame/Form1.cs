@@ -84,6 +84,37 @@ namespace FruitNinjaGame
 
         private void ProcessPointerMove(int px, int py)
         {
+            if (isOver)
+            {
+                if (RetryIconState == 0)
+                {
+                    if (px >= RetryIcon.X &&
+                        px <= RetryIcon.X + RetryIcon.img[0].Width + 10 &&
+                        py >= RetryIcon.Y &&
+                        py <= RetryIcon.Y + RetryIcon.img[0].Height + 10)
+                    {
+                        RetryIconState = 1;
+                    }
+                }
+
+                if (ExitIconState == 0)
+                {
+                    if (px >= GameOverExitIcon.X &&
+                        px <= GameOverExitIcon.X + 130 &&
+                        py >= GameOverExitIcon.Y &&
+                        py <= GameOverExitIcon.Y + 130)
+                    {
+                        ExitIconState = 1;
+                        create_explosion(GameOverExitIcon.X, GameOverExitIcon.Y);
+                        GameOverExitIcon = null;
+                        animate_exp();
+                        T.Stop();
+                        this.Close();
+                    }
+                }
+
+            }
+
             if (isMenu)
             {
                 if (px >= StartIcon.X && px <= StartIcon.X + StartIcon.img[0].Width + 10
@@ -182,9 +213,11 @@ namespace FruitNinjaGame
                         if (LivesCount == 0)
                         {
                             isOver = true;
+                            GameOver = new Bitmap(AppConfig.GetAssetPath("GameOver.png"));
                             audio.StopMusic();
                             Fruits.Clear();
                             Bombs.Clear();
+                            DrawGameOver();
                         }
                     }
                 }
@@ -226,6 +259,7 @@ namespace FruitNinjaGame
         int ScoreCount = 0;
         int StartIconState = 0;
         int ExitIconState = 0;
+        int RetryIconState = 0;
         int LivesCount = 3;
         int prevX = -1;
         int prevY = -1;
@@ -236,12 +270,14 @@ namespace FruitNinjaGame
 
         float startAngle = 0;
         float exitAngle = 0;
+        float retryangle = 0;
 
         Bitmap back;
         Bitmap GameOver;
         Bitmap GameName;
         Bitmap StartRing;
         Bitmap ExitRing;
+        Bitmap RetryRing;
 
         Fruit StartIcon = new Fruit();
         Fruit ExitIcon = new Fruit();
@@ -607,6 +643,7 @@ namespace FruitNinjaGame
             StartRing = new Bitmap(AppConfig.GetAssetPath("start_ring.png"));
             ExitRing = new Bitmap(AppConfig.GetAssetPath("exit_ring.png"));
 
+
             Fruit pnn = new Fruit();
             pnn.X = this.ClientSize.Width / 2 - 405;
             pnn.Y = this.ClientSize.Height / 2 - 20;
@@ -623,6 +660,37 @@ namespace FruitNinjaGame
             pn.Y = this.ClientSize.Height / 2 - 20;
             pn.img.Add(ExiIcon);
             ExitIcon = pn;
+        }
+
+
+        Fruit RetryIcon = new Fruit();
+        Fruit GameOverExitIcon = new Fruit();
+
+        void DrawGameOver()
+        {
+            Fruit pnn = new Fruit();
+            pnn.X = this.ClientSize.Width / 2 - 400;
+            pnn.Y = this.ClientSize.Height / 2 + 100;
+            pnn.isCut = 0;
+
+            Bitmap img = new Bitmap(AppConfig.GetAssetPath("full_coco.png"));
+            pnn.img.Add(img);
+
+            img = new Bitmap(AppConfig.GetAssetPath("half_coco.png"));
+            pnn.img.Add(img);
+
+            RetryIcon = pnn;
+
+            RetryRing = new Bitmap(AppConfig.GetAssetPath("retry_ring.png"));
+
+            Fruit exit = new Fruit();
+            exit.X = this.ClientSize.Width / 2 + 300;
+            exit.Y = this.ClientSize.Height / 2 + 80;
+
+            Bitmap exitImg = new Bitmap(AppConfig.GetAssetPath("bomb.png"));
+            exit.img.Add(exitImg);
+
+            GameOverExitIcon = exit;
         }
 
         void DrawRotatedImage(Graphics g, Image img, float x, float y, float w, float h, float angle)
@@ -645,10 +713,68 @@ namespace FruitNinjaGame
             g.DrawImage(back, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
             if(isOver)
             {
-                GameOver = new Bitmap(AppConfig.GetAssetPath("GameOver.png"));
-                g.DrawImage(GameOver, 0, 0, this.ClientSize.Width, this.ClientSize.Height);
+                g.DrawImage(GameOver, 0, -100, this.ClientSize.Width, this.ClientSize.Height);
 
-                    
+                { // Save current state
+                    var state = g.Save();
+
+                    // Move origin to rotation center (example: center of rectangle)
+                    g.TranslateTransform(this.ClientSize.Width / 2, 90);
+
+                    // Rotate (degrees)
+                    g.RotateTransform(-5); // rotate 30 degrees
+
+                    // Draw rectangle centered around the new origin
+                    int w = this.ClientSize.Width;
+                    int h = 180;
+
+                    using (SolidBrush brush = new SolidBrush(Color.FromArgb(120, 0, 0, 0)))
+                    {
+                        g.FillRectangle(brush, -w / 2 - 10, -h / 2 - 60, w, h);
+                    }
+
+
+                    // Restore original state
+                    g.Restore(state);
+                }
+                
+
+                DrawRotatedImage(g, RetryRing,
+                    this.ClientSize.Width / 2 - 500,
+                    this.ClientSize.Height / 2,
+                    300, 300,
+                    retryangle);
+
+                if (RetryIconState == 0)
+                {
+                    DrawRotatedImage(g,
+                        RetryIcon.img[RetryIconState],
+                        RetryIcon.X,
+                        RetryIcon.Y,
+                        RetryIcon.img[0].Width + 10, RetryIcon.img[0].Height + 10,
+                        exitAngle);
+                }
+                else
+                {
+                    g.DrawImage(
+                        RetryIcon.img[RetryIconState],
+                        RetryIcon.X - 20,
+                        RetryIcon.Y - 10);
+                }
+
+                DrawRotatedImage(g, ExitRing,
+                    this.ClientSize.Width / 2 + 200,
+                    this.ClientSize.Height / 2,
+                    300, 300,
+                    exitAngle);
+
+                if(ExitIconState == 0)
+                {
+                    DrawRotatedImage(g, GameOverExitIcon.img[0],
+                    GameOverExitIcon.X, GameOverExitIcon.Y,
+                    130, 130,
+                    retryangle);
+                }
             }
 
             if (isMenu)
@@ -814,14 +940,11 @@ namespace FruitNinjaGame
                 }
             }
 
-            DrawYoloHud(g);
+            //DrawYoloHud(g);
             DrawYoloPointerMarker(g);
 
             int toolImageIndex = GetCurrentToolImageIndex();
             g.DrawImage(Blade.img[toolImageIndex], Blade.X, Blade.Y, Blade.img[toolImageIndex].Width - 150, Blade.img[toolImageIndex].Height - 150);
-
-
-
         }
 
         private void DrawYoloHud(Graphics g)
@@ -980,13 +1103,76 @@ namespace FruitNinjaGame
 
         Random R = new Random();
 
-        private int GetCurrentLevel()
-        {
-            lock (_levelLock) return _currentLevel;
-        }
 
         private void T_Tick(object? sender, EventArgs e)
         {
+            if (isOver)
+            {
+                retryangle += 5;
+                exitAngle -= 5;
+
+                if (RetryIconState == 1)
+                {
+                    RetryIcon.Y += 50;
+                }
+
+                if (RetryIcon.Y > this.ClientSize.Height)
+                {
+                    // Clear all gameplay objects
+                    Fruits.Clear();
+                    Bombs.Clear();
+                    Exp.Clear();
+
+                    // Reset gameplay values
+                    ScoreCount = 0;
+                    LivesCount = 3;
+
+                    ct = 0;
+                    prevX = -1;
+                    prevY = -1;
+
+                    // Reset states
+                    RetryIconState = 0;
+                    ExitIconState = 0;
+
+                    isOver = false;
+                    isGame = true;
+                    isMenu = false;
+
+                    // Reset retry animation
+                    retryangle = 0;
+                    exitAngle = 0;
+
+                    // Reset YOLO pointer smoothing
+                    yoloCursorX = -1f;
+                    yoloCursorY = -1f;
+                    yoloPixelX = -1;
+                    yoloPixelY = -1;
+                    yoloUpdateCount = 0;
+
+                    // Reset blade position
+                    Blade.X = this.ClientSize.Width / 2;
+                    Blade.Y = this.ClientSize.Height / 2;
+
+                    // Reset difficulty
+                    lock (levelLock)
+                    {
+                        Level = 100;
+                    }
+
+                    // Recreate game over buttons cleanly
+                    RetryIcon = new Fruit();
+                    GameOverExitIcon = new Fruit();
+
+                    // Start fresh gameplay setup
+                    DrawGameOver();
+
+                    // Resume music
+                    if (IsToolActive())
+                        audio.PlayGameplayMusic();
+                }
+            }
+
             if (isMenu)
             {
                 startAngle += 5;

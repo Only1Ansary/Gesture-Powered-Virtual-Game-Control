@@ -392,3 +392,503 @@
 2026-05-08 22:25:15  [Gaze] Stopped session for user 1 (25 samples).
 2026-05-08 22:25:16  [GazeCLI] Saved: {'sample_count': 25, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
 2026-05-08 22:25:16  === gaze_session end (25 samples) ===
+
+=== gaze_session start 2026-05-09 21:00:04 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:00:04  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:00:04  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:00:04  [Gaze] Started session for user 3.
+2026-05-09 21:00:04  GAZE_STATUS FAIL capture
+2026-05-09 21:00:04  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:00:04  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:00:04  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:00:04  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:00:46 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:00:46  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:00:46  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:00:46  [Gaze] Started session for user 3.
+2026-05-09 21:00:46  GAZE_STATUS FAIL capture
+2026-05-09 21:00:46  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:00:47  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:00:47  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:00:47  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:03:09 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:03:09  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:03:09  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:03:09  [Gaze] Started session for user 3.
+2026-05-09 21:03:09  GAZE_STATUS FAIL capture
+2026-05-09 21:03:09  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:03:09  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:03:09  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:03:09  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:05:25 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:05:25  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:05:25  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:05:25  [Gaze] Started session for user 3.
+2026-05-09 21:05:25  GAZE_STATUS FAIL capture
+2026-05-09 21:05:25  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:05:25  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:05:25  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:05:25  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:05:51 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:05:51  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:05:51  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:05:51  [Gaze] Started session for user 3.
+2026-05-09 21:05:51  GAZE_STATUS FAIL capture
+2026-05-09 21:05:51  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:05:52  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:05:52  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:05:52  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:06:06 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:06:06  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:06:06  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:06:06  [Gaze] Started session for user 2.
+2026-05-09 21:06:06  GAZE_STATUS FAIL capture
+2026-05-09 21:06:06  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:06:06  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:06:06  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:06:06  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:12:06 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:12:06  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:12:06  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:12:06  [Gaze] Started session for user 3.
+2026-05-09 21:12:06  GAZE_STATUS FAIL capture
+2026-05-09 21:12:06  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:12:06  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:12:06  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:12:06  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:14:56 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:14:56  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:14:56  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:14:56  [Gaze] Started session for user 2.
+2026-05-09 21:14:56  GAZE_STATUS FAIL capture
+2026-05-09 21:14:56  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:14:56  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:14:56  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:14:56  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:16:17 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:16:17  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:16:17  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:16:17  [Gaze] Started session for user 2.
+2026-05-09 21:16:17  GAZE_STATUS FAIL capture
+2026-05-09 21:16:17  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:16:17  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:16:17  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:16:17  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:16:20 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:16:20  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:16:20  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:16:20  [Gaze] Started session for user 2.
+2026-05-09 21:16:20  GAZE_STATUS FAIL capture
+2026-05-09 21:16:20  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:16:20  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:16:20  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:16:20  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:16:55 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:16:55  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:16:55  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:16:55  [Gaze] Started session for user 3.
+2026-05-09 21:16:55  GAZE_STATUS FAIL capture
+2026-05-09 21:16:55  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:16:55  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:16:55  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:16:55  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:16:58 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:16:58  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:16:58  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:16:58  [Gaze] Started session for user 3.
+2026-05-09 21:16:58  GAZE_STATUS FAIL capture
+2026-05-09 21:16:58  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:16:58  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:16:58  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:16:58  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:17:05 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:17:05  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:17:05  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:17:05  [Gaze] Started session for user 2.
+2026-05-09 21:17:05  GAZE_STATUS FAIL capture
+2026-05-09 21:17:05  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:17:06  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:17:06  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:17:06  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:18:49 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:18:49  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:18:49  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:18:49  [Gaze] Started session for user 3.
+2026-05-09 21:18:49  GAZE_STATUS FAIL capture
+2026-05-09 21:18:49  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:18:49  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:18:49  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:18:49  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:26:33 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:26:33  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:26:33  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:26:33  [Gaze] Started session for user 3.
+2026-05-09 21:26:33  GAZE_STATUS FAIL capture
+2026-05-09 21:26:33  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:26:33  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:26:33  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:26:33  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:28:54 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:28:54  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:28:54  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:28:54  [Gaze] Started session for user 3.
+2026-05-09 21:28:54  GAZE_STATUS FAIL capture
+2026-05-09 21:28:54  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:28:54  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:28:54  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:28:54  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:30:51 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:30:51  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:30:51  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:30:51  [Gaze] Started session for user 3.
+2026-05-09 21:30:51  GAZE_STATUS FAIL capture
+2026-05-09 21:30:51  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:30:51  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:30:51  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:30:51  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:32:01 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:32:01  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:32:01  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:32:01  [Gaze] Started session for user 3.
+2026-05-09 21:32:01  GAZE_STATUS FAIL capture
+2026-05-09 21:32:01  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:32:01  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:32:01  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:32:01  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:34:02 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:34:02  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:34:02  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:34:02  [Gaze] Started session for user 2.
+2026-05-09 21:34:02  GAZE_STATUS FAIL capture
+2026-05-09 21:34:02  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:34:02  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:34:02  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:34:02  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:35:31 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:35:31  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:35:31  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:35:31  [Gaze] Started session for user 2.
+2026-05-09 21:35:31  GAZE_STATUS FAIL capture
+2026-05-09 21:35:31  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:35:32  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:35:32  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:35:32  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:35:59 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:35:59  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:35:59  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:35:59  [Gaze] Started session for user 2.
+2026-05-09 21:35:59  GAZE_STATUS FAIL capture
+2026-05-09 21:35:59  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:36:01  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:36:01  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:36:01  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:40:01 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:40:01  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:40:01  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:40:01  [Gaze] Started session for user 3.
+2026-05-09 21:40:01  GAZE_STATUS FAIL capture
+2026-05-09 21:40:01  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:40:01  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:40:01  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:40:01  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:41:08 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:41:08  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:41:08  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:41:08  [Gaze] Started session for user 3.
+2026-05-09 21:41:08  GAZE_STATUS FAIL capture
+2026-05-09 21:41:08  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:41:08  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:41:08  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:41:08  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:42:51 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:42:51  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:42:51  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:42:51  [Gaze] Started session for user 2.
+2026-05-09 21:42:51  GAZE_STATUS FAIL capture
+2026-05-09 21:42:51  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:42:51  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:42:51  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:42:51  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:45:00 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:45:00  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 21:45:00  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:45:00  [Gaze] Started session for user 2.
+2026-05-09 21:45:01  GAZE_STATUS FAIL capture
+2026-05-09 21:45:01  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:45:01  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 21:45:01  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 21:45:01  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:46:37 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:46:37  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:46:37  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:46:37  [Gaze] Started session for user 3.
+2026-05-09 21:46:37  GAZE_STATUS FAIL capture
+2026-05-09 21:46:37  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:46:37  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:46:37  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:46:37  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:49:51 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:49:51  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:49:51  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:49:51  [Gaze] Started session for user 3.
+2026-05-09 21:49:51  GAZE_STATUS FAIL capture
+2026-05-09 21:49:51  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:49:51  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:49:51  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:49:51  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:53:36 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:53:36  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:53:36  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:53:36  [Gaze] Started session for user 3.
+2026-05-09 21:53:36  GAZE_STATUS FAIL capture
+2026-05-09 21:53:36  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:53:36  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:53:36  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:53:36  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:55:25 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:55:25  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:55:25  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:55:25  [Gaze] Started session for user 3.
+2026-05-09 21:55:25  GAZE_STATUS FAIL capture
+2026-05-09 21:55:25  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:55:25  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:55:25  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:55:25  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:55:30 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:55:30  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:55:30  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:55:30  [Gaze] Started session for user 3.
+2026-05-09 21:55:30  GAZE_STATUS FAIL capture
+2026-05-09 21:55:30  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:55:30  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:55:30  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:55:30  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:55:33 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:55:33  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:55:33  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:55:33  [Gaze] Started session for user 3.
+2026-05-09 21:55:33  GAZE_STATUS FAIL capture
+2026-05-09 21:55:33  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:55:33  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:55:33  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:55:33  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:55:36 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:55:36  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:55:36  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:55:36  [Gaze] Started session for user 3.
+2026-05-09 21:55:36  GAZE_STATUS FAIL capture
+2026-05-09 21:55:36  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:55:36  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:55:36  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:55:36  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:55:39 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:55:39  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:55:39  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:55:39  [Gaze] Started session for user 3.
+2026-05-09 21:55:39  GAZE_STATUS FAIL capture
+2026-05-09 21:55:39  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:55:39  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:55:39  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:55:39  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 21:58:43 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 21:58:43  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 21:58:43  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 21:58:43  [Gaze] Started session for user 3.
+2026-05-09 21:58:43  GAZE_STATUS FAIL capture
+2026-05-09 21:58:43  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 21:58:43  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 21:58:43  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 21:58:43  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 22:22:13 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 22:22:13  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 22:22:13  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 22:22:13  [Gaze] Started session for user 3.
+2026-05-09 22:22:13  GAZE_STATUS FAIL capture
+2026-05-09 22:22:13  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 22:22:14  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 22:22:14  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 22:22:14  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 22:23:31 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 22:23:31  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 22:23:31  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 22:23:31  [Gaze] Started session for user 3.
+2026-05-09 22:23:32  GAZE_STATUS FAIL capture
+2026-05-09 22:23:32  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 22:23:33  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 22:23:33  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 22:23:33  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 22:23:39 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 22:23:39  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 22:23:39  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 22:23:39  [Gaze] Started session for user 3.
+2026-05-09 22:23:39  GAZE_STATUS FAIL capture
+2026-05-09 22:23:39  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 22:23:42  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 22:23:42  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 22:23:42  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 22:23:45 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 22:23:45  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 22:23:45  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 22:23:45  [Gaze] Started session for user 2.
+2026-05-09 22:23:45  GAZE_STATUS FAIL capture
+2026-05-09 22:23:45  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 22:23:48  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 22:23:48  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 22:23:48  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 22:26:34 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 22:26:34  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 22:26:34  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 22:26:34  [Gaze] Started session for user 2.
+2026-05-09 22:26:34  GAZE_STATUS FAIL capture
+2026-05-09 22:26:34  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 22:26:53  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 22:26:53  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 22:26:53  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 22:59:15 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 22:59:15  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 22:59:15  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 22:59:15  [Gaze] Started session for user 3.
+2026-05-09 22:59:15  GAZE_STATUS FAIL capture
+2026-05-09 22:59:15  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 22:59:15  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 22:59:15  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 22:59:15  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:01:47 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:01:47  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 23:01:47  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:01:47  [Gaze] Started session for user 3.
+2026-05-09 23:01:47  GAZE_STATUS FAIL capture
+2026-05-09 23:01:47  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:01:47  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 23:01:47  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 23:01:47  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:02:22 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:02:22  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 23:02:22  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:02:22  [Gaze] Started session for user 3.
+2026-05-09 23:02:22  GAZE_STATUS FAIL capture
+2026-05-09 23:02:22  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:02:29  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 23:02:29  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 23:02:29  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:03:11 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:03:11  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 23:03:11  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:03:11  [Gaze] Started session for user 3.
+2026-05-09 23:03:11  GAZE_STATUS FAIL capture
+2026-05-09 23:03:11  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:03:11  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 23:03:11  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 23:03:11  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:05:04 user=3 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:05:04  [GazeCLI] Recording user 3 on camera 0.
+2026-05-09 23:05:04  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:05:04  [Gaze] Started session for user 3.
+2026-05-09 23:05:04  GAZE_STATUS FAIL capture
+2026-05-09 23:05:04  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:05:05  [Gaze] Stopped session for user 3 (0 samples).
+2026-05-09 23:05:05  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_3'}
+2026-05-09 23:05:05  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:06:28 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:06:28  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 23:06:28  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:06:28  [Gaze] Started session for user 2.
+2026-05-09 23:06:28  GAZE_STATUS FAIL capture
+2026-05-09 23:06:28  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:06:29  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 23:06:29  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 23:06:29  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:07:43 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:07:43  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 23:07:43  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:07:43  [Gaze] Started session for user 2.
+2026-05-09 23:07:43  GAZE_STATUS FAIL capture
+2026-05-09 23:07:43  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:07:43  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 23:07:43  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 23:07:43  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:08:38 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:08:38  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 23:08:38  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:08:38  [Gaze] Started session for user 2.
+2026-05-09 23:08:38  GAZE_STATUS FAIL capture
+2026-05-09 23:08:38  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:08:46  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 23:08:46  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 23:08:46  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:10:28 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:10:28  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 23:10:28  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:10:28  [Gaze] Started session for user 2.
+2026-05-09 23:10:28  GAZE_STATUS FAIL capture
+2026-05-09 23:10:28  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:10:30  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 23:10:30  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 23:10:30  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:16:44 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:16:44  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 23:16:44  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:16:44  [Gaze] Started session for user 2.
+2026-05-09 23:16:44  GAZE_STATUS FAIL capture
+2026-05-09 23:16:44  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:16:45  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 23:16:45  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 23:16:45  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-09 23:19:03 user=2 camera=0 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-09 23:19:03  [GazeCLI] Recording user 2 on camera 0.
+2026-05-09 23:19:03  [GazeCLI] Debug log file: C:\Users\PC\Desktop\fruit\Gesture-Powered-Virtual-Game-Control\gaze_data/gaze_session.log
+2026-05-09 23:19:03  [Gaze] Started session for user 2.
+2026-05-09 23:19:03  GAZE_STATUS FAIL capture
+2026-05-09 23:19:03  [Gaze] Capture stopped after error: No module named 'gaze_tracking'
+2026-05-09 23:19:08  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-09 23:19:08  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\gaze_data\\user_2'}
+2026-05-09 23:19:08  === gaze_session end (0 samples) ===
