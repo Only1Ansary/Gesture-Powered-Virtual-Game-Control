@@ -12,23 +12,19 @@ except ImportError as e:
     print(f"Details: {e}")
     sys.exit(1)
 
+from camera_manager import open_camera, CameraRole
+
 # Create face_data directory if it doesn't exist
 DATA_DIR = "face_data"
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
-def load_config():
-    try:
-        with open("config.json", "r") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def enroll(user_id, camera_index):
+def enroll(user_id, camera_index=None):
     print(f"ENROLL: Starting enrollment for User ID {user_id}...")
-    cap = cv2.VideoCapture(camera_index)
-    if not cap.isOpened():
-        print(f"ERROR: Could not open camera {camera_index}")
+    try:
+        cap = open_camera(CameraRole.FACE)
+    except RuntimeError as e:
+        print(f"ERROR: {e}")
         return False
 
     print("Look at the camera and wait for capture...")
@@ -76,7 +72,7 @@ def enroll(user_id, camera_index):
         print("FAILED: No face captured")
         return False
 
-def verify(camera_index):
+def verify(camera_index=None):
     print("VERIFY: Starting face login...")
     
     # Load all known faces
@@ -93,9 +89,10 @@ def verify(camera_index):
         print("ERROR: No faces registered yet.")
         return None
 
-    cap = cv2.VideoCapture(camera_index)
-    if not cap.isOpened():
-        print(f"ERROR: Could not open camera {camera_index}")
+    try:
+        cap = open_camera(CameraRole.FACE)
+    except RuntimeError as e:
+        print(f"ERROR: {e}")
         return None
 
     start_time = time.time()
@@ -149,9 +146,6 @@ def delete_face(user_id):
     return False
 
 if __name__ == "__main__":
-    config = load_config()
-    cam_idx = config.get("face_camera_index", 0)
-
     if len(sys.argv) < 2:
         print("Usage: face_manager.py --enroll <id> | --verify | --delete <id>")
         sys.exit(1)
@@ -159,9 +153,9 @@ if __name__ == "__main__":
     cmd = sys.argv[1]
     
     if cmd == "--enroll" and len(sys.argv) == 3:
-        enroll(sys.argv[2], cam_idx)
+        enroll(sys.argv[2])
     elif cmd == "--verify":
-        verify(cam_idx)
+        verify()
     elif cmd == "--delete" and len(sys.argv) == 3:
         delete_face(sys.argv[2])
     else:

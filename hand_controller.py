@@ -3,10 +3,10 @@ import mediapipe as mp
 import pyautogui
 import numpy as np
 import time
+from camera_manager import open_camera, CameraRole
 
 # ── Configuration ─────────────────────────────────────────
-SMOOTHING    = 1
-CAMERA_INDEX = 0
+SMOOTHING = 1
 
 pyautogui.FAILSAFE = False
 
@@ -15,9 +15,11 @@ mp_drawing = mp.solutions.drawing_utils
 
 screen_w, screen_h = pyautogui.size()
 
-cap = cv2.VideoCapture(CAMERA_INDEX)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+try:
+    cap = open_camera(CameraRole.HAND, width=640, height=480)
+except RuntimeError as _cam_err:
+    print(f"[HandController] {_cam_err}")
+    raise SystemExit(1)
 
 cursor_buffer = []
 

@@ -1,25 +1,25 @@
-# ============================================================
-#  Eye gaze only — gaze_session_cli.py / gaze_tracker / heatmaps
-#
-#  Python 3.10+ (3.11 recommended on Windows).
-#
-#  1) Pip packages (OpenCV + dlib + heatmap stack):
-#       python -m pip install -r requirements-gaze.txt
-#
-#  2) GazeTracking library (install after step 1 so dlib comes from the wheel):
-#       python -m pip install --no-deps git+https://github.com/antoinelame/GazeTracking.git
-#
-#  3) Smoke test (camera index from config.json gaze_camera_index):
-#       python -c "from gaze_tracking import GazeTracking; print('OK', GazeTracking)"
-# ============================================================
-
-opencv-python>=4.8.0
-numpy>=2.0
-pandas>=2.0
-seaborn>=0.13
-matplotlib>=3.8
-
-# Face landmarks for GazeTracking (Windows: prebuilt wheel; else source build).
-dlib-bin>=20.0.1; platform_system == "Windows"
-dlib>=20.0; platform_system != "Windows"
-
+# ============================================================
+#  Eye gaze only — gaze_session_cli.py / gaze_tracker / heatmaps
+#
+#  Python 3.10+ (3.11 recommended on Windows).
+#
+#  1) Pip packages (OpenCV + dlib + heatmap stack):
+#       python -m pip install -r requirements-gaze.txt
+#
+#  2) GazeTracking library (install after step 1 so dlib comes from the wheel):
+#       python -m pip install --no-deps git+https://github.com/antoinelame/GazeTracking.git
+#
+#  3) Smoke test (camera index from config.json gaze_camera_index):
+#       python -c "from gaze_tracking import GazeTracking; print('OK', GazeTracking)"
+# ============================================================
+
+opencv-python>=4.8.0
+numpy>=2.0
+pandas>=2.0
+seaborn>=0.13
+matplotlib>=3.8
+
+# Face landmarks for GazeTracking (Windows: prebuilt wheel; else source build).
+dlib-bin>=20.0.1; platform_system == "Windows"
+dlib>=20.0; platform_system != "Windows"
+

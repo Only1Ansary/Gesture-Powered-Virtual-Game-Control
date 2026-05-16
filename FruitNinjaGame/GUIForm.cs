@@ -83,14 +83,18 @@ namespace FruitNinjaGame
         public static readonly bool GazeEnabled = ReadBool("gaze_enabled", false);
         /// <summary>DirectShow device id for reacTIVision (see <c>reacTIVision.exe -l</c>); not the same as OpenCV.</summary>
         public static readonly int ReactvisionCameraIndex = ReadInt("reactvision_camera_index", 0);
-        /// <summary>Typically Iriun (or second cam) — eye gaze.</summary>
+        /// <summary>OpenCV eye-gaze cam (often built-in webcam with MSMF-first; see gaze_opencv_dshow_first).</summary>
         public static readonly int GazeCameraIndex = ReadInt("gaze_camera_index", 1);
-        /// <summary>Typically another Iriun / phone stream.</summary>
         public static readonly int EmotionCameraIndex = ReadInt("emotion_camera_index", 2);
-        /// <summary>Typically another Iriun / phone stream.</summary>
+        /// <summary>YOLO sidecar uses DirectShow (<c>CAP_DSHOW</c>); commonly Iriun at index 0.</summary>
         public static readonly int YoloCameraIndex = ReadInt("yolo_camera_index", 3);
-        /// <summary>Typically another Iriun / phone stream.</summary>
         public static readonly int HandTrackerCameraIndex = ReadInt("hand_tracker_camera_index", 4);
+        /// <summary>
+        /// Which Iriun device (1-based) reacTIVision should use.
+        /// 1 = first Iriun, 2 = second, 3 = third (default — leaves Iriun 1 for emotion, Iriun 2 for YOLO).
+        /// Only used when <see cref="ReactvisionCameraNameContains"/> is empty.
+        /// </summary>
+        public static readonly int ReactvisionDshowIriunNumber = ReadInt("reactvision_dshow_iriun_number", 3);
         /// <summary>
         /// If non-empty: run <c>reacTIVision.exe -l</c> and pick the first DirectShow device whose name contains this
         /// substring (case-insensitive). DirectShow device order is <b>not</b> the same as OpenCV indices.
@@ -102,6 +106,16 @@ namespace FruitNinjaGame
         public static readonly bool GazePreviewWindow = ReadBool("gaze_preview_window", false);
         /// <summary>Webcam feeds are often mirrored; gaze_session_cli flips frames before tracking when true (see gaze_mirror_horizontal).</summary>
         public static readonly bool GazeMirrorHorizontal = ReadBool("gaze_mirror_horizontal", false);
+        /// <summary>If false, gaze opens MSMF before DirectShow (typical laptop webcam); if true, DSHOW first (Iriun / phone order).</summary>
+        public static readonly bool GazeOpencvDshowFirst = ReadBool("gaze_opencv_dshow_first", false);
+        /// <summary>Windows: gaze_session_cli resolves first DirectShow camera not matching Iriun (see gaze_dshow_pick_non_iriun).</summary>
+        public static readonly bool GazeDshowPickNonIriun = ReadBool("gaze_dshow_pick_non_iriun", false);
+        /// <summary>Windows: if non-empty, pick first DirectShow device whose name contains this substring (<c>reacTIVision.exe -l</c>).</summary>
+        public static readonly string GazeCameraNameContains = ReadString("gaze_camera_name_contains", "");
+        /// <summary>Windows: pick first DirectShow device whose name contains Iriun (<c>yolo_object_tracker.py</c>).</summary>
+        public static readonly bool YoloDshowPickFirstIriun = ReadBool("yolo_dshow_pick_first_iriun", false);
+        /// <summary>Windows: if non-empty, YOLO sidecar picks first DirectShow device name match.</summary>
+        public static readonly string YoloCameraNameContains = ReadString("yolo_camera_name_contains", "");
 
         private static string ResolveRepoRoot()
         {
@@ -253,9 +267,10 @@ namespace FruitNinjaGame
         public static int ResolveReactivisionDirectShowDeviceId()
         {
             int fallback = Math.Max(0, ReactvisionCameraIndex);
-            string needle = (ReactvisionCameraNameContains ?? "").Trim();
-            if (needle.Length == 0 || string.IsNullOrEmpty(ReactvisionExe))
+            if (string.IsNullOrEmpty(ReactvisionExe))
                 return fallback;
+
+            List<(int id, string name)> devices = new();
             try
             {
                 string exe = ReactvisionExe;
@@ -270,49 +285,70 @@ namespace FruitNinjaGame
                     CreateNoWindow = true,
                 };
                 using var p = Process.Start(psi);
-                if (p == null)
-                    return fallback;
-                string stdout = "";
-                string stderr = "";
+                if (p == null) return fallback;
+                string stdout = "", stderr = "";
                 var readOut = Task.Run(() => { stdout = p.StandardOutput.ReadToEnd(); });
                 var readErr = Task.Run(() => { stderr = p.StandardError.ReadToEnd(); });
-                if (!p.WaitForExit(45000))
-                {
-                    try { p.Kill(); } catch { }
-                    return fallback;
-                }
+                if (!p.WaitForExit(45000)) { try { p.Kill(); } catch { } return fallback; }
                 Task.WaitAll(readOut, readErr);
 
                 string all = stdout + Environment.NewLine + stderr;
                 var rx = new Regex(@"^\s*(\d+):\s*(.+)$", RegexOptions.Multiline);
                 foreach (Match m in rx.Matches(all))
                 {
-                    if (!m.Success || m.Groups.Count < 3)
-                        continue;
+                    if (!m.Success || m.Groups.Count < 3) continue;
                     string name = m.Groups[2].Value.Trim();
-                    if (name.IndexOf("iriun", StringComparison.OrdinalIgnoreCase) >= 0)
-                        continue;
-                    if (name.IndexOf(needle, StringComparison.OrdinalIgnoreCase) < 0)
-                        continue;
-                    if (int.TryParse(m.Groups[1].Value, out int id))
-                    {
-                        Console.WriteLine(
-                            $"reacTIVision: DirectShow id {id} for \"{name}\" (matched \"{needle}\"); " +
-                            $"fallback index from config was {fallback}.");
-                        return id;
-                    }
+                    // skip likely audio endpoints
+                    if (name.IndexOf("midi mapper", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        name.IndexOf("wavetable synth", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                    if (int.TryParse(m.Groups[1].Value, out int devId))
+                        devices.Add((devId, name));
                 }
-
-                Console.WriteLine(
-                    $"reacTIVision: no device name contains \"{needle}\" (see reacTIVision.exe -l). " +
-                    $"Using reactvision_camera_index fallback {fallback}.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"reacTIVision DirectShow resolve failed: {ex.Message}; using id {fallback}.");
+                return fallback;
             }
 
-            return fallback;
+            if (devices.Count == 0) return fallback;
+
+            // ── Strategy 1: explicit name_contains match (beats Nth-Iriun) ───────
+            string needle = (ReactvisionCameraNameContains ?? "").Trim();
+            if (needle.Length > 0)
+            {
+                foreach (var (id, name) in devices)
+                {
+                    if (name.IndexOf(needle, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                    Console.WriteLine($"reacTIVision: DirectShow id {id} \"{name}\" matched name_contains \"{needle}\".");
+                    return id;
+                }
+                Console.WriteLine($"reacTIVision: name_contains \"{needle}\" matched nothing; using fallback {fallback}.");
+                return fallback;
+            }
+
+            // ── Strategy 2: pick Nth Iriun (reactvision_dshow_iriun_number) ──────
+            // Camera layout: Iriun 1=emotion, Iriun 2=YOLO, Iriun 3=reacTIVision
+            var iriunDevices = devices
+                .Where(d => d.name.IndexOf("iriun", StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
+
+            int nth = Math.Max(1, ReactvisionDshowIriunNumber); // 1-based
+            if (iriunDevices.Count == 0)
+            {
+                Console.WriteLine($"reacTIVision: no Iriun devices found; using fallback {fallback}.");
+                return fallback;
+            }
+            if (nth > iriunDevices.Count)
+            {
+                string available = string.Join(", ", iriunDevices.Select(d => $"#{d.id}:{d.name}"));
+                Console.WriteLine($"reacTIVision: Iriun #{nth} requested but only {iriunDevices.Count} found ({available}); using fallback {fallback}.");
+                return fallback;
+            }
+
+            var chosen = iriunDevices[nth - 1];
+            Console.WriteLine($"reacTIVision: DirectShow id {chosen.id} → Iriun #{nth} ({chosen.name}).");
+            return chosen.id;
         }
 
         /// <summary>OpenCV pipelines only; reacTIVision uses a separate DirectShow id space.</summary>
@@ -327,6 +363,31 @@ namespace FruitNinjaGame
             };
             foreach (var g in pairs.GroupBy(p => p.idx).Where(x => x.Count() > 1))
             {
+                var list = g.Select(p => p.key).Distinct().OrderBy(k => k).ToArray();
+                if (OperatingSystem.IsWindows()
+                    && !GazeOpencvDshowFirst
+                    && list.Length == 2
+                    && list[0] == "gaze_camera_index"
+                    && list[1] == "yolo_camera_index")
+                {
+                    continue;
+                }
+                if (OperatingSystem.IsWindows()
+                    && (GazeDshowPickNonIriun || !string.IsNullOrWhiteSpace(GazeCameraNameContains))
+                    && list.Length == 2
+                    && list[0] == "gaze_camera_index"
+                    && list[1] == "yolo_camera_index")
+                {
+                    continue;
+                }
+                if (OperatingSystem.IsWindows()
+                    && (YoloDshowPickFirstIriun || !string.IsNullOrWhiteSpace(YoloCameraNameContains))
+                    && list.Length == 2
+                    && list[0] == "gaze_camera_index"
+                    && list[1] == "yolo_camera_index")
+                {
+                    continue;
+                }
                 string keys = string.Join(", ", g.Select(p => p.key));
                 Console.WriteLine(
                     $"WARNING: config.json reuses OpenCV camera index {g.Key} for: {keys}. " +
@@ -1335,6 +1396,37 @@ namespace FruitNinjaGame
         private int _faceIdSelected = 0;
         private DateTime _faceIdShownTime = DateTime.MinValue;
 
+        private System.Windows.Forms.Timer _enforceForegroundTimer = null;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
+
+        private void EnforceAppForeground()
+        {
+            if (IsHandleCreated && !IsDisposed)
+            {
+                try
+                {
+                    Form target = (_gameRunning && _activeGameForm != null && !_activeGameForm.IsDisposed)
+                        ? (Form)_activeGameForm
+                        : this;
+                    if (target.IsHandleCreated)
+                    {
+                        target.TopMost = true;
+                        SwitchToThisWindow(target.Handle, true);
+                        SetForegroundWindow(target.Handle);
+                        target.BringToFront();
+                        target.Activate();
+                        target.Focus();
+                    }
+                }
+                catch { }
+            }
+        }
+
         // ── ctor ───────────────────────────────────────────────────────────────
         public GUIForm()
         {
@@ -1345,8 +1437,11 @@ namespace FruitNinjaGame
             Text = "Gesture-Powered Virtual Game Control";
             BackColor = Color.Black;
             ApplyBorderlessFullscreen();
+
             DoubleBuffered = true;
             KeyPreview = true;
+
+            Shown += (_, __) => EnforceAppForeground();
 
             KeyDown += OnKeyDown;
             FormClosing += (s, e) => OnAppExit();
@@ -1363,6 +1458,10 @@ namespace FruitNinjaGame
             ApplyBorderlessFullscreen();
             AppConfig.WarnIfDuplicateOpenCvCameraIndices();
             AppConfig.WarnIfDuplicateTcpSidecarPorts();
+
+            _enforceForegroundTimer = new System.Windows.Forms.Timer { Interval = 1000 };
+            _enforceForegroundTimer.Tick += (_, __) => EnforceAppForeground();
+            _enforceForegroundTimer.Start();
 
             // CircularMenuOverlay is a transparent topmost Form.
             // We pass 'this' as parent only so the overlay stays alive with GUIForm;
@@ -1521,8 +1620,14 @@ namespace FruitNinjaGame
             if (_reactivisionProcess != null) return;
             try
             {
-                // reacTIVision writes camera.xml when it exits. If we Sync then Kill, shutdown
-                // overwrites our file with the old camera (e.g. Iriun). Kill first, then Sync.
+                Process[] existing = Process.GetProcessesByName("reacTIVision");
+                if (existing.Length > 0 && !existing[0].HasExited)
+                {
+                    _reactivisionProcess = existing[0];
+                    Console.WriteLine("reacTIVision is already running from run.bat.");
+                    return;
+                }
+
                 KillBundledReactivisionIfRunning();
                 Thread.Sleep(500);
                 SyncReactivisionCameraXml();
@@ -1557,7 +1662,7 @@ namespace FruitNinjaGame
                 {
                     WorkingDirectory = Path.GetDirectoryName(AppConfig.ReactvisionExe),
                     UseShellExecute = true,
-                    WindowStyle = ProcessWindowStyle.Normal,
+                    WindowStyle = ProcessWindowStyle.Minimized,
                 };
                 _reactivisionProcess = Process.Start(psi);
                 Thread.Sleep(1500);

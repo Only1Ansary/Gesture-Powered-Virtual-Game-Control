@@ -31,6 +31,14 @@ if not exist "config.json" (
   echo.
 )
 
+echo Resolving reacTIVision camera configuration...
+python camera_resolve.py --sync-reactivision
+echo Launching background reacTIVision minimized...
+start /min /d "reacTIVision-1.5.1-win64" "" "reacTIVision.exe"
+timeout /t 2 /nobreak >nul
+echo.
+echo Launching C# Game GUI in foreground...
+
 dotnet run --project "FruitNinjaGame\FruitNinjaGame.csproj"
 set ERR=%ERRORLEVEL%
 echo.

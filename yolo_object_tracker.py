@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from pathlib import Path
 import socket
 import time
@@ -29,15 +30,14 @@ logging.basicConfig(
 
 try:
     from config import TCP_TOOL_PORT as _DEFAULT_TCP_TOOL
-    from config import YOLO_CAMERA_INDEX as _DEFAULT_YOLO_CAM
 except ImportError:
-    _DEFAULT_YOLO_CAM = 3
     _DEFAULT_TCP_TOOL = 12346
+
+from camera_manager import open_camera, CameraRole
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = int(os.getenv("GAME_TCP_TOOL_PORT", str(_DEFAULT_TCP_TOOL)))
 
-CAMERA_INDEX = int(os.getenv("YOLO_CAMERA_INDEX", str(_DEFAULT_YOLO_CAM)))
 DEFAULT_MODEL_NAME = "yolov8l-worldv2.pt"
 MODEL_PATH = os.getenv("YOLO_MODEL_PATH", DEFAULT_MODEL_NAME)
 CONFIDENCE_THRESHOLD = float(os.getenv("YOLO_CONFIDENCE", "0.015"))
@@ -227,13 +227,12 @@ def main():
     else:
         logging.warning("Model does not support set_classes(); detection depends on model's built-in labels.")
 
-    cap = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_DSHOW)
-    if not cap.isOpened():
-        logging.error("Cannot open YOLO camera index %s. Exiting.", CAMERA_INDEX)
+    try:
+        cap = open_camera(CameraRole.YOLO, width=1280, height=720)
+    except RuntimeError as e:
+        logging.error(str(e))
         return
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-    logging.info("YOLO camera opened on index %s", CAMERA_INDEX)
+    logging.info("YOLO camera opened")
 
     sock = None
     last_connect_attempt = 0.0

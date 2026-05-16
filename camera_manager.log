@@ -1,0 +1,154 @@
+2026-05-16 19:53:38  INFO     ============================================================
+2026-05-16 19:53:38  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 19:53:38  INFO     config.py loaded OK
+2026-05-16 19:53:38  DEBUG    Resolving index for role=FACE
+2026-05-16 19:53:40  INFO     FACE  → resolved index=2  force_dshow=True  ([Face] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 19:53:40  INFO     --- open_camera(FACE) ---  index=2  force_dshow=True  request=0x0
+2026-05-16 19:53:40  DEBUG      trying CAP_DSHOW only (Iriun / resolved non-Iriun path)
+2026-05-16 19:53:40  DEBUG      _try_open  index=2  api=DSHOW
+2026-05-16 19:53:40  DEBUG      _try_open  OK  index=2  api=DSHOW
+2026-05-16 19:53:41  INFO     SUCCESS  FACE  index=2  backend=DSHOW  resolution=1920x1080  fps=0.0
+2026-05-16 19:53:59  INFO     ============================================================
+2026-05-16 19:53:59  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 19:53:59  INFO     config.py loaded OK
+2026-05-16 19:53:59  DEBUG    Resolving index for role=FACE
+2026-05-16 19:54:00  INFO     FACE  → resolved index=2  force_dshow=True  ([Face] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 19:54:00  INFO     --- open_camera(FACE) ---  index=2  force_dshow=True  request=0x0
+2026-05-16 19:54:00  DEBUG      trying CAP_DSHOW only (Iriun / resolved non-Iriun path)
+2026-05-16 19:54:00  DEBUG      _try_open  index=2  api=DSHOW
+2026-05-16 19:54:01  DEBUG      _try_open  OK  index=2  api=DSHOW
+2026-05-16 19:54:01  INFO     SUCCESS  FACE  index=2  backend=DSHOW  resolution=1920x1080  fps=0.0
+2026-05-16 19:54:01  DEBUG    Resolving index for role=GAZE
+2026-05-16 19:54:02  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 19:54:02  INFO     --- open_camera(GAZE) ---  index=2  force_dshow=True  request=0x0
+2026-05-16 19:54:02  DEBUG      trying MSMF then DSHOW then default (gaze non-Iriun path)
+2026-05-16 19:54:02  DEBUG      _try_open  index=2  api=MSMF
+2026-05-16 19:54:03  DEBUG      _try_open  OK  index=2  api=MSMF
+2026-05-16 19:54:03  INFO     SUCCESS  GAZE  index=2  backend=MSMF  resolution=640x480  fps=30.0
+2026-05-16 19:54:03  DEBUG    Resolving index for role=HAND
+2026-05-16 19:54:04  INFO     HAND  → resolved index=2  force_dshow=True  ([Hand] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 19:54:04  INFO     --- open_camera(HAND) ---  index=2  force_dshow=True  request=0x0
+2026-05-16 19:54:04  DEBUG      trying CAP_DSHOW only (Iriun / resolved non-Iriun path)
+2026-05-16 19:54:04  DEBUG      _try_open  index=2  api=DSHOW
+2026-05-16 19:54:05  DEBUG      _try_open  OK  index=2  api=DSHOW
+2026-05-16 19:54:05  INFO     SUCCESS  HAND  index=2  backend=DSHOW  resolution=1920x1080  fps=0.0
+2026-05-16 19:54:05  DEBUG    Resolving index for role=EMOTION
+2026-05-16 19:54:06  INFO     EMOTION → resolved index=0  Iriun#1  ([Emotion] DirectShow #0 → Iriun #1 (Iriun Webcam))
+2026-05-16 19:54:06  INFO     --- open_camera(EMOTION) ---  index=0  force_dshow=True  request=0x0
+2026-05-16 19:54:06  DEBUG      trying CAP_DSHOW only (Iriun / resolved non-Iriun path)
+2026-05-16 19:54:06  DEBUG      _try_open  index=0  api=DSHOW
+2026-05-16 19:54:07  DEBUG      _try_open  OK  index=0  api=DSHOW
+2026-05-16 19:54:07  INFO     SUCCESS  EMOTION  index=0  backend=DSHOW  resolution=640x480  fps=0.0
+2026-05-16 19:54:07  DEBUG    Resolving index for role=YOLO
+2026-05-16 19:54:08  INFO     YOLO  → resolved index=1  Iriun#2  ([YOLO] DirectShow #1 → Iriun #2 (Iriun Webcam #3))
+2026-05-16 19:54:08  INFO     --- open_camera(YOLO) ---  index=1  force_dshow=True  request=0x0
+2026-05-16 19:54:08  DEBUG      trying CAP_DSHOW only (Iriun / resolved non-Iriun path)
+2026-05-16 19:54:08  DEBUG      _try_open  index=1  api=DSHOW
+2026-05-16 19:54:09  DEBUG      _try_open  OK  index=1  api=DSHOW
+2026-05-16 19:54:09  INFO     SUCCESS  YOLO  index=1  backend=DSHOW  resolution=640x480  fps=0.0
+2026-05-16 19:55:20  INFO     ============================================================
+2026-05-16 19:55:20  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 19:55:20  INFO     config.py loaded OK
+2026-05-16 19:55:20  DEBUG    Resolving index for role=GAZE
+2026-05-16 19:55:21  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 19:55:21  DEBUG    Resolving index for role=GAZE
+2026-05-16 19:55:23  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 19:55:45  INFO     ============================================================
+2026-05-16 19:55:45  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 19:55:45  INFO     config.py loaded OK
+2026-05-16 19:55:46  INFO     ============================================================
+2026-05-16 19:55:46  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 19:55:46  INFO     config.py loaded OK
+2026-05-16 19:55:47  INFO     ============================================================
+2026-05-16 19:55:47  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 19:55:47  INFO     config.py loaded OK
+2026-05-16 19:55:47  DEBUG    Resolving index for role=EMOTION
+2026-05-16 19:55:49  INFO     EMOTION → resolved index=0  Iriun#1  ([Emotion] DirectShow #0 → Iriun #1 (Iriun Webcam))
+2026-05-16 19:55:49  INFO     --- open_camera(EMOTION) ---  index=0  force_dshow=True  request=0x0
+2026-05-16 19:55:49  DEBUG      trying CAP_DSHOW only (Iriun / resolved non-Iriun path)
+2026-05-16 19:55:49  DEBUG      _try_open  index=0  api=DSHOW
+2026-05-16 19:55:49  DEBUG      _try_open  OK  index=0  api=DSHOW
+2026-05-16 19:55:49  DEBUG    Resolving index for role=YOLO
+2026-05-16 19:55:50  INFO     SUCCESS  EMOTION  index=0  backend=DSHOW  resolution=640x480  fps=0.0
+2026-05-16 19:55:52  INFO     YOLO  → resolved index=1  Iriun#2  ([YOLO] DirectShow #1 → Iriun #2 (Iriun Webcam #3))
+2026-05-16 19:55:52  INFO     --- open_camera(YOLO) ---  index=1  force_dshow=True  request=1280x720
+2026-05-16 19:55:52  DEBUG      trying CAP_DSHOW only (Iriun / resolved non-Iriun path)
+2026-05-16 19:55:52  DEBUG      _try_open  index=1  api=DSHOW
+2026-05-16 19:55:53  DEBUG      _try_open  OK  index=1  api=DSHOW
+2026-05-16 19:55:54  INFO     SUCCESS  YOLO  index=1  backend=DSHOW  resolution=1280x720  fps=0.0
+2026-05-16 19:57:33  INFO     ============================================================
+2026-05-16 19:57:33  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 19:57:33  INFO     config.py loaded OK
+2026-05-16 19:57:33  DEBUG    Resolving index for role=HAND
+2026-05-16 19:57:34  INFO     HAND  → resolved index=2  force_dshow=True  ([Hand] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 19:57:34  INFO     --- open_camera(HAND) ---  index=2  force_dshow=True  request=640x480
+2026-05-16 19:57:34  DEBUG      trying MSMF then DSHOW then default (main webcam path)
+2026-05-16 19:57:34  DEBUG      _try_open  index=2  api=MSMF
+2026-05-16 19:57:35  DEBUG      _try_open  OK  index=2  api=MSMF
+2026-05-16 19:57:35  INFO     SUCCESS  HAND  index=2  backend=MSMF  resolution=640x480  fps=30.0
+2026-05-16 20:02:31  INFO     ============================================================
+2026-05-16 20:02:31  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:02:31  INFO     config.py loaded OK
+2026-05-16 20:02:31  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:02:32  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:02:32  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:02:34  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:05:47  INFO     ============================================================
+2026-05-16 20:05:47  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:05:47  INFO     config.py loaded OK
+2026-05-16 20:05:47  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:05:49  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:05:49  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:05:50  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:08:05  INFO     ============================================================
+2026-05-16 20:08:05  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:08:05  INFO     config.py loaded OK
+2026-05-16 20:08:05  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:08:07  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:08:07  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:08:08  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:11:47  INFO     ============================================================
+2026-05-16 20:11:47  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:11:47  INFO     config.py loaded OK
+2026-05-16 20:11:47  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:11:49  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:11:49  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:11:50  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:12:07  INFO     ============================================================
+2026-05-16 20:12:07  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:12:07  INFO     config.py loaded OK
+2026-05-16 20:12:09  INFO     ============================================================
+2026-05-16 20:12:09  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:12:09  INFO     config.py loaded OK
+2026-05-16 20:12:09  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:12:11  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:12:11  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:12:12  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:12:33  INFO     ============================================================
+2026-05-16 20:12:33  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:12:33  INFO     config.py loaded OK
+2026-05-16 20:12:33  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:12:34  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:12:34  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:12:35  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:21:08  INFO     ============================================================
+2026-05-16 20:21:08  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:21:08  INFO     config.py loaded OK
+2026-05-16 20:21:08  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:21:10  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:21:10  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:21:12  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:21:14  INFO     ============================================================
+2026-05-16 20:21:14  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:21:14  INFO     config.py loaded OK
+2026-05-16 20:21:15  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:21:16  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:21:16  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:21:17  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 → main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:27:51  INFO     ============================================================
+2026-05-16 20:27:51  INFO     camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:27:51  INFO     config.py loaded OK
+2026-05-16 20:27:51  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:27:52  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 -> main webcam (first non-Iriun: ASUS FHD webcam))
+2026-05-16 20:27:52  DEBUG    Resolving index for role=GAZE
+2026-05-16 20:27:54  INFO     GAZE  → resolved index=2  force_dshow=True  ([Gaze] DirectShow #2 -> main webcam (first non-Iriun: ASUS FHD webcam))

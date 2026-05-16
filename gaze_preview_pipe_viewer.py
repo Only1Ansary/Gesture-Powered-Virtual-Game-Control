@@ -29,6 +29,18 @@ def main() -> int:
     title = sys.argv[1] if len(sys.argv) > 1 else "Gaze live view"
     stdin = sys.stdin.buffer
     cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+
+    hwnd = 0
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            hwnd = ctypes.windll.user32.FindWindowW(None, title)
+            if hwnd != 0:
+                # 6 = SW_MINIMIZE: Minimize window immediately on creation
+                ctypes.windll.user32.ShowWindow(hwnd, 6)
+        except Exception:
+            pass
+
     try:
         while True:
             hdr = _read_exact(stdin, 4)
@@ -44,7 +56,20 @@ def main() -> int:
             frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
             if frame is None:
                 continue
-            cv2.imshow(title, frame)
+
+            # OpenCV's cv2.imshow forces minimized windows to restore on Windows.
+            # We check IsIconic (minimized state) and skip imshow if minimized.
+            is_minimized = False
+            if hwnd != 0 and sys.platform == "win32":
+                try:
+                    import ctypes
+                    is_minimized = (ctypes.windll.user32.IsIconic(hwnd) != 0)
+                except Exception:
+                    pass
+
+            if not is_minimized:
+                cv2.imshow(title, frame)
+
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
     finally:

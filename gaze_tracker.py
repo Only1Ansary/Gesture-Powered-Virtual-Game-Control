@@ -44,6 +44,7 @@ class GazeSessionManager:
         on_machine_line: Callable[[str], None] | None = None,
         machine_status: bool = False,
         opencv_dshow_first: bool = False,
+        force_opencv_dshow_only: bool = False,
         capture_width: int = 0,
         capture_height: int = 0,
         preview_window: bool = False,
@@ -57,6 +58,7 @@ class GazeSessionManager:
         self.on_machine_line = on_machine_line
         self.machine_status = machine_status
         self._opencv_dshow_first = bool(opencv_dshow_first)
+        self._force_opencv_dshow_only = bool(force_opencv_dshow_only)
         self._capture_w = max(0, int(capture_width))
         self._capture_h = max(0, int(capture_height))
         self._preview_window = bool(preview_window)
@@ -499,6 +501,16 @@ class GazeSessionManager:
 
         idx = self.camera_index
         if sys.platform == "win32":
+            if self._force_opencv_dshow_only:
+                import cv2
+
+                cap = self._open_capture_backend(idx, "CAP_DSHOW", cv2.CAP_DSHOW)
+                if cap is not None:
+                    return cap
+                self._emit(
+                    f"[Gaze] force CAP_DSHOW only index {idx} failed (see gaze_dshow_pick_non_iriun / gaze_camera_name_contains)."
+                )
+                return None
             if self._opencv_dshow_first:
                 api_order: list[tuple[str, int | None]] = [
                     ("CAP_DSHOW", cv2.CAP_DSHOW),

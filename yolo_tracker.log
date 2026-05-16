@@ -1,1 +1,4 @@
-2026-05-09 23:44:49,810 - ERROR - ultralytics is not installed. Install it with: pip install ultralytics
+2026-05-16 20:12:07,389 - INFO - ============================================================
+2026-05-16 20:12:07,389 - INFO - camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-16 20:12:07,391 - INFO - config.py loaded OK
+2026-05-16 20:12:07,391 - INFO - Loading YOLO model: D:\Code\HCI PROJ UI\yolov8l-worldv2.pt

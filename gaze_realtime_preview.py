@@ -4,6 +4,7 @@ Live OpenCV window: webcam + GazeTracking (pupil crosses on frame).
 Uses the same camera logic as gaze_tracker.GazeSessionManager (config.json:
 - gaze_camera_index
 - gaze_opencv_dshow_first
+- gaze_dshow_pick_non_iriun / gaze_camera_name_contains (Windows, reacTIVision -l)
 - gaze_capture_width / height, 0 = native
 - gaze_sample_interval_ms, gaze_smooth_alpha
 
@@ -20,24 +21,40 @@ from gaze_tracking import GazeTracking
 
 from config import (
     GAZE_CAMERA_INDEX,
+    GAZE_CAMERA_NAME_CONTAINS,
     GAZE_CAPTURE_HEIGHT,
     GAZE_CAPTURE_WIDTH,
+    GAZE_DSHOW_PICK_NON_IRIUN,
     GAZE_MIRROR_HORIZONTAL,
     GAZE_OPENCV_DSHOW_FIRST,
     GAZE_SAMPLE_INTERVAL_MS,
     GAZE_SMOOTH_ALPHA,
+    REACTVISION_EXE,
 )
+from camera_resolve import resolve_gaze_dshow_camera
 from gaze_tracker import GazeSessionManager
 
 
 def main() -> int:
     idx = GAZE_CAMERA_INDEX
+    force_dshow = False
+    if sys.platform == "win32" and (GAZE_DSHOW_PICK_NON_IRIUN or GAZE_CAMERA_NAME_CONTAINS):
+        idx, force_dshow, msg = resolve_gaze_dshow_camera(
+            reactvision_exe=REACTVISION_EXE,
+            fallback_index=GAZE_CAMERA_INDEX,
+            pick_non_iriun=GAZE_DSHOW_PICK_NON_IRIUN,
+            name_contains=GAZE_CAMERA_NAME_CONTAINS,
+        )
+        if msg:
+            print(msg)
+
     helper = GazeSessionManager(
         enabled=True,
         camera_index=idx,
         sample_interval_ms=GAZE_SAMPLE_INTERVAL_MS,
         smooth_alpha=GAZE_SMOOTH_ALPHA,
         opencv_dshow_first=GAZE_OPENCV_DSHOW_FIRST,
+        force_opencv_dshow_only=force_dshow,
         capture_width=GAZE_CAPTURE_WIDTH,
         capture_height=GAZE_CAPTURE_HEIGHT,
     )

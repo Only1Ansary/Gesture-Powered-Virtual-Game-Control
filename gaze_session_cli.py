@@ -23,10 +23,12 @@ _gaze_cap_note = (
 
 from config import (
     GAZE_CAMERA_INDEX,
+    GAZE_CAMERA_NAME_CONTAINS,
     GAZE_CAPTURE_HEIGHT,
     GAZE_CAPTURE_WIDTH,
     GAZE_DATA_DIR,
     GAZE_DEBUG_LOG,
+    GAZE_DSHOW_PICK_NON_IRIUN,
     GAZE_HEATMAP_GRID_COLUMNS,
     GAZE_HEATMAP_GRID_ROWS,
     GAZE_LAYOUT_MARGIN_RATIO,
@@ -39,6 +41,7 @@ from config import (
     GAZE_SESSION_LOG_FILE,
     GAZE_SMOOTH_ALPHA,
 )
+from camera_manager import get_camera_index, CameraRole
 from gaze_store import GazeProfileStore
 from gaze_tracker import GazeSessionManager
 
@@ -64,6 +67,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    # All resolve logic (non-Iriun pick, name match, fallback) is in camera_manager
+    camera_index = get_camera_index(CameraRole.GAZE)
+    # force_dshow reflects whether the resolved index is DirectShow-space only
+    from camera_manager import _resolve_index
+    _, force_gaze_dshow_only = _resolve_index(CameraRole.GAZE)
+
     if args.no_preview:
         use_preview = False
     elif args.preview:
@@ -79,7 +88,7 @@ def main() -> int:
             log_fp = open(GAZE_SESSION_LOG_FILE, "a", encoding="utf-8")
             log_fp.write(
                 f"\n=== gaze_session start {time.strftime('%Y-%m-%d %H:%M:%S')} "
-                f"user={args.user_id} camera={args.camera_index} "
+                f"user={args.user_id} camera={camera_index} "
                 f"({_gaze_cap_note}) ===\n"
             )
             log_fp.flush()
@@ -107,11 +116,12 @@ def main() -> int:
     try:
         gaze = GazeSessionManager(
             enabled=True,
-            camera_index=args.camera_index,
+            camera_index=camera_index,
             sample_interval_ms=GAZE_SAMPLE_INTERVAL_MS,
             smooth_alpha=GAZE_SMOOTH_ALPHA,
             machine_status=True,
             opencv_dshow_first=GAZE_OPENCV_DSHOW_FIRST,
+            force_opencv_dshow_only=force_gaze_dshow_only,
             capture_width=GAZE_CAPTURE_WIDTH,
             capture_height=GAZE_CAPTURE_HEIGHT,
             preview_window=use_preview,
@@ -121,7 +131,7 @@ def main() -> int:
         )
 
         cli_intro = (
-            f"[GazeCLI] Recording user {args.user_id} on camera {args.camera_index}."
+            f"[GazeCLI] Recording user {args.user_id} on camera {camera_index}."
         )
         print(cli_intro, flush=True)
         if log_fp:
@@ -150,7 +160,7 @@ def main() -> int:
                     samples=samples,
                     screen_width=args.screen_width,
                     screen_height=args.screen_height,
-                    camera_index=args.camera_index,
+                    camera_index=camera_index,
                     min_samples=GAZE_MIN_SAMPLES,
                     grid_columns=GAZE_HEATMAP_GRID_COLUMNS,
                     grid_rows=GAZE_HEATMAP_GRID_ROWS,

@@ -85,38 +85,49 @@ for _tp, _keys in _by_tcp.items():
             "assign a unique port per channel.",
             file=sys.stderr,
         )
-# OpenCV camera index per feature — use a distinct index for each (no sharing).
-# reacTIVision uses DirectShow enumeration (reacTIVision.exe -l), not OpenCV order.
-# Python does not launch reacTIVision; the GUI resolves camera id via config / name match.
-REACTVISION_CAMERA_INDEX = int(_CFG.get("reactvision_camera_index", 0))
-GAZE_CAMERA_INDEX = int(_CFG.get("gaze_camera_index", 1))
-EMOTION_CAMERA_INDEX = int(_CFG.get("emotion_camera_index", 2))
-YOLO_CAMERA_INDEX = int(_CFG.get("yolo_camera_index", 3))
-HAND_TRACKER_CAMERA_INDEX = int(_CFG.get("hand_tracker_camera_index", 4))
+# ── Camera layout ─────────────────────────────────────────────────────────────
+# Main webcam (non-Iriun) : face-id / gaze / hand  — never simultaneously
+# Iriun 1                 : emotion   (in-game)
+# Iriun 2                 : YOLO      (in-game)
+# Iriun 3                 : reacTIVision (always)
+# Iriun 4                 : reserved for future use
+#
+# *_camera_index values below are fallbacks only when the pick flags are set.
+# Actual indices are resolved at runtime from reacTIVision.exe -l output.
+# ──────────────────────────────────────────────────────────────────────────────
 
-# Warn if OpenCV pipelines share an index (not comparable to reactvision_camera_index).
-_indices = {
-    "gaze_camera_index": GAZE_CAMERA_INDEX,
-    "emotion_camera_index": EMOTION_CAMERA_INDEX,
-    "yolo_camera_index": YOLO_CAMERA_INDEX,
-    "hand_tracker_camera_index": HAND_TRACKER_CAMERA_INDEX,
-}
-_by_val: dict[int, list[str]] = {}
-for _k, _v in _indices.items():
-    _by_val.setdefault(_v, []).append(_k)
-for _v, _keys in _by_val.items():
-    if len(_keys) > 1:
-        print(
-            f"[Config] WARNING: OpenCV camera index {_v} is shared by: "
-            f"{', '.join(_keys)} — use a unique index per feature.",
-            file=sys.stderr,
-        )
+REACTVISION_CAMERA_INDEX        = int(_CFG.get("reactvision_camera_index", 0))
+REACTVISION_CAMERA_NAME_CONTAINS= str(_CFG.get("reactvision_camera_name_contains", "") or "").strip()
+REACTVISION_DSHOW_IRIUN_NUMBER  = int(_CFG.get("reactvision_dshow_iriun_number", 3))
 
-# OpenCV backends for gaze camera: True = try DirectShow before MSMF (often matches phone/Iriun order).
-GAZE_OPENCV_DSHOW_FIRST = bool(_CFG.get("gaze_opencv_dshow_first", False))
-# Optional capture size; 0 = native default (recommended — forced 720p breaks many webcams).
-GAZE_CAPTURE_WIDTH = max(0, int(_CFG.get("gaze_capture_width", 0)))
-GAZE_CAPTURE_HEIGHT = max(0, int(_CFG.get("gaze_capture_height", 0)))
+GAZE_CAMERA_INDEX               = int(_CFG.get("gaze_camera_index", 0))
+GAZE_OPENCV_DSHOW_FIRST         = bool(_CFG.get("gaze_opencv_dshow_first", False))
+GAZE_DSHOW_PICK_NON_IRIUN       = bool(_CFG.get("gaze_dshow_pick_non_iriun", True))
+GAZE_CAMERA_NAME_CONTAINS       = str(_CFG.get("gaze_camera_name_contains", "") or "").strip()
+GAZE_CAPTURE_WIDTH              = max(0, int(_CFG.get("gaze_capture_width", 0)))
+GAZE_CAPTURE_HEIGHT             = max(0, int(_CFG.get("gaze_capture_height", 0)))
+
+YOLO_CAMERA_INDEX               = int(_CFG.get("yolo_camera_index", 0))
+YOLO_DSHOW_IRIUN_NUMBER         = int(_CFG.get("yolo_dshow_iriun_number", 2))
+YOLO_CAMERA_NAME_CONTAINS       = str(_CFG.get("yolo_camera_name_contains", "") or "").strip()
+# Legacy key — superceded by yolo_dshow_iriun_number but kept for old configs
+YOLO_DSHOW_PICK_FIRST_IRIUN     = bool(_CFG.get("yolo_dshow_pick_first_iriun", False))
+
+EMOTION_CAMERA_INDEX            = int(_CFG.get("emotion_camera_index", 0))
+EMOTION_DSHOW_IRIUN_NUMBER      = int(_CFG.get("emotion_dshow_iriun_number", 1))
+EMOTION_CAMERA_NAME_CONTAINS    = str(_CFG.get("emotion_camera_name_contains", "") or "").strip()
+
+HAND_TRACKER_CAMERA_INDEX       = int(_CFG.get("hand_tracker_camera_index", 0))
+HAND_DSHOW_PICK_NON_IRIUN       = bool(_CFG.get("hand_dshow_pick_non_iriun", True))
+HAND_CAMERA_NAME_CONTAINS       = str(_CFG.get("hand_camera_name_contains", "") or "").strip()
+
+FACE_CAMERA_INDEX               = int(_CFG.get("face_camera_index", 0))
+FACE_DSHOW_PICK_NON_IRIUN       = bool(_CFG.get("face_dshow_pick_non_iriun", True))
+FACE_CAMERA_NAME_CONTAINS       = str(_CFG.get("face_camera_name_contains", "") or "").strip()
+
+# All five roles resolve to distinct physical devices at runtime via pick flags,
+# so shared fallback indices (all 0) are expected and not a real conflict.
+
 GAZE_ENABLED                 = bool(_CFG.get("gaze_enabled", False))
 GAZE_SAMPLE_INTERVAL_MS      = int(_CFG.get("gaze_sample_interval_ms", 100))
 GAZE_MIN_SAMPLES             = int(_CFG.get("gaze_min_samples", 30))
