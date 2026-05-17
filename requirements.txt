@@ -1,68 +1,95 @@
 # ============================================================
-#  Core requirements — install with:
-#      pip install -r requirements.txt
+#  requirements.txt — exact pinned versions, conflict-free
 #
-#  Python 3.10+ required (3.11 recommended on Windows).
+#  Python 3.10 or 3.11 recommended (3.11 on Windows).
 #  Tkinter ships with the standard CPython installer; if it
-#  is missing, reinstall Python and tick "tcl/tk" in the
-#  optional features.
+#  is missing, reinstall Python and tick "tcl/tk and IDLE"
+#  in the optional features.
 #
-#  Install order matters for dlib-dependent packages:
+#  INSTALL ORDER:
 #    1. pip install -r requirements.txt
 #    2. pip install --no-deps git+https://github.com/antoinelame/GazeTracking.git
+#       (GazeTracking is not on PyPI; --no-deps avoids rebuilding dlib)
+#
+#  KEY CONSTRAINT NOTES:
+#    numpy  : must be >=1.26.0,<2.0.0
+#             tensorflow==2.18.1 floor is 1.26.0
+#             mediapipe==0.10.21 ceiling is <2
+#             Both ultralytics and deepface are fine in this range.
+#    opencv : use opencv-contrib-python ONLY — mediapipe always depends
+#             on it and it conflicts with plain opencv-python (both
+#             ship cv2.pyd/.so). opencv-contrib-python is a strict
+#             superset so all cv2 calls in every file work unchanged.
+#    protobuf: tensorflow needs >=3.20.3,<6; mediapipe needs >=4.25.3,<5
+#             Intersection: 4.25.x is the only safe lane.
+#    keras  : tensorflow==2.18.1 requires keras>=3.5.0; deepface
+#             requires >=2.2.0 — keras==3.9.0 satisfies both.
+#    dlib   : face-recognition and GazeTracking both need dlib.
+#             On Windows use dlib-bin (pre-built wheel, no C++ compiler).
+#             On Linux/macOS pip builds dlib from source (CMake required).
 # ============================================================
 
-# --- Images & GIF animation ------------------------------------
-Pillow>=10.0.0,<13.0.0
 
-# --- TUIO / OSC ------------------------------------------------
-python-osc>=1.9.3
+# ── Images & animation ─────────────────────────────────────
+Pillow==10.4.0
 
-# --- Windows-only: volume control & window management ----------
-# pywin32 provides win32gui / win32con / win32api used for
-# minimize-other-windows, fullscreen focus, game window control.
-pywin32>=311; platform_system == "Windows"
+# ── TUIO / OSC (gaze session sidecar <-> C# GUI) ───────────
+python-osc==1.9.3
 
-# pycaw + comtypes are needed for Windows master-volume control
-# in the circular TUIO menu (VOL +/-).
-pycaw>=20251023; platform_system == "Windows"
-comtypes>=1.4.0; platform_system == "Windows"
+# ── Windows-only system integrations ───────────────────────
+pywin32==311; platform_system == "Windows"
+pycaw==20251023; platform_system == "Windows"
+comtypes==1.4.9; platform_system == "Windows"
 
-# --- Bluetooth admin device detection --------------------------
-bleak>=0.22.0
+# ── Bluetooth device detection ──────────────────────────────
+bleak==0.22.3
 
-# --- Mouse / keyboard automation (hand_controller, yolo_object_tracker) ---
-pyautogui>=0.9.54
+# ── Mouse / keyboard automation ─────────────────────────────
+# hand_controller.py, yolo_object_tracker.py
+pyautogui==0.9.54
 
-# --- Core computer-vision & numerics ---------------------------
-# numpy <2.0 required: mediapipe 0.10.x and deepface both pin numpy<2.
-# face-recognition also works best on numpy 1.x.
-numpy>=1.24.0,<2.0.0
-opencv-python>=4.8.0,<4.11.0
+# ── Core numerics ───────────────────────────────────────────
+# Floor set by tensorflow==2.18.1 (>=1.26.0); ceiling set by mediapipe (<2.0)
+numpy==1.26.4
 
-# --- Hand-tracking / gesture controller (hand_controller.py) ---
-mediapipe>=0.10.0,<0.11.0
+# ── OpenCV — contrib build only ─────────────────────────────
+# mediapipe depends on opencv-contrib-python; installing plain opencv-python
+# alongside it causes a cv2 symbol conflict. Use contrib everywhere.
+# All basic cv2 APIs used across every file are included in contrib.
+opencv-contrib-python==4.10.0.84
 
-# --- Object detection / YOLO (yolo_object_tracker.py) ----------
-ultralytics>=8.0.0,<8.5.0
+# ── protobuf ────────────────────────────────────────────────
+# tensorflow: >=3.20.3,<6  |  mediapipe: >=4.25.3,<5
+# 4.25.x is the only version range satisfying both constraints.
+protobuf==4.25.5
 
-# --- Emotion detection (emotion_server.py) ---------------------
-# deepface pulls in tensorflow / tf-keras automatically.
-# Pin tf-keras to avoid the keras 3.x vs tf 2.x split.
-deepface>=0.0.93,<0.0.101
-tf-keras>=2.15.0,<2.22.0
+# ── Hand tracking / gesture controller ──────────────────────
+# hand_controller.py
+mediapipe==0.10.21
 
-# --- Face recognition (face_manager.py) -----------------------
-# face-recognition requires dlib; use dlib-bin on Windows to
-# avoid the CMake/C++ build (same as gaze stack below).
-face-recognition>=1.3.0
-dlib-bin>=20.0.1; platform_system == "Windows"
-dlib>=19.24.0; platform_system != "Windows"
+# ── Object detection / YOLO (yolo_object_tracker.py) ────────
+ultralytics==8.3.40
+torch==2.5.1
+torchvision==0.20.1
 
-# --- Eye gaze (gaze_session_cli.py, gaze_tracker.py, heatmaps) ----
-# GazeTracking is NOT on PyPI — install separately after this file:
-#   pip install --no-deps git+https://github.com/antoinelame/GazeTracking.git
-# (--no-deps prevents pip from building dlib from source a second time)
-pandas>=2.0.0,<3.0.0
-seaborn>=0.13.0,<0.14.0
-matplotlib>=3.8.0,<4.0.0
+# ── Deep learning backend ───────────────────────────────────
+# tensorflow required by deepface; keras>=3.5.0 required by tensorflow 2.18.x
+tensorflow==2.18.1
+keras==3.9.0
+
+# ── Emotion detection (emotion_server.py) ───────────────────
+deepface==0.0.100
+
+# ── Face recognition (face_manager.py) ──────────────────────
+face-recognition==1.3.0
+face-recognition-models==0.3.0
+# dlib: pre-built wheel on Windows, source build on Linux/macOS
+dlib-bin==20.0.1; platform_system == "Windows"
+dlib==19.24.6; platform_system != "Windows"
+
+# ── Eye gaze stack ──────────────────────────────────────────
+# gaze_tracker.py, gaze_session_cli.py, gaze_heatmap.py
+# GazeTracking itself: see install step 2 at the top of this file.
+pandas==2.2.3
+seaborn==0.13.2
+matplotlib==3.9.4
