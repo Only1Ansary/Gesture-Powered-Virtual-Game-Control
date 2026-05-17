@@ -1,4 +1,75 @@
-2026-05-16 20:12:07,389 - INFO - ============================================================
-2026-05-16 20:12:07,389 - INFO - camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
-2026-05-16 20:12:07,391 - INFO - config.py loaded OK
-2026-05-16 20:12:07,391 - INFO - Loading YOLO model: D:\Code\HCI PROJ UI\yolov8l-worldv2.pt
+2026-05-18 01:06:27,962 - INFO - ============================================================
+2026-05-18 01:06:27,964 - INFO - camera_manager loaded  (log: D:\Code\HCI PROJ UI\camera_manager.log)
+2026-05-18 01:06:27,964 - INFO - config.py loaded OK
+2026-05-18 01:06:27,965 - INFO - Loading YOLO model: D:\Code\HCI PROJ UI\yolov8l-worldv2.pt
+2026-05-18 01:06:32,539 - INFO - Configured YOLO-World classes: stick, wooden stick, rod, pole, baton, wand, pointer, pencil, pen, baseball bat, ruler, measuring ruler, straight ruler, scale ruler
+2026-05-18 01:06:32,544 - DEBUG - Resolving index for role=YOLO
+2026-05-18 01:06:34,949 - INFO - YOLO  → resolved index=1  Iriun#2  ([YOLO] DirectShow #1 -> Iriun #2 (Iriun Webcam #3))
+2026-05-18 01:06:34,949 - INFO - --- open_camera(YOLO) ---  index=1  force_dshow=True  request=1280x720
+2026-05-18 01:06:34,949 - DEBUG -   trying CAP_DSHOW only (Iriun path)
+2026-05-18 01:06:34,949 - DEBUG -   _try_open  index=1  api=DSHOW
+2026-05-18 01:06:36,804 - DEBUG -   _try_open  OK  index=1  api=DSHOW
+2026-05-18 01:06:38,039 - INFO - SUCCESS  YOLO  index=1  backend=DSHOW  resolution=1280x720  fps=0.0
+2026-05-18 01:06:38,040 - INFO - YOLO camera opened
+2026-05-18 01:06:41,836 - INFO - Connected to C# tool listener
+2026-05-18 01:06:41,836 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:41,929 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:42,055 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:42,304 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:42,551 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:42,797 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:43,045 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:43,293 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:43,421 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:43,542 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:43,667 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:43,790 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:43,917 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:44,038 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:44,162 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:44,412 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:44,664 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:44,914 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:45,163 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:45,411 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:45,536 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:45,659 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:45,784 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:45,905 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:46,031 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:46,154 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:46,281 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:46,530 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:46,779 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:47,029 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:47,281 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:47,528 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:47,655 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:47,779 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:47,903 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:48,029 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:48,152 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:48,278 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:48,404 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:48,652 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:48,824 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:48,902 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:49,153 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:49,401 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:49,654 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:49,778 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:49,901 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:50,029 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:50,151 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:50,277 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:50,395 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:50,521 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:50,771 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:51,019 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:51,270 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:51,519 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:51,767 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:51,899 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:52,018 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720
+2026-05-18 01:06:52,139 - INFO - Tool: none candidate=none confidence=0.00 observed=wand:0.01
+2026-05-18 01:06:52,263 - INFO - Tool: none candidate=none confidence=0.00 observed=no boxes frame=1280x720

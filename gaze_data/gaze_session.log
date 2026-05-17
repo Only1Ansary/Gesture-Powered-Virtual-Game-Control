@@ -1775,3 +1775,405 @@
 2026-05-16 20:27:57  [Gaze] Stopped session for user 1 (0 samples).
 2026-05-16 20:27:57  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
 2026-05-16 20:27:57  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-17 23:43:59 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-17 23:43:59  [GazeCLI] Recording user 1 on camera 2.
+2026-05-17 23:43:59  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-17 23:43:59  [Gaze] Started session for user 1.
+2026-05-17 23:44:02  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-17 23:44:02  GAZE_STATUS CAMERA_OK
+2026-05-17 23:44:02  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-17 23:44:02  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-17 23:44:02  GAZE_STATUS PUPILS
+2026-05-17 23:44:02  GAZE_STATUS SAMPLES 1
+2026-05-17 23:44:03  GAZE_STATUS PUPILS
+2026-05-17 23:44:03  GAZE_STATUS PUPILS
+2026-05-17 23:44:03  GAZE_STATUS SAMPLES 5
+2026-05-17 23:44:04  GAZE_STATUS PUPILS
+2026-05-17 23:44:04  GAZE_STATUS PUPILS
+2026-05-17 23:44:05  GAZE_STATUS PUPILS
+2026-05-17 23:44:05  GAZE_STATUS SAMPLES 10
+
+=== gaze_session start 2026-05-17 23:45:04 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-17 23:45:04  [GazeCLI] Recording user 1 on camera 2.
+2026-05-17 23:45:04  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-17 23:45:04  [Gaze] Started session for user 1.
+2026-05-17 23:45:07  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-17 23:45:07  GAZE_STATUS CAMERA_OK
+2026-05-17 23:45:07  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-17 23:45:07  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-17 23:45:07  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-17 23:45:07  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-17 23:45:07  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-17 23:51:36 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-17 23:51:36  [GazeCLI] Recording user 1 on camera 2.
+2026-05-17 23:51:36  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-17 23:51:36  [Gaze] Started session for user 1.
+2026-05-17 23:51:39  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-17 23:51:39  GAZE_STATUS CAMERA_OK
+2026-05-17 23:51:39  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-17 23:51:39  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-17 23:51:39  GAZE_STATUS PUPILS
+2026-05-17 23:51:39  GAZE_STATUS SAMPLES 1
+2026-05-17 23:51:40  GAZE_STATUS PUPILS
+2026-05-17 23:51:40  GAZE_STATUS PUPILS
+2026-05-17 23:51:40  GAZE_STATUS SAMPLES 5
+2026-05-17 23:51:41  [Gaze] Stopped session for user 1 (5 samples).
+2026-05-17 23:51:43  [GazeCLI] Saved: {'sample_count': 5, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-17 23:51:43  === gaze_session end (5 samples) ===
+
+=== gaze_session start 2026-05-18 00:00:40 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:00:40  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:00:40  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:00:40  [Gaze] Started session for user 1.
+2026-05-18 00:00:42  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:00:42  GAZE_STATUS CAMERA_OK
+2026-05-18 00:00:42  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:00:42  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:00:43  GAZE_STATUS PUPILS
+2026-05-18 00:00:43  GAZE_STATUS SAMPLES 1
+2026-05-18 00:00:44  GAZE_STATUS PUPILS
+2026-05-18 00:00:45  [Gaze] Stopped session for user 1 (4 samples).
+2026-05-18 00:00:51  [GazeCLI] Saved: {'sample_count': 4, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:00:51  === gaze_session end (4 samples) ===
+
+=== gaze_session start 2026-05-18 00:01:16 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:01:16  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:01:16  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:01:16  [Gaze] Started session for user 1.
+2026-05-18 00:01:18  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:01:18  GAZE_STATUS CAMERA_OK
+2026-05-18 00:01:18  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:01:18  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:01:19  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:01:19  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:01:19  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:06:50 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:06:50  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:06:50  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:06:50  [Gaze] Started session for user 1.
+2026-05-18 00:06:52  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:06:52  GAZE_STATUS CAMERA_OK
+2026-05-18 00:06:52  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:06:52  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:06:52  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:06:52  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:06:52  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:07:16 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:07:16  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:07:16  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:07:16  [Gaze] Started session for user 1.
+2026-05-18 00:07:18  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:07:18  GAZE_STATUS CAMERA_OK
+2026-05-18 00:07:18  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:07:18  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:07:19  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:07:19  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:07:19  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:16:36 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:16:36  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:16:36  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:16:36  [Gaze] Started session for user 1.
+2026-05-18 00:16:38  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:16:38  GAZE_STATUS CAMERA_OK
+2026-05-18 00:16:38  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:16:38  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:16:38  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:16:38  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:16:38  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:17:11 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:17:11  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:17:11  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:17:11  [Gaze] Started session for user 1.
+2026-05-18 00:17:13  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:17:13  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:17:13  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:19:51 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:19:51  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:19:51  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:19:51  [Gaze] Started session for user 1.
+2026-05-18 00:19:53  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:19:53  GAZE_STATUS CAMERA_OK
+2026-05-18 00:19:53  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:19:53  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:19:53  GAZE_STATUS PUPILS
+2026-05-18 00:19:53  GAZE_STATUS SAMPLES 1
+2026-05-18 00:19:54  GAZE_STATUS PUPILS
+2026-05-18 00:19:55  GAZE_STATUS PUPILS
+2026-05-18 00:19:55  GAZE_STATUS SAMPLES 5
+2026-05-18 00:19:55  [Gaze] Stopped session for user 1 (6 samples).
+2026-05-18 00:19:57  [GazeCLI] Saved: {'sample_count': 6, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:19:57  === gaze_session end (6 samples) ===
+
+=== gaze_session start 2026-05-18 00:20:57 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:20:57  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:20:57  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:20:57  [Gaze] Started session for user 1.
+2026-05-18 00:20:59  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:20:59  GAZE_STATUS CAMERA_OK
+2026-05-18 00:20:59  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:20:59  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:20:59  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:20:59  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:20:59  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:23:39 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:23:39  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:23:39  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:23:39  [Gaze] Started session for user 1.
+2026-05-18 00:23:41  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:23:41  GAZE_STATUS CAMERA_OK
+2026-05-18 00:23:41  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:23:41  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:23:41  GAZE_STATUS PUPILS
+2026-05-18 00:23:41  GAZE_STATUS SAMPLES 1
+2026-05-18 00:23:42  GAZE_STATUS PUPILS
+2026-05-18 00:23:43  GAZE_STATUS PUPILS
+2026-05-18 00:23:43  GAZE_STATUS SAMPLES 5
+2026-05-18 00:23:43  GAZE_STATUS PUPILS
+2026-05-18 00:23:45  GAZE_STATUS PUPILS
+2026-05-18 00:23:46  GAZE_STATUS PUPILS
+2026-05-18 00:23:46  GAZE_STATUS SAMPLES 10
+2026-05-18 00:23:47  [Gaze] Stopped session for user 1 (11 samples).
+2026-05-18 00:23:49  [GazeCLI] Saved: {'sample_count': 11, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:23:49  === gaze_session end (11 samples) ===
+
+=== gaze_session start 2026-05-18 00:26:06 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:26:06  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:26:06  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:26:06  [Gaze] Started session for user 1.
+2026-05-18 00:26:08  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:26:08  GAZE_STATUS CAMERA_OK
+2026-05-18 00:26:08  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:26:08  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:26:08  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:26:08  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:26:08  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:28:10 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:28:10  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:28:10  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:28:10  [Gaze] Started session for user 1.
+2026-05-18 00:28:13  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:28:13  GAZE_STATUS CAMERA_OK
+2026-05-18 00:28:13  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:28:13  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:28:13  GAZE_STATUS PUPILS
+2026-05-18 00:28:13  GAZE_STATUS SAMPLES 1
+2026-05-18 00:28:13  GAZE_STATUS PUPILS
+2026-05-18 00:28:14  GAZE_STATUS PUPILS
+2026-05-18 00:28:14  GAZE_STATUS SAMPLES 5
+2026-05-18 00:28:15  GAZE_STATUS PUPILS
+2026-05-18 00:28:15  GAZE_STATUS PUPILS
+2026-05-18 00:28:17  [Gaze] Stopped session for user 1 (8 samples).
+2026-05-18 00:28:18  [GazeCLI] Saved: {'sample_count': 8, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:28:18  === gaze_session end (8 samples) ===
+
+=== gaze_session start 2026-05-18 00:31:25 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:31:25  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:31:25  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:31:25  [Gaze] Started session for user 1.
+2026-05-18 00:31:27  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:31:27  GAZE_STATUS CAMERA_OK
+2026-05-18 00:31:27  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:31:27  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:31:27  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:31:27  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:31:27  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:32:31 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:32:31  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:32:31  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:32:31  [Gaze] Started session for user 1.
+2026-05-18 00:32:34  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:32:34  GAZE_STATUS CAMERA_OK
+2026-05-18 00:32:34  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:32:34  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:32:35  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:32:35  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:32:35  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:33:30 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:33:30  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:33:30  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:33:30  [Gaze] Started session for user 1.
+2026-05-18 00:33:32  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:33:32  GAZE_STATUS CAMERA_OK
+2026-05-18 00:33:32  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:33:32  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:33:32  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:33:32  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:33:32  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:34:37 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:34:37  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:34:37  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:34:37  [Gaze] Started session for user 1.
+2026-05-18 00:34:40  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:34:40  GAZE_STATUS CAMERA_OK
+2026-05-18 00:34:40  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:34:40  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:34:40  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:34:40  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:34:40  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:35:52 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:35:52  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:35:52  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:35:52  [Gaze] Started session for user 1.
+2026-05-18 00:35:55  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:35:55  GAZE_STATUS CAMERA_OK
+2026-05-18 00:35:55  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:35:55  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:35:55  GAZE_STATUS PUPILS
+2026-05-18 00:35:55  GAZE_STATUS SAMPLES 1
+2026-05-18 00:35:57  GAZE_STATUS PUPILS
+2026-05-18 00:35:58  GAZE_STATUS PUPILS
+2026-05-18 00:36:01  [Gaze] Stopped session for user 1 (4 samples).
+2026-05-18 00:36:03  [GazeCLI] Saved: {'sample_count': 4, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:36:03  === gaze_session end (4 samples) ===
+
+=== gaze_session start 2026-05-18 00:39:41 user=0 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:39:41  [GazeCLI] Recording user 0 on camera 2.
+2026-05-18 00:39:41  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:39:41  [Gaze] Started session for user 0.
+2026-05-18 00:39:43  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:39:43  GAZE_STATUS CAMERA_OK
+2026-05-18 00:39:43  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:39:43  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:39:43  GAZE_STATUS PUPILS
+2026-05-18 00:39:43  GAZE_STATUS SAMPLES 1
+2026-05-18 00:39:44  GAZE_STATUS PUPILS
+2026-05-18 00:39:45  GAZE_STATUS PUPILS
+2026-05-18 00:39:45  GAZE_STATUS SAMPLES 5
+2026-05-18 00:39:45  GAZE_STATUS PUPILS
+2026-05-18 00:39:46  GAZE_STATUS PUPILS
+2026-05-18 00:39:46  GAZE_STATUS SAMPLES 10
+2026-05-18 00:39:46  GAZE_STATUS PUPILS
+2026-05-18 00:39:47  [Gaze] Stopped session for user 0 (12 samples).
+2026-05-18 00:39:49  [GazeCLI] Saved: {'sample_count': 12, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-18 00:39:49  === gaze_session end (12 samples) ===
+
+=== gaze_session start 2026-05-18 00:42:27 user=0 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:42:27  [GazeCLI] Recording user 0 on camera 2.
+2026-05-18 00:42:27  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:42:27  [Gaze] Started session for user 0.
+2026-05-18 00:42:29  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:42:29  GAZE_STATUS CAMERA_OK
+2026-05-18 00:42:29  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:42:29  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:42:29  [Gaze] Stopped session for user 0 (0 samples).
+2026-05-18 00:42:29  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-18 00:42:29  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:47:38 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:47:38  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 00:47:38  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:47:38  [Gaze] Started session for user 1.
+2026-05-18 00:47:41  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:47:41  GAZE_STATUS CAMERA_OK
+2026-05-18 00:47:41  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:47:41  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:47:41  [Gaze] Stopped session for user 1 (0 samples).
+2026-05-18 00:47:41  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 00:47:41  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:48:00 user=2 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:48:00  [GazeCLI] Recording user 2 on camera 2.
+2026-05-18 00:48:00  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:48:00  [Gaze] Started session for user 2.
+2026-05-18 00:48:02  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:48:02  GAZE_STATUS CAMERA_OK
+2026-05-18 00:48:02  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:48:02  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:48:02  GAZE_STATUS PUPILS
+2026-05-18 00:48:02  GAZE_STATUS SAMPLES 1
+2026-05-18 00:48:03  GAZE_STATUS PUPILS
+2026-05-18 00:48:04  GAZE_STATUS PUPILS
+2026-05-18 00:48:04  GAZE_STATUS SAMPLES 5
+2026-05-18 00:48:04  GAZE_STATUS PUPILS
+2026-05-18 00:48:05  GAZE_STATUS PUPILS
+2026-05-18 00:48:06  GAZE_STATUS PUPILS
+2026-05-18 00:48:06  GAZE_STATUS SAMPLES 10
+2026-05-18 00:48:07  GAZE_STATUS PUPILS
+2026-05-18 00:48:07  GAZE_STATUS PUPILS
+2026-05-18 00:48:07  GAZE_STATUS SAMPLES 15
+2026-05-18 00:48:08  GAZE_STATUS PUPILS
+2026-05-18 00:48:09  GAZE_STATUS PUPILS
+2026-05-18 00:48:23  GAZE_STATUS HINT no_pupils_face_the_camera_check_lighting
+2026-05-18 00:48:25  GAZE_STATUS PUPILS
+2026-05-18 00:48:26  GAZE_STATUS PUPILS
+2026-05-18 00:48:26  GAZE_STATUS SAMPLES 20
+2026-05-18 00:48:26  GAZE_STATUS PUPILS
+2026-05-18 00:48:27  GAZE_STATUS PUPILS
+2026-05-18 00:48:28  [Gaze] Stopped session for user 2 (23 samples).
+2026-05-18 00:48:30  [GazeCLI] Saved: {'sample_count': 23, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_2'}
+2026-05-18 00:48:30  === gaze_session end (23 samples) ===
+
+=== gaze_session start 2026-05-18 00:51:13 user=0 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:51:13  [GazeCLI] Recording user 0 on camera 2.
+2026-05-18 00:51:13  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:51:13  [Gaze] Started session for user 0.
+2026-05-18 00:51:15  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:51:15  GAZE_STATUS CAMERA_OK
+2026-05-18 00:51:15  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:51:15  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:51:16  GAZE_STATUS PUPILS
+2026-05-18 00:51:16  GAZE_STATUS SAMPLES 1
+2026-05-18 00:51:16  GAZE_STATUS PUPILS
+2026-05-18 00:51:19  GAZE_STATUS PUPILS
+2026-05-18 00:51:19  GAZE_STATUS PUPILS
+2026-05-18 00:51:19  GAZE_STATUS SAMPLES 5
+2026-05-18 00:51:21  GAZE_STATUS PUPILS
+2026-05-18 00:51:36  GAZE_STATUS HINT no_pupils_face_the_camera_check_lighting
+2026-05-18 00:52:49  GAZE_STATUS PUPILS
+2026-05-18 00:52:50  GAZE_STATUS PUPILS
+2026-05-18 00:52:50  GAZE_STATUS SAMPLES 10
+2026-05-18 00:52:50  GAZE_STATUS PUPILS
+2026-05-18 00:52:53  [Gaze] Stopped session for user 0 (13 samples).
+2026-05-18 00:52:55  [GazeCLI] Saved: {'sample_count': 13, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_0'}
+2026-05-18 00:52:55  === gaze_session end (13 samples) ===
+
+=== gaze_session start 2026-05-18 00:56:48 user=2 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:56:48  [GazeCLI] Recording user 2 on camera 2.
+2026-05-18 00:56:48  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:56:48  [Gaze] Started session for user 2.
+2026-05-18 00:56:50  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:56:50  GAZE_STATUS CAMERA_OK
+2026-05-18 00:56:50  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:56:50  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:56:50  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-18 00:56:50  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_2'}
+2026-05-18 00:56:50  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 00:58:08 user=2 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 00:58:08  [GazeCLI] Recording user 2 on camera 2.
+2026-05-18 00:58:08  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 00:58:08  [Gaze] Started session for user 2.
+2026-05-18 00:58:10  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 00:58:10  GAZE_STATUS CAMERA_OK
+2026-05-18 00:58:10  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 00:58:10  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 00:58:10  [Gaze] Stopped session for user 2 (0 samples).
+2026-05-18 00:58:10  [GazeCLI] Saved: {'sample_count': 0, 'heatmap_created': False, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_2'}
+2026-05-18 00:58:10  === gaze_session end (0 samples) ===
+
+=== gaze_session start 2026-05-18 01:06:15 user=1 camera=2 (Windows: DSHOW/MSMF order per gaze_opencv_dshow_first; native res unless gaze_capture_* set) ===
+2026-05-18 01:06:15  [GazeCLI] Recording user 1 on camera 2.
+2026-05-18 01:06:15  [GazeCLI] Debug log file: D:\Code\HCI PROJ UI\gaze_data/gaze_session.log
+2026-05-18 01:06:15  [Gaze] Started session for user 1.
+2026-05-18 01:06:17  [Gaze] Opened camera index 2 (CAP_DSHOW) at 1920×1080, frames OK.
+2026-05-18 01:06:17  GAZE_STATUS CAMERA_OK
+2026-05-18 01:06:17  [Gaze] External OpenCV preview running (separate process from sidecar/GUI).
+2026-05-18 01:06:17  [Gaze] gaze_mirror_horizontal on — frames flipped before tracking to match screen left/right.
+2026-05-18 01:06:18  GAZE_STATUS PUPILS
+2026-05-18 01:06:18  GAZE_STATUS SAMPLES 1
+2026-05-18 01:06:19  [Gaze] Stopped session for user 1 (2 samples).
+2026-05-18 01:06:21  [GazeCLI] Saved: {'sample_count': 2, 'heatmap_created': True, 'layout_created': False, 'user_dir': 'D:\\Code\\HCI PROJ UI\\gaze_data\\user_1'}
+2026-05-18 01:06:21  === gaze_session end (2 samples) ===

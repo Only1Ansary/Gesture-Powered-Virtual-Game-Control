@@ -22,6 +22,7 @@ except RuntimeError as _cam_err:
     raise SystemExit(1)
 
 cursor_buffer = []
+last_log_time = time.time()
 
 def smooth_cursor(x, y):
     cursor_buffer.append((x, y))
@@ -32,16 +33,24 @@ def smooth_cursor(x, y):
     return avg_x, avg_y
 
 with mp_hands.Hands(
-    model_complexity=1,
+    model_complexity=0,
     max_num_hands=1,
-    min_detection_confidence=0.7,
-    min_tracking_confidence=0.6,
+    min_detection_confidence=0.3,
+    min_tracking_confidence=0.3,
 ) as hands:
+
+    print("[HandController] Entered detection loop. Waiting for frames...", flush=True)
+    last_status_time = time.time()
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
+            print("[HandController] cap.read() returned False! Exiting loop.", flush=True)
             break
+
+        if time.time() - last_status_time > 3.0:
+            print(f"[HandController] Active stream ({frame.shape[1]}x{frame.shape[0]}), searching for hands...", flush=True)
+            last_status_time = time.time()
 
         # frame = cv2.flip(frame, 1)
         h, w = frame.shape[:2]
@@ -72,6 +81,10 @@ with mp_hands.Hands(
                 mx, my = smooth_cursor(mx, my)
 
                 pyautogui.moveTo(mx, my, duration=0)
+
+                if time.time() - last_log_time > 0.5:
+                    print(f"Tracking Hand: screen ({mx}, {my}) normalized ({idx_tip.x:.2f}, {idx_tip.y:.2f})", flush=True)
+                    last_log_time = time.time()
 
                 # Draw pointer
                 cv2.circle(frame, (ix_px, iy_px), 12, (0, 255, 0), -1)

@@ -1713,14 +1713,20 @@ namespace FruitNinjaGame
             if (_handProcess != null && !_handProcess.HasExited)
                 return;
 
+            if (_handProcess != null)
+            {
+                _handProcess.Dispose();
+                _handProcess = null;
+            }
+
             string scriptPath = ResolveHandControllerPath();
+            Console.WriteLine($"StartHandController resolving script: \"{scriptPath}\"");
             if (string.IsNullOrEmpty(scriptPath) || !File.Exists(scriptPath))
             {
                 Console.WriteLine("hand_controller.py not found – hand tracking disabled.");
                 return;
             }
 
-            // Use "python" or "python3" – adjust if necessary
             string pythonExe = "python";
             if (Environment.OSVersion.Platform == PlatformID.Unix)
                 pythonExe = "python3";
@@ -1733,15 +1739,31 @@ namespace FruitNinjaGame
                     {
                         FileName = pythonExe,
                         Arguments = $"\"{scriptPath}\"",
+                        WorkingDirectory = AppConfig.RepoRoot,
                         UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden
                     }
                 };
+                _handProcess.StartInfo.EnvironmentVariables["PYTHONUNBUFFERED"] = "1";
                 _handProcess.StartInfo.EnvironmentVariables["HAND_TRACKER_CAMERA_INDEX"] =
                     AppConfig.HandTrackerCameraIndex.ToString();
+                _handProcess.OutputDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(e.Data))
+                        Console.WriteLine($"HandTracker: {e.Data}");
+                };
+                _handProcess.ErrorDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(e.Data))
+                        Console.WriteLine($"HandTracker ERR: {e.Data}");
+                };
                 _handProcess.Start();
-                Console.WriteLine("Hand controller started.");
+                _handProcess.BeginOutputReadLine();
+                _handProcess.BeginErrorReadLine();
+                Console.WriteLine($"Hand controller started (PID: {_handProcess.Id}).");
             }
             catch (Exception ex)
             {
@@ -1751,14 +1773,17 @@ namespace FruitNinjaGame
 
         private void StopHandController()
         {
-            if (_handProcess != null && !_handProcess.HasExited)
+            if (_handProcess != null)
             {
-                try
+                if (!_handProcess.HasExited)
                 {
-                    _handProcess.Kill();
-                    _handProcess.WaitForExit(2000);
+                    try
+                    {
+                        _handProcess.Kill();
+                        _handProcess.WaitForExit(2000);
+                    }
+                    catch { }
                 }
-                catch { }
                 _handProcess.Dispose();
                 _handProcess = null;
                 Console.WriteLine("Hand controller stopped.");
@@ -2501,7 +2526,6 @@ namespace FruitNinjaGame
             finally
             {
                 LaunchReactivision();
-                StartHandController();
             }
         }
 
@@ -3430,8 +3454,9 @@ namespace FruitNinjaGame
             string name = _currentUser.HasValue ? _users[_currentUser.Value].Name : "";
             _useTuioControl = _currentUser.HasValue && _users.ContainsKey(_currentUser.Value);
             StopGazeSession();
+            Thread.Sleep(1500); // Ensure main webcam lock is fully released before Hand Tracker grabs it
 
-            if (!_useTuioControl) { StopReactivision(); Thread.Sleep(2000); }
+            if (!_useTuioControl) { StopReactivision(); }
 
             bool success = LaunchGame(name, _currentUser ?? -1, out string errMsg);
             if (success)
@@ -3463,6 +3488,12 @@ namespace FruitNinjaGame
             if (_emotionProcess != null && !_emotionProcess.HasExited)
                 return;
 
+            if (_emotionProcess != null)
+            {
+                _emotionProcess.Dispose();
+                _emotionProcess = null;
+            }
+
             string scriptPath = Path.Combine(AppConfig.RepoRoot, "emotion_server.py");
             if (!File.Exists(scriptPath))
             {
@@ -3472,20 +3503,37 @@ namespace FruitNinjaGame
 
             try
             {
+                string pythonExe = Environment.OSVersion.Platform == PlatformID.Unix ? "python3" : "python";
                 _emotionProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
-                        FileName = "python",  // or "python3" on Linux
+                        FileName = pythonExe,
                         Arguments = $"\"{scriptPath}\"",
+                        WorkingDirectory = AppConfig.RepoRoot,
                         UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden
                     }
                 };
+                _emotionProcess.StartInfo.EnvironmentVariables["PYTHONUNBUFFERED"] = "1";
                 _emotionProcess.StartInfo.EnvironmentVariables["EMOTION_CAMERA_INDEX"] =
                     AppConfig.EmotionCameraIndex.ToString();
+
+                _emotionProcess.OutputDataReceived += (_, e) =>
+                {
+                    if (e.Data != null) Console.WriteLine("EmotionServer: " + e.Data);
+                };
+                _emotionProcess.ErrorDataReceived += (_, e) =>
+                {
+                    if (e.Data != null) Console.WriteLine("EmotionServer ERR: " + e.Data);
+                };
+
                 _emotionProcess.Start();
+                _emotionProcess.BeginOutputReadLine();
+                _emotionProcess.BeginErrorReadLine();
                 Console.WriteLine("Emotion server started.");
             }
             catch (Exception ex)
@@ -3496,12 +3544,15 @@ namespace FruitNinjaGame
 
         private void StopEmotionServer()
         {
-            if (_emotionProcess != null && !_emotionProcess.HasExited)
+            if (_emotionProcess != null)
             {
                 try
                 {
-                    _emotionProcess.Kill();
-                    _emotionProcess.WaitForExit(2000);
+                    if (!_emotionProcess.HasExited)
+                    {
+                        _emotionProcess.Kill();
+                        _emotionProcess.WaitForExit(2000);
+                    }
                 }
                 catch { }
                 _emotionProcess.Dispose();

@@ -255,10 +255,10 @@ def open_camera(
                         or _try_open(idx, None, label)
                     )
                 else:
-                    _log.debug("  trying MSMF then DSHOW then default (main webcam path)")
+                    _log.debug("  trying DSHOW then MSMF then default (main webcam path)")
                     cap = (
-                        _try_open(idx, cv2.CAP_MSMF, label)
-                        or _try_open(idx, cv2.CAP_DSHOW, label)
+                        _try_open(idx, cv2.CAP_DSHOW, label)
+                        or _try_open(idx, cv2.CAP_MSMF, label)
                         or _try_open(idx, None, label)
                     )
             else:

@@ -11,9 +11,6 @@ namespace FruitNinjaGame
     {
         System.Windows.Forms.Timer T = new System.Windows.Forms.Timer();
         Bitmap off;
-        private TcpListener? levelListener;
-        private Thread? listenerThread;
-        private volatile bool listening = true;
         private readonly object levelLock = new object();
         private readonly object toolLock = new object();
         private readonly GameAudioPlayer audio = new GameAudioPlayer();
@@ -67,8 +64,6 @@ namespace FruitNinjaGame
             this.FormClosed += (_, _) =>
             {
                 isClosing = true;
-                listening = false;
-                levelListener?.Stop();
                 audio.Dispose();
             };
         }
@@ -340,15 +335,13 @@ namespace FruitNinjaGame
         }
 
 
-        private readonly object _levelLock = new object();
-        private int _currentLevel = 100;
-
         public void SetDifficultyLevel(int level)
         {
-            lock (_levelLock)
+            lock (levelLock)
             {
-                _currentLevel = level;
+                Level = level;
             }
+            Console.WriteLine($"[FruitNinja] Difficulty Level set to {level} ({GetDifficultyMode()})");
         }
 
         public void SetToolState(string toolState)
@@ -1075,46 +1068,6 @@ namespace FruitNinjaGame
             return "Normal";
         }
 
-        private void ListenForLevelUpdates()
-        {
-            try
-            {
-                levelListener = new TcpListener(IPAddress.Loopback, AppConfig.TcpLevelPort);
-                levelListener.Start();
-                while (listening)
-                {
-                    if (levelListener.Pending())
-                    {
-                        using (TcpClient client = levelListener.AcceptTcpClient())
-                        using (NetworkStream stream = client.GetStream())
-                        {
-                            StreamReader reader = new StreamReader(stream, Encoding.ASCII);
-                            string? data = reader.ReadLine();
-                            if (!string.IsNullOrEmpty(data) && int.TryParse(data, out int newLevel))
-                            {
-                                // Update the Level variable thread‑safely
-                                lock (levelLock)
-                                {
-                                    Level = newLevel;
-                                }
-                                // Optional: log to console or a label
-                                Console.WriteLine($"Level updated to {Level}");
-                            }
-                        }
-                    }
-                    Thread.Sleep(50);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Listener error: {ex.Message}");
-            }
-            finally
-            {
-                levelListener?.Stop();
-            }
-        }
-
         private void Form1_Load(object? sender, EventArgs e)
         {
             off = new Bitmap(this.ClientSize.Width, this.ClientSize.Height);
@@ -1123,11 +1076,6 @@ namespace FruitNinjaGame
             Blade.img.Add(img);
             string stickPath = AppConfig.GetAssetPath("stick.png");
             Blade.img.Add(File.Exists(stickPath) ? new Bitmap(stickPath) : img);
-
-            // Start TCP listener on a background thread
-            listenerThread = new Thread(ListenForLevelUpdates);
-            listenerThread.IsBackground = true;
-            listenerThread.Start();
         }
 
         private void Form1_KeyDown(object? sender, KeyEventArgs e)
