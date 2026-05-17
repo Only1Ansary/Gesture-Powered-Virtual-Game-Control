@@ -1,16 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "94NWPt5A6wU=",
+  "dgSpecHash": "Z9uXk9p/29Q=",
   "success": true,
-  "projectFilePath": "D:\\Code\\HCI PROJ UI\\FruitNinjaGame\\FruitNinjaGame.csproj",
+  "projectFilePath": "C:\\Users\\PC\\Desktop\\fruit\\Gesture-Powered-Virtual-Game-Control\\FruitNinjaGame\\FruitNinjaGame.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\aline\\.nuget\\packages\\naudio\\2.3.0\\naudio.2.3.0.nupkg.sha512",
-    "C:\\Users\\aline\\.nuget\\packages\\naudio.asio\\2.3.0\\naudio.asio.2.3.0.nupkg.sha512",
-    "C:\\Users\\aline\\.nuget\\packages\\naudio.core\\2.3.0\\naudio.core.2.3.0.nupkg.sha512",
-    "C:\\Users\\aline\\.nuget\\packages\\naudio.midi\\2.3.0\\naudio.midi.2.3.0.nupkg.sha512",
-    "C:\\Users\\aline\\.nuget\\packages\\naudio.wasapi\\2.3.0\\naudio.wasapi.2.3.0.nupkg.sha512",
-    "C:\\Users\\aline\\.nuget\\packages\\naudio.winforms\\2.3.0\\naudio.winforms.2.3.0.nupkg.sha512",
-    "C:\\Users\\aline\\.nuget\\packages\\naudio.winmm\\2.3.0\\naudio.winmm.2.3.0.nupkg.sha512"
+    "C:\\Users\\PC\\.nuget\\packages\\naudio\\2.3.0\\naudio.2.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\naudio.asio\\2.3.0\\naudio.asio.2.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\naudio.core\\2.3.0\\naudio.core.2.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\naudio.midi\\2.3.0\\naudio.midi.2.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\naudio.wasapi\\2.3.0\\naudio.wasapi.2.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\naudio.winforms\\2.3.0\\naudio.winforms.2.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\naudio.winmm\\2.3.0\\naudio.winmm.2.3.0.nupkg.sha512"
   ],
   "logs": []
 }
